@@ -1,0 +1,9 @@
+
+.DS_Store
+*/.DS_Store
+.history/
+build/
+dist/
+*/build/
+*/dist/
+*.spec
