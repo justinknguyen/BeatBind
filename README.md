@@ -49,6 +49,8 @@ Once you're ready, press on `Start` to save your settings and start listening fo
 ### NOTE: Restart the app if you changed the location of the .exe file. <br>
 The registry key used to start the app on Windows startup needs to be updated to the new .exe path. Restarting the app will resolve that.
 
+Quit the app by pressing on "Quit" within the system tray icon menu, or end the process in Task Manager.
+
 ### Where Is My Information Saved?
 1. Press `Win+R` to bring up the "Run" menu, or type in "Run" within your Windows search bar.
 1. Enter the following in the "Open" input field:
