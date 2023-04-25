@@ -46,7 +46,7 @@ The app requires the user to input five fields:
 Once you're ready, press on `Start` to save your settings and start listening for your hotkeys!
 
 ***
-### NOTE: Restart the app if you change the location of the .exe file. <br>
+### NOTE: Restart the app if you changed the location of the .exe file. <br>
 The registry key used to start the app on Windows startup needs to be updated to the new .exe path. Restarting the app will resolve that.
 
 ### Where Is My Information Saved?
