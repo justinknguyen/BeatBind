@@ -194,6 +194,13 @@ class SpotifyGlobalHotkeysApp(object):
         try:
             response = requests.put(url, headers=headers)
             response.raise_for_status()
+            if response.status_code == 403:  # The music is already playing
+                # pause music on specific device id
+                url = f'https://api.spotify.com/v1/me/player/pause?device_id={self.device_id}'
+                response = requests.put(url, headers=headers)
+                response.raise_for_status()
+                print('Paused music')
+                return
             print('Playing music')
         except Exception as e:
             print(f'Error: {e}')
