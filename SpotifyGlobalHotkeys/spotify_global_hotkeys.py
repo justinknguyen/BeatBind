@@ -68,28 +68,12 @@ class SpotifyGlobalHotkeysApp(object):
         # Spotify access token
         self.token = None
         
-        # Start the loop to monitor system wake up events
-        wakeup_thread = threading.Thread(target=self.MonitorWakeup)
-        wakeup_thread.daemon = True
-        wakeup_thread.start()
-        
         self.refresh_thread_running = False
                 
     # --------------------------------------------------------------------------------------- #
     '''
     MISC
-    '''
-    def MonitorWakeup(self):
-        last_boot_time = None
-        while True:
-            current_boot_time = psutil.boot_time()
-            if last_boot_time is not None and current_boot_time > last_boot_time:
-                print("System woke up from sleep")
-                self.SetHotkeys() # Reset hotkeys
-                self.CreateToken() # Recreate token
-            last_boot_time = current_boot_time
-            time.sleep(10)
-            
+    '''   
     def UpdateStartupRegistry(self):
         key_path = r'Software\Microsoft\Windows\CurrentVersion\Run'
         app_name = 'SpotifyGlobalHotkeys'
