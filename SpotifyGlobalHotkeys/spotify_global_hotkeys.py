@@ -60,6 +60,8 @@ class SpotifyGlobalHotkeysApp(object):
         self.volume_up_hotkey = None
         self.volume_down_hotkey = None
         
+        self.last_volume = None
+        
         self.startup_var = None
         self.minimize_var = None
 
@@ -122,9 +124,9 @@ class SpotifyGlobalHotkeysApp(object):
     def SetHotkeys(self):
         print('Setting hotkeys')
         keyboard.unhook_all()  # Kill the previous keyboard listener
-        self.play_pause_hotkey = keyboard.add_hotkey(self.hotkeys['play/pause'], lambda: (self.PlayPause(), time.sleep(0.5)))
-        self.prev_track_hotkey = keyboard.add_hotkey(self.hotkeys['prev_track'], lambda: (self.PrevNext('previous'), time.sleep(0.5)))
-        self.next_track_hotkey = keyboard.add_hotkey(self.hotkeys['next_track'], lambda: (self.PrevNext('next'), time.sleep(0.5)))
+        self.play_pause_hotkey = keyboard.add_hotkey(self.hotkeys['play/pause'], lambda: (self.PlayPause(), time.sleep(0.3)))
+        self.prev_track_hotkey = keyboard.add_hotkey(self.hotkeys['prev_track'], lambda: (self.PrevNext('previous'), time.sleep(0.3)))
+        self.next_track_hotkey = keyboard.add_hotkey(self.hotkeys['next_track'], lambda: (self.PrevNext('next'), time.sleep(0.3)))
         self.volume_up_hotkey = keyboard.add_hotkey(self.hotkeys['volume_up'], lambda: (self.AdjustVolume(5), time.sleep(0)))
         self.volume_down_hotkey = keyboard.add_hotkey(self.hotkeys['volume_down'], lambda: (self.AdjustVolume(-5), time.sleep(0)))
         
@@ -274,7 +276,8 @@ class SpotifyGlobalHotkeysApp(object):
 
     def AdjustVolume(self, amount):
         headers = {'Authorization': 'Bearer ' + self.token}
-        url = f'https://api.spotify.com/v1/me/player/volume?volume_percent={self.GetCurrentVolume() + amount}'
+        self.last_volume = self.GetCurrentVolume()
+        url = f'https://api.spotify.com/v1/me/player/volume?volume_percent={self.last_volume + amount}&device_id={self.device_id}'
         try:
             response = requests.put(url, headers=headers)
             response.raise_for_status()
@@ -300,6 +303,7 @@ class SpotifyGlobalHotkeysApp(object):
             return volume
         except Exception as e:
             print(f'Error: {e}')
+            return self.last_volume
             
     # --------------------------------------------------------------------------------------- #
     '''
