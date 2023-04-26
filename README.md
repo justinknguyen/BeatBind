@@ -45,7 +45,8 @@ The app requires the user to input five fields:
 - This program uses the [keyboard](https://github.com/boppreh/keyboard) module to listen for hotkeys.
 - To help create your hotkeys, you can view the keycodes [here](https://github.com/boppreh/keyboard#keyboardkey_down).
 
-Once you're ready, press on `Start` to save your settings and start listening for your hotkeys!
+Once you're done, click on `Save` to save your settings. <br>
+Click on `Start & Close` to close the window and start listening for your hotkeys! You can open the settings again by right-clicking on the app's system tray icon.
 
 ***
 ### NOTE: Restart the app if you changed the location of the .exe file. <br>
