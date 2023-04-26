@@ -164,14 +164,6 @@ class SpotifyGlobalHotkeysApp(object):
             print('Could not find .cache file. Creating token...')
             self.CreateToken()
         
-    def RefreshToken(self, auth_manager, expires_in):
-        while True:
-            time.sleep(expires_in - 60)  # Sleep until the token needs to be refreshed
-            print('Refreshing token')
-            token_data = auth_manager.refresh_access_token(auth_manager.get_cached_token()['refresh_token'])
-            self.token = token_data['access_token']
-            expires_in = token_data['expires_in']
-        
     def RefreshToken(self):
         while True:
             time.sleep(self.expires_in - 60)  # Sleep until the token needs to be refreshed
