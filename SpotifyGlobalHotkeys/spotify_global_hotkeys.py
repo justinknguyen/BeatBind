@@ -14,10 +14,12 @@ import threading
 import json.decoder
 import winreg as reg
 import tkinter as tk
+import tkinter.messagebox as messagebox
 from PIL import Image
 from tkinter import ttk
 from ttkthemes import ThemedTk
 from spotipy.oauth2 import SpotifyOAuth
+from datetime import datetime
 
 class SpotifyGlobalHotkeysApp(object):
     def __init__(self):
@@ -30,6 +32,7 @@ class SpotifyGlobalHotkeysApp(object):
                 base_path = os.path.dirname(os.path.abspath(__file__))
             return os.path.join(base_path, relative_path)
         
+        # Create paths
         self.app_folder = os.path.join(os.environ['APPDATA'], '.spotify_global_hotkeys')
         os.makedirs(self.app_folder, exist_ok=True)
         self.config_path = os.path.join(self.app_folder, 'config.json')
@@ -66,7 +69,10 @@ class SpotifyGlobalHotkeysApp(object):
         self.minimize_var = None
 
         # Spotify access token
+        self.auth_manager = None
+        self.token_data = None
         self.token = None
+        self.expires_in = None
         
         self.refresh_thread_running = False
                 
@@ -135,11 +141,29 @@ class SpotifyGlobalHotkeysApp(object):
             print(f'Error saving config: {e}')
         except Exception as e:
             print(f'Unexpected error while saving config: {e}')
+            
+    def ErrorMessage(self, message):
+        messagebox.showerror("Error", message)
         
     # --------------------------------------------------------------------------------------- #
     '''
     API
     '''
+    def CheckTokenExpiry(self):
+        cache_file = os.path.join(self.app_folder, f'.cache-{self.username}')
+
+        if os.path.exists(cache_file):
+            with open(cache_file, 'r') as f:
+                cache_data = json.load(f)
+                
+            expires_at = cache_data['expires_at']
+            if datetime.now().timestamp() >= expires_at:
+                print('Cached token has expired')
+                self.CreateToken()
+        else:
+            print('Could not find .cache file. Creating token...')
+            self.CreateToken()
+        
     def RefreshToken(self, auth_manager, expires_in):
         while True:
             time.sleep(expires_in - 60)  # Sleep until the token needs to be refreshed
@@ -147,39 +171,48 @@ class SpotifyGlobalHotkeysApp(object):
             token_data = auth_manager.refresh_access_token(auth_manager.get_cached_token()['refresh_token'])
             self.token = token_data['access_token']
             expires_in = token_data['expires_in']
+        
+    def RefreshToken(self):
+        while True:
+            time.sleep(self.expires_in - 60)  # Sleep until the token needs to be refreshed
+            print('Refreshing token')
+            self.token_data = self.auth_manager.refresh_access_token(self.auth_manager.get_cached_token()['refresh_token'])
+            self.token = self.token_data['access_token']
+            self.expires_in = self.token_data['expires_in']
             
     def CreateToken(self):
         print('Creating token')
         cache_file = os.path.join(self.app_folder, f'.cache-{self.username}')
-        auth_manager = SpotifyOAuth(username=self.username,
-                                    scope=self.scope,
-                                    client_id=self.client_id,
-                                    client_secret=self.client_secret,
-                                    redirect_uri=self.redirect_uri,
-                                    cache_path=cache_file)
         try:
-            token_data = auth_manager.refresh_access_token(auth_manager.get_cached_token()['refresh_token'])
+            self.auth_manager = SpotifyOAuth(username=self.username,
+                                            scope=self.scope,
+                                            client_id=self.client_id,
+                                            client_secret=self.client_secret,
+                                            redirect_uri=self.redirect_uri,
+                                            cache_path=cache_file)
         except:
-            token_data = auth_manager.get_access_token()
+            self.ErrorMessage('Invalid credentials. Please check your input fields.')
+            return False
+        
+        try:
+            self.token_data = self.auth_manager.refresh_access_token(self.auth_manager.get_cached_token()['refresh_token'])
+        except:
+            self.token_data = self.auth_manager.get_access_token()
 
-        self.token = token_data['access_token']
-        expires_in = token_data['expires_in']
+        self.token = self.token_data['access_token']
+        self.expires_in = self.token_data['expires_in']
 
         # Start the loop to refresh the token before it expires, if not already running
         if not self.refresh_thread_running:
             print('Created refresh thread')
-            refresh_thread = threading.Thread(target=self.RefreshToken, args=(auth_manager, expires_in))
+            refresh_thread = threading.Thread(target=self.RefreshToken)
             refresh_thread.daemon = True
             refresh_thread.start()
             self.refresh_thread_running = True
+            
+        return True
               
     def HandleConnectionError(self, retry_count=0):
-        if retry_count >= 3:
-            print("Maximum retries reached. Aborting.")
-            return
-
-        self.CreateToken()  # Recreate token
-
         # Connection error occurs when device is no longer active, so play music on specific device id
         headers = {'Authorization': 'Bearer ' + self.token}
         url = f'https://api.spotify.com/v1/me/player/play?device_id={self.device_id}'
@@ -196,8 +229,6 @@ class SpotifyGlobalHotkeysApp(object):
             print('Playing music')
         except Exception as e:
             print(f'Error: {e}')
-            print(f'Retrying... {retry_count + 1}')
-            self.HandleConnectionError(retry_count=retry_count + 1)
  
     def GetPlaybackState(self):
         headers = {'Authorization': 'Bearer ' + self.token}
@@ -213,6 +244,8 @@ class SpotifyGlobalHotkeysApp(object):
             return None
  
     def PlayPause(self):
+        self.CheckTokenExpiry()
+        
         is_playing = self.GetPlaybackState()
         if is_playing is None:
             return
@@ -235,6 +268,8 @@ class SpotifyGlobalHotkeysApp(object):
             print(f'Error: {e}')
             
     def PrevNext(self, command):
+        self.CheckTokenExpiry()
+        
         headers = {'Authorization': 'Bearer ' + self.token}
         url = f'https://api.spotify.com/v1/me/player/{command}?device_id={self.device_id}'
         try:
@@ -248,6 +283,8 @@ class SpotifyGlobalHotkeysApp(object):
             print(f'Error: {e}')
 
     def AdjustVolume(self, amount):
+        self.CheckTokenExpiry()
+        
         headers = {'Authorization': 'Bearer ' + self.token}
         self.last_volume = self.GetCurrentVolume()
         url = f'https://api.spotify.com/v1/me/player/volume?volume_percent={self.last_volume + amount}&device_id={self.device_id}'
@@ -305,7 +342,6 @@ class SpotifyGlobalHotkeysApp(object):
         root = ThemedTk(theme='breeze')
         root.title('Spotify Global Hotkeys')
         root.iconbitmap(self.icon_path)
-        root.focus_force()
         
         def center_window(window):
             window.update_idletasks()
@@ -314,7 +350,10 @@ class SpotifyGlobalHotkeysApp(object):
             x = (window.winfo_screenwidth() // 2) - (width // 2)
             y = (window.winfo_screenheight() // 2) - (height // 2)
             window.geometry(f'{width}x{height}+{x}+{y}')
-            window.after(1, lambda: window.focus_force())
+            window.after(100, lambda: window.focus_force())
+            
+        def save_action():
+            self.SaveConfig()
         
         def start_action():
             self.username = username_entry.get()
@@ -330,12 +369,13 @@ class SpotifyGlobalHotkeysApp(object):
             self.hotkeys['volume_down'] = volume_down_entry.get()
             self.SetHotkeys()
 
-            self.SaveConfig()
             self.SetStartup(self.startup_var.get())
-            root.destroy()
-            self.CreateToken()
-            if not self.app.visible:
-                self.run()
+            if not self.CreateToken():
+                return
+            else:
+                root.destroy()
+                if not self.app.visible:
+                    self.run()
 
         # Create a frame with padding
         frame = ttk.Frame(root, padding=20)
@@ -367,9 +407,11 @@ class SpotifyGlobalHotkeysApp(object):
         next_track_entry = ttk.Entry(frame, width=35)
         volume_up_entry = ttk.Entry(frame, width=35)
         volume_down_entry = ttk.Entry(frame, width=35)
-
-        # Button
-        start_button = ttk.Button(frame, text='Start', command=start_action)
+        
+        # Buttons
+        button_frame = ttk.Frame(frame)
+        save_button = ttk.Button(button_frame, text='Save', command=save_action)
+        start_button = ttk.Button(button_frame, text='Start & Close', command=start_action)
         
         # Checkboxes
         self.startup_var = tk.BooleanVar()
@@ -406,8 +448,9 @@ class SpotifyGlobalHotkeysApp(object):
             self.minimize_var.set(False)
         
         # Checkboxes
-        startup_checkbox = ttk.Checkbutton(frame, text='Start on Windows startup', variable=self.startup_var)
-        minimize_checkbox = ttk.Checkbutton(frame, text='Start minimized', variable=self.minimize_var)
+        checkbox_frame = ttk.Frame(frame)
+        startup_checkbox = ttk.Checkbutton(checkbox_frame, text='Start on Windows startup', variable=self.startup_var)
+        minimize_checkbox = ttk.Checkbutton(checkbox_frame, text='Start minimized', variable=self.minimize_var)
         
         # Grid layout
         username_label.grid(row=0, column=0, sticky='E')
@@ -430,12 +473,16 @@ class SpotifyGlobalHotkeysApp(object):
         volume_up_label.grid(row=10, column=0, sticky='E')
         volume_up_entry.grid(row=10, column=1)
         volume_down_label.grid(row=11, column=0, sticky='E')
-        volume_down_entry.grid(row=11, column=1)
-        start_button.grid(row=12, column=1, pady=10)    
-        startup_checkbox.grid(row=13, column=1, sticky='W')
-        minimize_checkbox.grid(row=14, column=1, sticky='W')
+        volume_down_entry.grid(row=11, column=1) 
+        button_frame.grid(row=12, column=0, columnspan=2, pady=10)
+        save_button.pack(side='left', padx=(0, 5))
+        start_button.pack(side='left', padx=(5, 0))
+        checkbox_frame.grid(row=13, column=0, columnspan=2, pady=10)
+        startup_checkbox.pack(side='left', padx=(0, 5))
+        minimize_checkbox.pack(side='left', padx=(5, 0))
 
         # Run the GUI
+        root.focus_force()
         center_window(root)
         root.mainloop()
         
