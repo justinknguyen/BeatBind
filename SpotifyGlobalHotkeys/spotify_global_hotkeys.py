@@ -20,6 +20,9 @@ from tkinter import ttk
 from ttkthemes import ThemedTk
 from spotipy.oauth2 import SpotifyOAuth
 from datetime import datetime
+import win32api
+import win32con
+import win32gui
 
 class SpotifyGlobalHotkeysApp(object):
     def __init__(self):
@@ -75,11 +78,29 @@ class SpotifyGlobalHotkeysApp(object):
         self.expires_in = None
         
         self.refresh_thread_running = False
+        
+        # Set up wake-up event listener
+        app_class = win32gui.WNDCLASS()
+        app_class.lpfnWndProc = self.WndProc
+        app_class.lpszClassName = "SpotifyGlobalHotkeysApp"
+        app_class.hInstance = win32api.GetModuleHandle()
+        class_atom = win32gui.RegisterClass(app_class)
+        self.hwnd = win32gui.CreateWindowEx(0, class_atom, None, 0, 0, 0, 0, 0, None, None, app_class.hInstance, None)
                 
     # --------------------------------------------------------------------------------------- #
     '''
     MISC
     '''
+    def WndProc(self, hWnd, message, wParam, lParam):
+        if message == win32con.WM_POWERBROADCAST:
+            if wParam == win32con.PBT_APMRESUMEAUTOMATIC:  # System is waking up from sleep
+                print("System woke up from sleep")
+                self.SetHotkeys()
+                self.CreateToken()
+                self.app.stop()
+                self.app.run()
+        return win32gui.DefWindowProc(hWnd, message, wParam, lParam)
+    
     def UpdateStartupRegistry(self):
         key_path = r'Software\Microsoft\Windows\CurrentVersion\Run'
         app_name = 'SpotifyGlobalHotkeys'
@@ -150,6 +171,7 @@ class SpotifyGlobalHotkeysApp(object):
     API
     '''
     def CheckTokenExpiry(self):
+        print('Checking token expiry...')
         cache_file = os.path.join(self.app_folder, f'.cache-{self.username}')
 
         if os.path.exists(cache_file):
@@ -343,11 +365,8 @@ class SpotifyGlobalHotkeysApp(object):
             y = (window.winfo_screenheight() // 2) - (height // 2)
             window.geometry(f'{width}x{height}+{x}+{y}')
             window.after(100, lambda: window.focus_force())
-            
-        def save_action():
-            self.SaveConfig()
         
-        def start_action():
+        def set_input_fields():
             self.username = username_entry.get()
             self.client_id = client_id_entry.get()
             self.client_secret = client_secret_entry.get()
@@ -360,7 +379,13 @@ class SpotifyGlobalHotkeysApp(object):
             self.hotkeys['volume_up'] = volume_up_entry.get()
             self.hotkeys['volume_down'] = volume_down_entry.get()
             self.SetHotkeys()
-
+            
+        def save_action():
+            set_input_fields()
+            self.SaveConfig()
+        
+        def start_action():
+            set_input_fields()
             self.SetStartup(self.startup_var.get())
             if not self.CreateToken():
                 return
@@ -523,3 +548,6 @@ if __name__ == '__main__':
             app.SettingsWindow()
     else:
         app.SettingsWindow()
+        
+    # Start message pump to process Windows messages
+    win32gui.PumpMessages()
