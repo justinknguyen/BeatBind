@@ -347,25 +347,11 @@ class SpotifyGlobalHotkeysApp(object):
     
     def SettingsAction(self):
         return pystray.MenuItem('Settings', self.OpenSettings)
-            
+      
     def OpenSettings(self, icon, item):
         self.SettingsWindow()
 
     def SettingsWindow(self):
-        # Create the GUI
-        root = ThemedTk(theme='breeze')
-        root.title('Spotify Global Hotkeys')
-        root.iconbitmap(self.icon_path)
-        
-        def center_window(window):
-            window.update_idletasks()
-            width = window.winfo_width()
-            height = window.winfo_height()
-            x = (window.winfo_screenwidth() // 2) - (width // 2)
-            y = (window.winfo_screenheight() // 2) - (height // 2)
-            window.geometry(f'{width}x{height}+{x}+{y}')
-            window.after(100, lambda: window.focus_force())
-        
         def set_input_fields():
             self.username = username_entry.get()
             self.client_id = client_id_entry.get()
@@ -393,6 +379,20 @@ class SpotifyGlobalHotkeysApp(object):
                 root.destroy()
                 if not self.app.visible:
                     self.run()
+                    
+        def center_window(window):
+            window.update_idletasks()
+            width = window.winfo_reqwidth()
+            height = window.winfo_reqheight()
+            x = (window.winfo_screenwidth() // 2) - (width // 2)
+            y = (window.winfo_screenheight() // 2) - (height // 2)
+            window.geometry(f'{width}x{height}+{x}+{y}')
+            
+        # Create the GUI
+        root = ThemedTk(theme='breeze')
+        root.withdraw()
+        root.title('Spotify Global Hotkeys')
+        root.iconbitmap(self.icon_path)
 
         # Create a frame with padding
         frame = ttk.Frame(root, padding=20)
@@ -497,10 +497,12 @@ class SpotifyGlobalHotkeysApp(object):
         checkbox_frame.grid(row=13, column=0, columnspan=2, pady=10)
         startup_checkbox.pack(side='left', padx=(0, 5))
         minimize_checkbox.pack(side='left', padx=(5, 0))
-
+        
         # Run the GUI
-        root.focus_force()
         center_window(root)
+        root.deiconify()
+        root.update()
+        root.focus_force()
         root.mainloop()
         
     def run(self):
@@ -549,5 +551,10 @@ if __name__ == '__main__':
     else:
         app.SettingsWindow()
         
-    # Start message pump to process Windows messages
-    win32gui.PumpMessages()
+    # Start message pump to process Windows messages    
+    def start_message_pump():
+        win32gui.PumpMessages()
+        
+    message_pump_thread = threading.Thread(target=start_message_pump)
+    message_pump_thread.daemon = True
+    message_pump_thread.start()
