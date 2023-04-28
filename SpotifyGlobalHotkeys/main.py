@@ -37,7 +37,7 @@ if __name__ == '__main__':
             
             for key, default_value in [('username', ''), ('client_id', ''), ('client_secret', ''), ('redirect_uri', ''), ('device_id', '')]:
                 setattr(app, key, config.get(key, default_value))
-            for key, default_value in [('play/pause', '<ctrl>+<alt>+<shift>+p'), ('prev_track', '<ctrl>+<alt>+<left>'), ('next_track', '<ctrl>+<alt>+<right>'), ('volume_up', '<ctrl>+<alt>+<up>'), ('volume_down', '<ctrl>+<alt>+<down>')]:
+            for key, default_value in [('play/pause', '<ctrl>+<alt>+<shift>+p'), ('prev_track', '<ctrl>+<alt>+a'), ('next_track', '<ctrl>+<alt>+d'), ('volume_up', '<ctrl>+<alt>+w'), ('volume_down', '<ctrl>+<alt>+s')]:
                 app.hotkeys[key] = hotkeys.get(key, default_value)
         
         # If minimize is True, do not open the Settings window

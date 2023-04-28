@@ -126,7 +126,7 @@ class SpotifyGlobalHotkeysView(object):
         hotkey_entries = [play_pause_entry, prev_track_entry, next_track_entry, volume_up_entry, volume_down_entry]
         keys = ['username', 'client_id', 'client_secret', 'redirect_uri', 'device_id']  
         hotkey_keys = ['play/pause', 'prev_track', 'next_track', 'volume_up', 'volume_down']
-        hotkey_defaults = ['<ctrl>+<alt>+<shift>+p', '<ctrl>+<alt>+<left>', '<ctrl>+<alt>+<right>', '<ctrl>+<alt>+<up>', '<ctrl>+<alt>+<down>']
+        hotkey_defaults = ['<ctrl>+<alt>+<shift>+p', '<ctrl>+<alt>+a', '<ctrl>+<alt>+d', '<ctrl>+<alt>+w', '<ctrl>+<alt>+s']
         
         if os.path.exists(self.app.config_path):
             with open(self.app.config_path, 'r') as f:
