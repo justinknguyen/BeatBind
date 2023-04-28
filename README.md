@@ -1,5 +1,5 @@
 # Spotify Global Hotkeys
-This background Windows application utilizes the [keyboard](https://github.com/boppreh/keyboard) module to listen for basic hotkeys, allowing users to easily control Spotify without the window focused. The app leverages the power of [Spotify's Web API](https://developer.spotify.com/documentation/web-api) through the use of [Spotipy](https://github.com/spotipy-dev/spotipy), providing seamless integration between the app and the music streaming platform.
+This background Windows application utilizes the [pynput](https://pynput.readthedocs.io/en/latest/keyboard.html) module to listen for basic hotkeys, allowing users to easily control Spotify without the window focused. The app leverages the power of [Spotify's Web API](https://developer.spotify.com/documentation/web-api) through the use of [Spotipy](https://github.com/spotipy-dev/spotipy), providing seamless integration between the app and the music streaming platform.
 
 <p align="center">
 <img src="image.png" width="50%" height="50%">
@@ -42,8 +42,8 @@ The app requires the user to input five fields:
 1. Paste the `Device ID` into the app.
 
 ### Hotkeys
-- This program uses the [keyboard](https://github.com/boppreh/keyboard) module to listen for hotkeys.
-- To help create your hotkeys, you can view the keycodes [here](https://github.com/boppreh/keyboard#keyboardkey_down).
+- This program uses the [pynput](https://pynput.readthedocs.io/en/latest/keyboard.html) module to listen for hotkeys.
+- Example hotkeys are given to help create your hotkeys. Note that the arrow keys don't seem to function with pynput.
 
 Once you're done, click on `Save` to save your settings. <br>
 Click on `Start & Close` to close the window and start listening for your hotkeys! You can open the settings again by right-clicking on the app's system tray icon.
