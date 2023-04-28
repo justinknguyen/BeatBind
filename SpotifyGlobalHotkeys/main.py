@@ -1,3 +1,7 @@
+'''
+Build Command:
+pyinstaller --onefile --noconsole --add-data "icon.ico;." --icon=icon.ico -n "SpotifyGlobalHotkeys" main.py
+'''
 import os
 import sys
 import json
