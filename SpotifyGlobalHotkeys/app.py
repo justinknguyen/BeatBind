@@ -65,7 +65,6 @@ class SpotifyGlobalHotkeysApp(object):
         
         # Thread flags
         self.refresh_thread_running = False
-        self.stop_event = threading.Event()
         
         # Set up wake-up event listener
         app_class = win32gui.WNDCLASS()
@@ -260,28 +259,26 @@ class SpotifyGlobalHotkeysApp(object):
                 except FileNotFoundError:
                     pass
     
-    def RestartHotkeyListener(self):
-        self.stop_event.set()
-        time.sleep(0.5)
-        self.stop_event.clear()
-        self.StartHotkeyListener()
-        
-    def StartHotkeyListener(self):
-        hotkey_listener_thread = threading.Thread(target=self.HotkeyListener)
-        hotkey_listener_thread.start()
-        
     def HotkeyListener(self):
         print('Listening to hotkeys...')
-        with keyboard.GlobalHotKeys({
-            self.hotkeys['play/pause'] : lambda: self.PlayPause(),
-            self.hotkeys['prev_track'] : lambda: self.PrevNext('previous'),
-            self.hotkeys['next_track'] : lambda: self.PrevNext('next'),
-            self.hotkeys['volume_up'] : lambda: self.AdjustVolume(5),
-            self.hotkeys['volume_down'] : lambda: self.AdjustVolume(-5),
-        }) as h:
-            while not self.stop_event.is_set():
-                time.sleep(0.1)
         
+        def with_cooldown(func):
+            last_called = [0]
+            def wrapper(*args, **kwargs):
+                if time.time() - last_called[0] > 0.3:  # 0.3 seconds cooldown
+                    func(*args, **kwargs)
+                    last_called[0] = time.time()
+            return wrapper
+
+        listener = keyboard.GlobalHotKeys({
+            self.hotkeys['play/pause']: with_cooldown(lambda: self.PlayPause()),
+            self.hotkeys['prev_track']: with_cooldown(lambda: self.PrevNext('previous')),
+            self.hotkeys['next_track']: with_cooldown(lambda: self.PrevNext('next')),
+            self.hotkeys['volume_up']: with_cooldown(lambda: self.AdjustVolume(5)),
+            self.hotkeys['volume_down']: with_cooldown(lambda: self.AdjustVolume(-5))
+        })
+        listener.start()
+            
     def SaveConfig(self):
         print('Saving config')
         # Add the hotkeys to the config dictionary
