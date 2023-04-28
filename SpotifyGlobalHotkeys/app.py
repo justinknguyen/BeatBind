@@ -10,12 +10,12 @@ import win32api
 import win32con
 import win32gui
 import requests
-import keyboard
 import threading
 import json.decoder
 import winreg as reg
 import tkinter.messagebox as messagebox
 from spotipy.oauth2 import SpotifyOAuth
+from pynput import keyboard
 
 class SpotifyGlobalHotkeysApp(object):
     def __init__(self):
@@ -67,8 +67,9 @@ class SpotifyGlobalHotkeysApp(object):
         self.token = None
         self.expires_in = None
         
-        # Refresh thread flag
+        # Thread flags
         self.refresh_thread_running = False
+        self.stop_event = threading.Event()
         
         # Set up wake-up event listener
         app_class = win32gui.WNDCLASS()
@@ -230,7 +231,6 @@ class SpotifyGlobalHotkeysApp(object):
         if message == win32con.WM_POWERBROADCAST:
             if wParam == win32con.PBT_APMRESUMEAUTOMATIC:  # System is waking up from sleep
                 print("System woke up from sleep")
-                self.SetHotkeys()
                 self.CreateToken()
         return win32gui.DefWindowProc(hWnd, message, wParam, lParam)
     
@@ -245,8 +245,7 @@ class SpotifyGlobalHotkeysApp(object):
             if registry_value != exe_path:
                 reg.SetValueEx(key, app_name, 0, reg.REG_SZ, exe_path)
         except FileNotFoundError:
-            # Key not found, do nothing
-            pass
+            print('Could not find the startup registry key')
 
         reg.CloseKey(key)
 
@@ -264,15 +263,28 @@ class SpotifyGlobalHotkeysApp(object):
                     reg.DeleteValue(reg_key, app_name)
                 except FileNotFoundError:
                     pass
-                    
-    def SetHotkeys(self):
-        print('Setting hotkeys')
-        keyboard.unhook_all()  # Kill the previous keyboard listener
-        self.play_pause_hotkey = keyboard.add_hotkey(self.hotkeys['play/pause'], lambda: (self.PlayPause(), time.sleep(0.3)))
-        self.prev_track_hotkey = keyboard.add_hotkey(self.hotkeys['prev_track'], lambda: (self.PrevNext('previous'), time.sleep(0.3)))
-        self.next_track_hotkey = keyboard.add_hotkey(self.hotkeys['next_track'], lambda: (self.PrevNext('next'), time.sleep(0.3)))
-        self.volume_up_hotkey = keyboard.add_hotkey(self.hotkeys['volume_up'], lambda: (self.AdjustVolume(5), time.sleep(0)))
-        self.volume_down_hotkey = keyboard.add_hotkey(self.hotkeys['volume_down'], lambda: (self.AdjustVolume(-5), time.sleep(0)))
+    
+    def RestartHotkeyListener(self):
+        self.stop_event.set()
+        time.sleep(0.5)
+        self.stop_event.clear()
+        self.StartHotkeyListener()
+        
+    def StartHotkeyListener(self):
+        hotkey_listener_thread = threading.Thread(target=self.HotkeyListener)
+        hotkey_listener_thread.start()
+        
+    def HotkeyListener(self):
+        print('Listening to hotkeys...')
+        with keyboard.GlobalHotKeys({
+            self.hotkeys['play/pause'] : lambda: self.PlayPause(),
+            self.hotkeys['prev_track'] : lambda: self.PrevNext('previous'),
+            self.hotkeys['next_track'] : lambda: self.PrevNext('next'),
+            self.hotkeys['volume_up'] : lambda: self.AdjustVolume(5),
+            self.hotkeys['volume_down'] : lambda: self.AdjustVolume(-5),
+        }) as h:
+            while not self.stop_event.is_set():
+                time.sleep(0.1)
         
     def SaveConfig(self):
         print('Saving config')

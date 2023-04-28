@@ -38,19 +38,16 @@ class SpotifyGlobalHotkeysView(object):
     def SettingsWindow(self):
         def set_input_fields():
             self.app.SetStartup(self.app.startup_var.get())
-            
             self.app.username = username_entry.get()
             self.app.client_id = client_id_entry.get()
             self.app.client_secret = client_secret_entry.get()
             self.app.redirect_uri = redirect_uri_entry.get()
             self.app.device_id = device_id_entry.get()
-            
             self.app.hotkeys['play/pause'] = play_pause_entry.get()
             self.app.hotkeys['prev_track'] = prev_track_entry.get()
             self.app.hotkeys['next_track'] = next_track_entry.get()
             self.app.hotkeys['volume_up'] = volume_up_entry.get()
             self.app.hotkeys['volume_down'] = volume_down_entry.get()
-            self.app.SetHotkeys()
             
         def save_action():
             set_input_fields()
@@ -62,6 +59,7 @@ class SpotifyGlobalHotkeysView(object):
                 return
             else:
                 root.destroy()
+                self.app.RestartHotkeyListener()
                 if not self.menu.visible:
                     self.run()
                     
@@ -128,7 +126,7 @@ class SpotifyGlobalHotkeysView(object):
         hotkey_entries = [play_pause_entry, prev_track_entry, next_track_entry, volume_up_entry, volume_down_entry]
         keys = ['username', 'client_id', 'client_secret', 'redirect_uri', 'device_id']  
         hotkey_keys = ['play/pause', 'prev_track', 'next_track', 'volume_up', 'volume_down']
-        hotkey_defaults = ['ctrl+alt+shift+p', 'ctrl+alt+left', 'ctrl+alt+right', 'ctrl+alt+up', 'ctrl+alt+down']
+        hotkey_defaults = ['<ctrl>+<alt>+<shift>+p', '<ctrl>+<alt>+<left>', '<ctrl>+<alt>+<right>', '<ctrl>+<alt>+<up>', '<ctrl>+<alt>+<down>']
         
         if os.path.exists(self.app.config_path):
             with open(self.app.config_path, 'r') as f:
@@ -193,4 +191,5 @@ class SpotifyGlobalHotkeysView(object):
     
     def run(self):
         self.app.UpdateStartupRegistry()
+        self.app.StartHotkeyListener()
         self.menu.run()
