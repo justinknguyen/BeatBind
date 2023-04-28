@@ -11,7 +11,7 @@ import json.decoder
 import winreg as reg
 import tkinter.messagebox as messagebox
 from spotipy.oauth2 import SpotifyOAuth
-from pynput import keyboard
+from global_hotkeys import *
 
 class SpotifyGlobalHotkeysApp(object):
     def __init__(self):
@@ -258,26 +258,39 @@ class SpotifyGlobalHotkeysApp(object):
                     reg.DeleteValue(reg_key, app_name)
                 except FileNotFoundError:
                     pass
-    
-    def HotkeyListener(self):
-        print('Listening to hotkeys...')
-        
-        def with_cooldown(func):
-            last_called = [0]
-            def wrapper(*args, **kwargs):
-                if time.time() - last_called[0] > 0.3:  # 0.3 seconds cooldown
-                    func(*args, **kwargs)
-                    last_called[0] = time.time()
-            return wrapper
 
-        listener = keyboard.GlobalHotKeys({
-            self.hotkeys['play/pause']: with_cooldown(lambda: self.PlayPause()),
-            self.hotkeys['prev_track']: with_cooldown(lambda: self.PrevNext('previous')),
-            self.hotkeys['next_track']: with_cooldown(lambda: self.PrevNext('next')),
-            self.hotkeys['volume_up']: with_cooldown(lambda: self.AdjustVolume(5)),
-            self.hotkeys['volume_down']: with_cooldown(lambda: self.AdjustVolume(-5))
-        })
-        listener.start()
+    def StopHotkeyListener(self):
+        stop_checking_hotkeys()
+        clear_hotkeys()
+    
+    def StartHotkeyListener(self):
+        print('Listening to hotkeys...')
+
+        # Our keybinding event handlers.
+        def play_pause():
+            self.PlayPause()
+        def previous():
+            self.PrevNext('previous')
+        def next():
+            self.PrevNext('next')
+        def volume_up():
+            self.AdjustVolume(5)
+        def volume_down():
+            self.AdjustVolume(-5)
+
+        bindings = [
+            [self.hotkeys['play/pause'].split('+'), None, play_pause],
+            [self.hotkeys['prev_track'].split('+'), None, previous],
+            [self.hotkeys['next_track'].split('+'), None, next],
+            [self.hotkeys['volume_up'].split('+'), None, volume_up],
+            [self.hotkeys['volume_down'].split('+'), None, volume_down]
+        ]
+
+        # Register all of our keybindings
+        register_hotkeys(bindings)
+
+        # Finally, start listening for keypresses
+        start_checking_hotkeys()
             
     def SaveConfig(self):
         print('Saving config')

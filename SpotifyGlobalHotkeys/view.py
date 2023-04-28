@@ -37,26 +37,6 @@ class SpotifyGlobalHotkeysView(object):
         self.SettingsWindow()
 
     def SettingsWindow(self):
-        def limit_entry_length(var, maxlen):
-            var.trace("w", lambda *args: enforce_max_length(var, maxlen))
-
-        def enforce_max_length(var, maxlen):
-            value = var.get()
-            if len(value) > maxlen:
-                var.set(value[:maxlen])
-                
-        def validate_alpha(char):
-            return char.isalpha() or char == ""
-
-        def limit_alpha_input(var):
-            var.trace("w", lambda *args: enforce_alpha_input(var))
-
-        def enforce_alpha_input(var):
-            value = var.get()
-            filtered_value = ''.join(filter(validate_alpha, value))
-            if value != filtered_value:
-                var.set(filtered_value)
-                
         def set_input_fields():
             self.app.SetStartup(self.app.startup_var.get())
             self.app.username = username_entry.get()
@@ -74,11 +54,11 @@ class SpotifyGlobalHotkeysView(object):
         def update_hotkey_entry(entry, modifiers_frame, ctrl_var, alt_var, shift_var):
             modifiers = []
             if ctrl_var.get():
-                modifiers.append('<ctrl>')
+                modifiers.append('control')
             if alt_var.get():
-                modifiers.append('<alt>')
+                modifiers.append('alt')
             if shift_var.get():
-                modifiers.append('<shift>')
+                modifiers.append('shift')
             key = entry.get().strip().lower()
             hotkey = '+'.join(modifiers + [key])
             return hotkey
@@ -107,8 +87,11 @@ class SpotifyGlobalHotkeysView(object):
                 return
             else:
                 root.destroy()
+                self.app.StopHotkeyListener()
                 if not self.menu.visible:
                     self.run()
+                else:
+                    self.app.StartHotkeyListener()
             
         # Create the GUI
         root = ThemedTk(theme='breeze')
@@ -153,7 +136,7 @@ class SpotifyGlobalHotkeysView(object):
         self.app.minimize_var = tk.BooleanVar()
         
         # Hotkey Area
-        width = 2
+        width = 8
         padding_x = 5
         padding_y = 2
         
@@ -221,21 +204,6 @@ class SpotifyGlobalHotkeysView(object):
         alt_volume_down_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
         shift_volume_down_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
         volume_down_entry.grid(row=0, column=4, padx=padding_x, pady=padding_y)
-        
-        # Limit entry lengths
-        max_length = 1
-        limit_entry_length(play_pause_var, max_length)
-        limit_entry_length(prev_track_var, max_length)
-        limit_entry_length(next_track_var, max_length)
-        limit_entry_length(volume_up_var, max_length)
-        limit_entry_length(volume_down_var, max_length)
-        
-        # Limit to alphas
-        limit_alpha_input(play_pause_var)
-        limit_alpha_input(prev_track_var)
-        limit_alpha_input(next_track_var)
-        limit_alpha_input(volume_up_var)
-        limit_alpha_input(volume_down_var)
 
         # Autofill entries
         def autofill_entry(entry, value, hotkey=False):
@@ -251,15 +219,15 @@ class SpotifyGlobalHotkeysView(object):
             modifiers = {'ctrl': False, 'alt': False, 'shift': False}
             key = ''
 
-            if '<ctrl>' in hotkey_str:
+            if 'control' in hotkey_str:
                 modifiers['ctrl'] = True
-                hotkey_str = hotkey_str.replace('<ctrl>', '')
-            if '<alt>' in hotkey_str:
+                hotkey_str = hotkey_str.replace('control', '')
+            if 'alt' in hotkey_str:
                 modifiers['alt'] = True
-                hotkey_str = hotkey_str.replace('<alt>', '')
-            if '<shift>' in hotkey_str:
+                hotkey_str = hotkey_str.replace('alt', '')
+            if 'shift' in hotkey_str:
                 modifiers['shift'] = True
-                hotkey_str = hotkey_str.replace('<shift>', '')
+                hotkey_str = hotkey_str.replace('shift', '')
             if '+' in hotkey_str:
                 hotkey_str = hotkey_str.replace('+', '')
 
@@ -270,7 +238,7 @@ class SpotifyGlobalHotkeysView(object):
         hotkey_entries = [play_pause_entry, prev_track_entry, next_track_entry, volume_up_entry, volume_down_entry]
         keys = ['username', 'client_id', 'client_secret', 'redirect_uri', 'device_id']  
         hotkey_keys = ['play/pause', 'prev_track', 'next_track', 'volume_up', 'volume_down']
-        hotkey_defaults = ['<ctrl>+<alt>+<shift>+p', '<ctrl>+<alt>+<shift>+a', '<ctrl>+<alt>+<shift>+d', '<ctrl>+<alt>+<shift>+w', '<ctrl>+<alt>+<shift>+s']
+        hotkey_defaults = ['control+alt+shift+p', 'control+alt+shift+left', 'control+alt+shift+right', 'control+alt+shift+up', 'control+alt+shift+down']
         
         ctrl_vars = [ctrl_play_pause_var, ctrl_prev_track_var, ctrl_next_track_var, ctrl_volume_up_var, ctrl_volume_down_var]
         alt_vars = [alt_play_pause_var, alt_prev_track_var, alt_next_track_var, alt_volume_up_var, alt_volume_down_var]
@@ -346,5 +314,5 @@ class SpotifyGlobalHotkeysView(object):
     
     def run(self):
         self.app.UpdateStartupRegistry()
-        self.app.HotkeyListener()
+        self.app.StartHotkeyListener()
         self.menu.run()
