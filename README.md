@@ -49,8 +49,8 @@ Once you're done, click on `Save` to save your settings. Click on `Start & Close
 You can open the settings again by right-clicking on the app's system tray icon.
 
 ***
-### NOTE: Restart the app if you changed the location of the .exe file. <br>
-The registry key used to start the app on Windows startup needs to be updated to the new .exe path. Restarting the app will resolve that.
+### Note: Restart the app if you changed the location of the .exe file. <br>
+The registry key used to start the app on Windows startup needs to be updated to the new `.exe` path. Restarting the app will resolve that.
 
 Quit the app by pressing on "Quit" within the system tray icon menu, or end the process in Task Manager.
 
