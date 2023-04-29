@@ -43,7 +43,7 @@ The app requires the user to input five fields:
 
 ### Hotkeys
 - This program uses the [global_hotkeys](https://github.com/btsdev/global_hotkeys) module to listen for hotkeys.
-- Please refer to the list of keycodes [here](https://github.com/btsdev/global_hotkeys#list-of-the-available-keys) for the text input field.
+- Please refer to the list of keycodes [here](https://github.com/btsdev/global_hotkeys#list-of-the-available-keys) for the `Key` input field.
 
 Once you're done, click on `Save` to save your settings. <br>
 Click on `Start & Close` to close the window and start listening for your hotkeys! You can open the settings again by right-clicking on the app's system tray icon.
