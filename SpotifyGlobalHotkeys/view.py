@@ -117,6 +117,8 @@ class SpotifyGlobalHotkeysView(object):
         next_track_label = ttk.Label(frame, text='Next Track Hotkey:')
         volume_up_label = ttk.Label(frame, text='Volume Up Hotkey:')
         volume_down_label = ttk.Label(frame, text='Volume Down Hotkey:')
+        modifiers_label = ttk.Label(frame, text='Modifiers')
+        key_label = ttk.Label(frame, text='Key')
         
         # Entries
         width = 35
@@ -285,6 +287,14 @@ class SpotifyGlobalHotkeysView(object):
         device_id_entry.grid(row=4, column=1)
 
         separator.grid(row=5, column=0, columnspan=3, sticky='EW', pady=10)
+        
+        labels_frame = ttk.Frame(frame)
+        labels_frame.grid(row=6, column=1, pady=padding_y)
+
+        modifier_label = ttk.Label(labels_frame, text='Modifiers')
+        key_label = ttk.Label(labels_frame, text='Key')
+        modifier_label.grid(row=0, column=1, padx=(70, 50))
+        key_label.grid(row=0, column=3, padx=(40, 40))
         
         play_pause_label.grid(row=7, column=0, sticky='E')
         play_pause_modifiers.grid(row=7, column=1, sticky='W')
