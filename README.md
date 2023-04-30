@@ -8,7 +8,7 @@ This background Python Windows application utilizes the [global_hotkeys](https:/
 ## Download
 Download the latest version from the [Releases](https://github.com/justinknguyen/Spotify-Global-Hotkeys/releases) page.
 
-You can build the `.exe` yourself with the provided build command in the `main.py` file.
+You can build the `.exe` yourself with the provided build command in the `app.py` file.
 
 ## Instructions
 A list of default [hotkeys](#hotkeys) are provided for guidance and convenience. <br>

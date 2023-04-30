@@ -3,14 +3,13 @@ import json
 import psutil
 import pystray
 import keyboard
-import threading
 import json.decoder
 import tkinter as tk
 from PIL import Image
 from tkinter import ttk
 from ttkthemes import ThemedTk
 
-class SpotifyGlobalHotkeysView(object):
+class Frontend(object):
     def __init__(self, app):
         self.app = app
         self.icon_path = app.icon_path
