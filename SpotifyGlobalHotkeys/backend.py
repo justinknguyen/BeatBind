@@ -10,6 +10,7 @@ import threading
 import json.decoder
 import winreg as reg
 import tkinter.messagebox as messagebox
+from datetime import datetime
 from spotipy.oauth2 import SpotifyOAuth
 from global_hotkeys import *
 
@@ -78,6 +79,21 @@ class Backend(object):
     '''
     API
     '''
+    def CheckTokenExpiry(self):
+        cache_file = os.path.join(self.app_folder, f'.cache-{self.username}')
+
+        if os.path.exists(cache_file):
+            with open(cache_file, 'r') as f:
+                cache_data = json.load(f)
+
+            expires_at = cache_data['expires_at']
+            if datetime.now().timestamp() >= expires_at:
+                print('Cached token has expired')
+                self.CreateToken()
+        else:
+            print('Could not find .cache file. Creating token...')
+            self.CreateToken()
+            
     def RefreshToken(self):
         while True:
             time.sleep(self.expires_in - 60)  # Sleep until the token needs to be refreshed
@@ -137,6 +153,8 @@ class Backend(object):
             print(f'Error: {e}')
  
     def PlayPause(self):
+        self.CheckTokenExpiry()
+        
         is_playing = self.GetPlaybackState()
         if is_playing is None:
             return
@@ -159,6 +177,8 @@ class Backend(object):
             print(f'Error: {e}')
             
     def PrevNext(self, command):
+        self.CheckTokenExpiry()
+        
         headers = {'Authorization': 'Bearer ' + self.token}
         url = f'https://api.spotify.com/v1/me/player/{command}?device_id={self.device_id}'
         try:
@@ -172,6 +192,8 @@ class Backend(object):
             print(f'Error: {e}')
 
     def AdjustVolume(self, amount):
+        self.CheckTokenExpiry()
+        
         headers = {'Authorization': 'Bearer ' + self.token}
         self.last_volume = self.GetCurrentVolume()
         url = f'https://api.spotify.com/v1/me/player/volume?volume_percent={self.last_volume + amount}&device_id={self.device_id}'
