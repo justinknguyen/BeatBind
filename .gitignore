@@ -7,3 +7,7 @@ dist/
 */build/
 */dist/
 *.spec
+*/build.py
+*/app.build/
+*/app.dist/
+*/app.onefile-build/
