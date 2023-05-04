@@ -33,7 +33,6 @@ class Backend(object):
         self.icon_path = resource_path('icon.ico')
        
         # Spotify credentials
-        self.username = None
         self.client_id = None
         self.client_secret = None
         self.device_id = None
@@ -79,7 +78,7 @@ class Backend(object):
     API
     '''
     def CheckTokenExpiry(self):
-        cache_file = os.path.join(self.app_folder, f'.cache-{self.username}')
+        cache_file = os.path.join(self.app_folder, '.cache')
 
         if os.path.exists(cache_file):
             with open(cache_file, 'r') as f:
@@ -103,13 +102,12 @@ class Backend(object):
             
     def CreateToken(self):
         print('Creating token')
-        cache_file = os.path.join(self.app_folder, f'.cache-{self.username}')
+        cache_file = os.path.join(self.app_folder, '.cache')
         # Delete cache file if it exists
         if os.path.exists(cache_file):
             os.remove(cache_file)
         try:
-            self.auth_manager = SpotifyOAuth(username=self.username,
-                                            scope='user-modify-playback-state,user-read-playback-state',
+            self.auth_manager = SpotifyOAuth(scope='user-modify-playback-state,user-read-playback-state',
                                             client_id=self.client_id,
                                             client_secret=self.client_secret,
                                             redirect_uri='http://localhost:8888/callback',

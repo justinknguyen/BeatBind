@@ -36,9 +36,10 @@ class Frontend(object):
         self.SettingsWindow()
 
     def SettingsWindow(self):
+        global KEY_OPTIONS
+        
         def set_input_fields():
             self.app.SetStartup(self.app.startup_var.get())
-            self.app.username = username_entry.get()
             self.app.client_id = client_id_entry.get()
             self.app.client_secret = client_secret_entry.get()
             self.app.device_id = device_id_entry.get()
@@ -105,7 +106,6 @@ class Frontend(object):
         separator = ttk.Separator(frame, orient='horizontal')
 
         # Labels
-        username_label = ttk.Label(frame, text='Spotify Username:')
         client_id_label = ttk.Label(frame, text='Client ID:')
         client_secret_label = ttk.Label(frame, text='Client Secret:')
         device_id_label = ttk.Label(frame, text='Device ID:')
@@ -120,8 +120,7 @@ class Frontend(object):
         key_label = ttk.Label(labels_frame, text='Key')
         
         # Entries
-        width = 35
-        username_entry = ttk.Entry(frame, width=width)
+        width = 40
         client_id_entry = ttk.Entry(frame, width=width)
         client_secret_entry = ttk.Entry(frame, width=width)
         device_id_entry = ttk.Entry(frame, width=width)
@@ -136,8 +135,8 @@ class Frontend(object):
         self.app.minimize_var = tk.BooleanVar()
         
         # Hotkey Area
-        width = 8
-        padding_x = 5
+        width = 12
+        padding_x = 2
         padding_y = 2
         
         ctrl_play_pause_var = tk.BooleanVar()
@@ -145,7 +144,7 @@ class Frontend(object):
         shift_play_pause_var = tk.BooleanVar()
         play_pause_modifiers = ttk.Frame(frame)
         play_pause_var = tk.StringVar()
-        play_pause_entry = ttk.Entry(play_pause_modifiers, width=width, textvariable=play_pause_var)
+        play_pause_entry = ttk.Combobox(play_pause_modifiers, width=width, values=KEY_OPTIONS, textvariable=play_pause_var, state='readonly', justify='center')
         ctrl_play_pause_checkbox, alt_play_pause_checkbox, shift_play_pause_checkbox = \
             create_modifiers(play_pause_modifiers, ctrl_play_pause_var, alt_play_pause_var, shift_play_pause_var)
         ctrl_play_pause_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
@@ -158,7 +157,7 @@ class Frontend(object):
         shift_prev_track_var = tk.BooleanVar()
         prev_track_modifiers = ttk.Frame(frame)
         prev_track_var = tk.StringVar()
-        prev_track_entry = ttk.Entry(prev_track_modifiers, width=width, textvariable=prev_track_var)
+        prev_track_entry = ttk.Combobox(prev_track_modifiers, width=width, values=KEY_OPTIONS, textvariable=prev_track_var, state='readonly', justify='center')
         ctrl_prev_track_checkbox, alt_prev_track_checkbox, shift_prev_track_checkbox = \
             create_modifiers(prev_track_modifiers, ctrl_prev_track_var, alt_prev_track_var, shift_prev_track_var)
         ctrl_prev_track_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
@@ -171,7 +170,7 @@ class Frontend(object):
         shift_next_track_var = tk.BooleanVar()
         next_track_modifiers = ttk.Frame(frame)
         next_track_var = tk.StringVar()
-        next_track_entry = ttk.Entry(next_track_modifiers, width=width, textvariable=next_track_var)
+        next_track_entry = ttk.Combobox(next_track_modifiers, width=width, values=KEY_OPTIONS, textvariable=next_track_var, state='readonly', justify='center')
         ctrl_next_track_checkbox, alt_next_track_checkbox, shift_next_track_checkbox = \
             create_modifiers(next_track_modifiers, ctrl_next_track_var, alt_next_track_var, shift_next_track_var)
         ctrl_next_track_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
@@ -184,7 +183,7 @@ class Frontend(object):
         shift_volume_up_var = tk.BooleanVar()
         volume_up_modifiers = ttk.Frame(frame)
         volume_up_var = tk.StringVar()
-        volume_up_entry = ttk.Entry(volume_up_modifiers, width=width, textvariable=volume_up_var)
+        volume_up_entry = ttk.Combobox(volume_up_modifiers, width=width, values=KEY_OPTIONS, textvariable=volume_up_var, state='readonly', justify='center')
         ctrl_volume_up_checkbox, alt_volume_up_checkbox, shift_volume_up_checkbox = \
             create_modifiers(volume_up_modifiers, ctrl_volume_up_var, alt_volume_up_var, shift_volume_up_var)
         ctrl_volume_up_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
@@ -197,7 +196,7 @@ class Frontend(object):
         shift_volume_down_var = tk.BooleanVar()
         volume_down_modifiers = ttk.Frame(frame)
         volume_down_var = tk.StringVar()
-        volume_down_entry = ttk.Entry(volume_down_modifiers, width=width, textvariable=volume_down_var)
+        volume_down_entry = ttk.Combobox(volume_down_modifiers, width=width, values=KEY_OPTIONS, textvariable=volume_down_var, state='readonly', justify='center')
         ctrl_volume_down_checkbox, alt_volume_down_checkbox, shift_volume_down_checkbox = \
             create_modifiers(volume_down_modifiers, ctrl_volume_down_var, alt_volume_down_var, shift_volume_down_var)
         ctrl_volume_down_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
@@ -207,12 +206,12 @@ class Frontend(object):
 
         # Autofill entries
         def autofill_entry(entry, value, hotkey=False):
-            entry.delete(0, tk.END)
             if hotkey:
                 modifiers, key = parse_hotkey_string(value)
-                entry.insert(0, key)
+                entry.set(key)
                 return modifiers
             else:
+                entry.delete(0, tk.END)
                 entry.insert(0, value)
 
         def parse_hotkey_string(hotkey_str):
@@ -234,9 +233,9 @@ class Frontend(object):
             key = hotkey_str.strip()
             return modifiers, key
   
-        entries = [username_entry, client_id_entry, client_secret_entry, device_id_entry]
+        entries = [client_id_entry, client_secret_entry, device_id_entry]
         hotkey_entries = [play_pause_entry, prev_track_entry, next_track_entry, volume_up_entry, volume_down_entry]
-        keys = ['username', 'client_id', 'client_secret', 'device_id']  
+        keys = ['client_id', 'client_secret', 'device_id']  
         hotkey_keys = ['play/pause', 'prev_track', 'next_track', 'volume_up', 'volume_down']
         hotkey_defaults = ['control+alt+shift+p', 'control+alt+shift+left', 'control+alt+shift+right', 'control+alt+shift+up', 'control+alt+shift+down']
         
@@ -273,8 +272,6 @@ class Frontend(object):
         minimize_checkbox = ttk.Checkbutton(checkbox_frame, text='Start minimized', variable=self.app.minimize_var)
         
         # Grid layout
-        username_label.grid(row=0, column=0, sticky='E')
-        username_entry.grid(row=0, column=1)
         client_id_label.grid(row=1, column=0, sticky='E')
         client_id_entry.grid(row=1, column=1)
         client_secret_label.grid(row=2, column=0, sticky='E')
@@ -318,3 +315,114 @@ class Frontend(object):
         self.app.UpdateStartupRegistry()
         self.app.StartHotkeyListener()
         self.menu.run()
+        
+KEY_OPTIONS = [
+    "a",
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
+    "g",
+    "h",
+    "i",
+    "j",
+    "k",
+    "l",
+    "m",
+    "n",
+    "o",
+    "p",
+    "q",
+    "r",
+    "s",
+    "t",
+    "u",
+    "v",
+    "w",
+    "x",
+    "y",
+    "z",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "f1",
+    "f2",
+    "f3",
+    "f4",
+    "f5",
+    "f6",
+    "f7",
+    "f8",
+    "f9",
+    "f10",
+    "f11",
+    "f12",
+    "f13",
+    "f14",
+    "f15",
+    "f16",
+    "f17",
+    "f18",
+    "f19",
+    "f20",
+    "f21",
+    "f22",
+    "f23",
+    "f24",
+    "+",
+    ",",
+    "-",
+    ".",
+    "/",
+    "`",
+    ";",
+    "[",
+    "\\",
+    "]",
+    "'",
+    "`",
+    "backspace",
+    "tab",
+    "clear",
+    "enter",
+    "pause",
+    "caps_lock",
+    "escape",
+    "space",
+    "page_up",
+    "page_down",
+    "end",
+    "home",
+    "left",
+    "up",
+    "right",
+    "down",
+    "print",
+    "enter",
+    "print_screen",
+    "insert",
+    "delete",
+    "numpad_0",
+    "numpad_1",
+    "numpad_2",
+    "numpad_3",
+    "numpad_4",
+    "numpad_5",
+    "numpad_6",
+    "numpad_7",
+    "numpad_8",
+    "numpad_9",
+    "multiply_key",
+    "add_key",
+    "subtract_key",
+    "decimal_key",
+    "divide_key",
+]
