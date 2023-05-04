@@ -26,11 +26,9 @@ The app requires the user to input five fields:
 1. To obtain the `Client ID`, `Client Secret`, and `Redirect URI`, head to the following link [Spotify for Developers](https://developer.spotify.com/).
 1. Sign-in and click on your profile in the top-right corner, then click on "Dashboard".
 1. Click on the "Create app" button to the right.
-1. Enter any "App name" you want (e.g., Spotify Global Hotkeys).
-1. Enter any "App description" you want (e.g., Global hotkeys for Spotify).
-1. Enter one of the following for the `Redirect URI`. You can change the port (80) if it doesn't work (e.g., 8000, 8080, 8888, etc.).
-    - http://localhost:80/callback
-    - http://127.0.0.1:80/callback
+1. Enter any "App name" and "App description" you want.
+1. Enter the following for the `Redirect URI`:
+    - http://localhost:8888/callback
 1. Click on the checkbox and then "Save".
 1. Click on the "Settings" button to the top-right. 
 1. Copy your `Client ID`, `Client Secret`, and `Redirect URI` and paste it into the app.

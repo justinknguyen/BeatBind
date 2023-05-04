@@ -41,7 +41,6 @@ class Frontend(object):
             self.app.username = username_entry.get()
             self.app.client_id = client_id_entry.get()
             self.app.client_secret = client_secret_entry.get()
-            self.app.redirect_uri = redirect_uri_entry.get()
             self.app.device_id = device_id_entry.get()
             
             self.app.hotkeys['play/pause'] = update_hotkey_entry(play_pause_entry, play_pause_modifiers, ctrl_play_pause_var, alt_play_pause_var, shift_play_pause_var)
@@ -109,22 +108,22 @@ class Frontend(object):
         username_label = ttk.Label(frame, text='Spotify Username:')
         client_id_label = ttk.Label(frame, text='Client ID:')
         client_secret_label = ttk.Label(frame, text='Client Secret:')
-        redirect_uri_label = ttk.Label(frame, text='Redirect URI:')
         device_id_label = ttk.Label(frame, text='Device ID:')
         play_pause_label = ttk.Label(frame, text='Play/Pause Hotkey:')
         prev_track_label = ttk.Label(frame, text='Previous Track Hotkey:')
         next_track_label = ttk.Label(frame, text='Next Track Hotkey:')
         volume_up_label = ttk.Label(frame, text='Volume Up Hotkey:')
         volume_down_label = ttk.Label(frame, text='Volume Down Hotkey:')
-        modifiers_label = ttk.Label(frame, text='Modifiers')
-        key_label = ttk.Label(frame, text='Key')
+        
+        labels_frame = ttk.Frame(frame)
+        modifier_label = ttk.Label(labels_frame, text='Modifiers')
+        key_label = ttk.Label(labels_frame, text='Key')
         
         # Entries
         width = 35
         username_entry = ttk.Entry(frame, width=width)
         client_id_entry = ttk.Entry(frame, width=width)
         client_secret_entry = ttk.Entry(frame, width=width)
-        redirect_uri_entry = ttk.Entry(frame, width=width)
         device_id_entry = ttk.Entry(frame, width=width)
         
         # Buttons
@@ -235,9 +234,9 @@ class Frontend(object):
             key = hotkey_str.strip()
             return modifiers, key
   
-        entries = [username_entry, client_id_entry, client_secret_entry, redirect_uri_entry, device_id_entry]
+        entries = [username_entry, client_id_entry, client_secret_entry, device_id_entry]
         hotkey_entries = [play_pause_entry, prev_track_entry, next_track_entry, volume_up_entry, volume_down_entry]
-        keys = ['username', 'client_id', 'client_secret', 'redirect_uri', 'device_id']  
+        keys = ['username', 'client_id', 'client_secret', 'device_id']  
         hotkey_keys = ['play/pause', 'prev_track', 'next_track', 'volume_up', 'volume_down']
         hotkey_defaults = ['control+alt+shift+p', 'control+alt+shift+left', 'control+alt+shift+right', 'control+alt+shift+up', 'control+alt+shift+down']
         
@@ -280,18 +279,12 @@ class Frontend(object):
         client_id_entry.grid(row=1, column=1)
         client_secret_label.grid(row=2, column=0, sticky='E')
         client_secret_entry.grid(row=2, column=1)
-        redirect_uri_label.grid(row=3, column=0, sticky='E')
-        redirect_uri_entry.grid(row=3, column=1)
         device_id_label.grid(row=4, column=0, sticky='E')
         device_id_entry.grid(row=4, column=1)
 
         separator.grid(row=5, column=0, columnspan=3, sticky='EW', pady=10)
-        
-        labels_frame = ttk.Frame(frame)
+    
         labels_frame.grid(row=6, column=1, pady=padding_y)
-
-        modifier_label = ttk.Label(labels_frame, text='Modifiers')
-        key_label = ttk.Label(labels_frame, text='Key')
         modifier_label.grid(row=0, column=1, padx=(70, 50))
         key_label.grid(row=0, column=3, padx=(40, 40))
         

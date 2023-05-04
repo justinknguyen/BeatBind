@@ -12,6 +12,7 @@ import winreg as reg
 import tkinter.messagebox as messagebox
 from datetime import datetime
 from spotipy.oauth2 import SpotifyOAuth
+from spotipy.oauth2 import SpotifyOauthError
 from global_hotkeys import *
 
 class Backend(object):
@@ -35,9 +36,7 @@ class Backend(object):
         self.username = None
         self.client_id = None
         self.client_secret = None
-        self.redirect_uri = None
         self.device_id = None
-        self.scope = 'user-modify-playback-state,user-read-playback-state'
 
         # Global hotkeys
         self.hotkeys = {
@@ -105,24 +104,41 @@ class Backend(object):
     def CreateToken(self):
         print('Creating token')
         cache_file = os.path.join(self.app_folder, f'.cache-{self.username}')
+        # Delete cache file if it exists
+        if os.path.exists(cache_file):
+            os.remove(cache_file)
         try:
             self.auth_manager = SpotifyOAuth(username=self.username,
-                                            scope=self.scope,
+                                            scope='user-modify-playback-state,user-read-playback-state',
                                             client_id=self.client_id,
                                             client_secret=self.client_secret,
-                                            redirect_uri=self.redirect_uri,
+                                            redirect_uri='http://localhost:8888/callback',
                                             cache_path=cache_file)
-        except:
-            self.ErrorMessage('Invalid credentials. Please check your input fields.')
+        except SpotifyOauthError as e:
+            self.ErrorMessage(e)
             return False
         
         try:
-            self.token_data = self.auth_manager.refresh_access_token(self.auth_manager.get_cached_token()['refresh_token'])
-        except:
             self.token_data = self.auth_manager.get_access_token()
+        except SpotifyOauthError as e:
+            self.ErrorMessage(e)
+            return False
 
         self.token = self.token_data['access_token']
         self.expires_in = self.token_data['expires_in']
+        
+        # Check if the device id is valid
+        response = requests.get('https://api.spotify.com/v1/me/player/devices', headers={'Authorization': f'Bearer {self.token}'})
+        if response.status_code == 200:
+            devices = response.json()['devices']
+            device_id = self.device_id
+            if device_id in [device['id'] for device in devices]:
+                print(f'Device ID {device_id} is valid')
+            else:
+                self.ErrorMessage(f'Device ID {device_id} is not valid')
+                return False
+        else:
+            print(f'Error getting devices: {response.status_code} {response.reason}')
 
         # Start the loop to refresh the token before it expires, if not already running
         if not self.refresh_thread_running:
