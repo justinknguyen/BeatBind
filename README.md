@@ -12,8 +12,8 @@ You can build the `.exe` yourself with the provided build command in the `build.
 
 ## Instructions
 The app requires the user to input three fields: 
-- [Client ID](#client-id-client-secret-and-redirect-uri)
-- [Client Secret](#client-id-client-secret-and-redirect-uri)
+- [Client ID](#client-id-and-client-secret)
+- [Client Secret](#client-id-and-client-secret)
 - [Device ID](#device-id)
 
 ### Client ID and Client Secret
