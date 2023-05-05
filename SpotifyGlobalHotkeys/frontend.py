@@ -2,12 +2,15 @@ import os
 import json
 import psutil
 import pystray
+import win32api
+import win32con
 import keyboard
 import json.decoder
 import tkinter as tk
 from PIL import Image
 from tkinter import ttk
 from ttkthemes import ThemedTk
+from global_hotkeys import keycodes
 
 class Frontend(object):
     def __init__(self, app):
@@ -37,6 +40,52 @@ class Frontend(object):
 
     def SettingsWindow(self):
         global KEY_OPTIONS
+        
+        def handle_keypress(virtual_keycode, entry):
+            decimal_to_keyname = {int(hex_value): key for key, hex_value in keycodes.vk_key_names.items()}
+            key_name = decimal_to_keyname.get(virtual_keycode)
+            
+            if key_name == 'backspace' or key_name == 'delete':
+                entry.delete(0, tk.END)
+            elif key_name in KEY_OPTIONS:
+                entry.delete(0, tk.END)
+                entry.insert(0, key_name)
+
+        def listen_for_key_events(entry):
+            while entry.focus_get() == entry:
+                for key_name, virtual_keycode in keycodes.vk_key_names.items():
+                    if win32api.GetAsyncKeyState(virtual_keycode) & 0x8000:
+                        handle_keypress(virtual_keycode, entry)
+                entry.update_idletasks()
+                entry.update()
+            
+        def autofill_entry(entry, value, hotkey=False):
+            entry.delete(0, tk.END)
+            if hotkey:
+                modifiers, key = parse_hotkey_string(value)
+                entry.insert(0, key)
+                return modifiers
+            else:
+                entry.insert(0, value)
+
+        def parse_hotkey_string(hotkey_str):
+            modifiers = {'ctrl': False, 'alt': False, 'shift': False}
+            key = ''
+
+            if 'control' in hotkey_str:
+                modifiers['ctrl'] = True
+                hotkey_str = hotkey_str.replace('control', '')
+            if 'alt' in hotkey_str:
+                modifiers['alt'] = True
+                hotkey_str = hotkey_str.replace('alt', '')
+            if 'shift' in hotkey_str:
+                modifiers['shift'] = True
+                hotkey_str = hotkey_str.replace('shift', '')
+            if '+' in hotkey_str:
+                hotkey_str = hotkey_str.replace('+', '')
+
+            key = hotkey_str.strip()
+            return modifiers, key
         
         def set_input_fields():
             self.app.SetStartup(self.app.startup_var.get())
@@ -92,7 +141,7 @@ class Frontend(object):
                     self.run()
                 else:
                     self.app.StartHotkeyListener()
-            
+        
         # Create the GUI
         root = ThemedTk(theme='breeze')
         root.withdraw()
@@ -145,96 +194,68 @@ class Frontend(object):
         alt_play_pause_var = tk.BooleanVar()
         shift_play_pause_var = tk.BooleanVar()
         play_pause_modifiers = ttk.Frame(frame)
-        play_pause_var = tk.StringVar()
-        play_pause_entry = ttk.Combobox(play_pause_modifiers, width=width, values=KEY_OPTIONS, textvariable=play_pause_var, state='readonly', justify='center')
+        play_pause_entry = tk.Entry(play_pause_modifiers, width=width, justify='center')
+        play_pause_entry.bind('<FocusIn>', lambda event: listen_for_key_events(play_pause_entry))
         ctrl_play_pause_checkbox, alt_play_pause_checkbox, shift_play_pause_checkbox = \
             create_modifiers(play_pause_modifiers, ctrl_play_pause_var, alt_play_pause_var, shift_play_pause_var)
         ctrl_play_pause_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
         alt_play_pause_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
         shift_play_pause_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
-        play_pause_entry.grid(row=0, column=4, padx=padding_x, pady=padding_y)
+        play_pause_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
         
         ctrl_prev_track_var = tk.BooleanVar()
         alt_prev_track_var = tk.BooleanVar()
         shift_prev_track_var = tk.BooleanVar()
         prev_track_modifiers = ttk.Frame(frame)
-        prev_track_var = tk.StringVar()
-        prev_track_entry = ttk.Combobox(prev_track_modifiers, width=width, values=KEY_OPTIONS, textvariable=prev_track_var, state='readonly', justify='center')
+        prev_track_entry = tk.Entry(prev_track_modifiers, width=width, justify='center')
+        prev_track_entry.bind('<FocusIn>', lambda event: listen_for_key_events(prev_track_entry))
         ctrl_prev_track_checkbox, alt_prev_track_checkbox, shift_prev_track_checkbox = \
             create_modifiers(prev_track_modifiers, ctrl_prev_track_var, alt_prev_track_var, shift_prev_track_var)
         ctrl_prev_track_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
         alt_prev_track_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
         shift_prev_track_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
-        prev_track_entry.grid(row=0, column=4, padx=padding_x, pady=padding_y)
+        prev_track_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
         ctrl_next_track_var = tk.BooleanVar()
         alt_next_track_var = tk.BooleanVar()
         shift_next_track_var = tk.BooleanVar()
         next_track_modifiers = ttk.Frame(frame)
-        next_track_var = tk.StringVar()
-        next_track_entry = ttk.Combobox(next_track_modifiers, width=width, values=KEY_OPTIONS, textvariable=next_track_var, state='readonly', justify='center')
+        next_track_entry = tk.Entry(next_track_modifiers, width=width, justify='center')
+        next_track_entry.bind('<FocusIn>', lambda event: listen_for_key_events(next_track_entry))
         ctrl_next_track_checkbox, alt_next_track_checkbox, shift_next_track_checkbox = \
             create_modifiers(next_track_modifiers, ctrl_next_track_var, alt_next_track_var, shift_next_track_var)
         ctrl_next_track_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
         alt_next_track_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
         shift_next_track_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
-        next_track_entry.grid(row=0, column=4, padx=padding_x, pady=padding_y)
+        next_track_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
         ctrl_volume_up_var = tk.BooleanVar()
         alt_volume_up_var = tk.BooleanVar()
         shift_volume_up_var = tk.BooleanVar()
         volume_up_modifiers = ttk.Frame(frame)
-        volume_up_var = tk.StringVar()
-        volume_up_entry = ttk.Combobox(volume_up_modifiers, width=width, values=KEY_OPTIONS, textvariable=volume_up_var, state='readonly', justify='center')
+        volume_up_entry = tk.Entry(volume_up_modifiers, width=width, justify='center')
+        volume_up_entry.bind('<FocusIn>', lambda event: listen_for_key_events(volume_up_entry))
         ctrl_volume_up_checkbox, alt_volume_up_checkbox, shift_volume_up_checkbox = \
             create_modifiers(volume_up_modifiers, ctrl_volume_up_var, alt_volume_up_var, shift_volume_up_var)
         ctrl_volume_up_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
         alt_volume_up_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
         shift_volume_up_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
-        volume_up_entry.grid(row=0, column=4, padx=padding_x, pady=padding_y)
+        volume_up_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
         ctrl_volume_down_var = tk.BooleanVar()
         alt_volume_down_var = tk.BooleanVar()
         shift_volume_down_var = tk.BooleanVar()
         volume_down_modifiers = ttk.Frame(frame)
-        volume_down_var = tk.StringVar()
-        volume_down_entry = ttk.Combobox(volume_down_modifiers, width=width, values=KEY_OPTIONS, textvariable=volume_down_var, state='readonly', justify='center')
+        volume_down_entry = tk.Entry(volume_down_modifiers, width=width, justify='center')
+        volume_down_entry.bind('<FocusIn>', lambda event: listen_for_key_events(volume_down_entry))
         ctrl_volume_down_checkbox, alt_volume_down_checkbox, shift_volume_down_checkbox = \
             create_modifiers(volume_down_modifiers, ctrl_volume_down_var, alt_volume_down_var, shift_volume_down_var)
         ctrl_volume_down_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
         alt_volume_down_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
         shift_volume_down_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
-        volume_down_entry.grid(row=0, column=4, padx=padding_x, pady=padding_y)
+        volume_down_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
         # Autofill entries
-        def autofill_entry(entry, value, hotkey=False):
-            if hotkey:
-                modifiers, key = parse_hotkey_string(value)
-                entry.set(key)
-                return modifiers
-            else:
-                entry.delete(0, tk.END)
-                entry.insert(0, value)
-
-        def parse_hotkey_string(hotkey_str):
-            modifiers = {'ctrl': False, 'alt': False, 'shift': False}
-            key = ''
-
-            if 'control' in hotkey_str:
-                modifiers['ctrl'] = True
-                hotkey_str = hotkey_str.replace('control', '')
-            if 'alt' in hotkey_str:
-                modifiers['alt'] = True
-                hotkey_str = hotkey_str.replace('alt', '')
-            if 'shift' in hotkey_str:
-                modifiers['shift'] = True
-                hotkey_str = hotkey_str.replace('shift', '')
-            if '+' in hotkey_str:
-                hotkey_str = hotkey_str.replace('+', '')
-
-            key = hotkey_str.strip()
-            return modifiers, key
-  
         entries = [client_id_entry, client_secret_entry, device_id_entry]
         hotkey_entries = [play_pause_entry, prev_track_entry, next_track_entry, volume_up_entry, volume_down_entry]
         keys = ['client_id', 'client_secret', 'device_id']  
@@ -311,6 +332,7 @@ class Frontend(object):
         startup_checkbox.pack(side='left', padx=(0, 5))
         minimize_checkbox.pack(side='left', padx=(5, 0))
        
+        # Center window and focus
         center_window(root)
         root.deiconify()
         root.update()
@@ -325,7 +347,6 @@ class Frontend(object):
         self.menu.run()
         
 KEY_OPTIONS = [
-    "",
     "a",
     "b",
     "c",
@@ -386,7 +407,7 @@ KEY_OPTIONS = [
     "f22",
     "f23",
     "f24",
-    "+",
+    "=",
     ",",
     "-",
     ".",
