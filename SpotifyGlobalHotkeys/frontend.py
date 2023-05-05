@@ -175,11 +175,11 @@ class Frontend(object):
         client_id_label = ttk.Label(frame, text='Client ID:')
         client_secret_label = ttk.Label(frame, text='Client Secret:')
         device_id_label = ttk.Label(frame, text='Device ID:')
-        play_pause_label = ttk.Label(frame, text='Play/Pause Hotkey:')
-        prev_track_label = ttk.Label(frame, text='Previous Track Hotkey:')
-        next_track_label = ttk.Label(frame, text='Next Track Hotkey:')
-        volume_up_label = ttk.Label(frame, text='Volume Up Hotkey:')
-        volume_down_label = ttk.Label(frame, text='Volume Down Hotkey:')
+        play_pause_label = ttk.Label(frame, text='Play/Pause:')
+        prev_track_label = ttk.Label(frame, text='Previous Track:')
+        next_track_label = ttk.Label(frame, text='Next Track:')
+        volume_up_label = ttk.Label(frame, text='Volume Up:')
+        volume_down_label = ttk.Label(frame, text='Volume Down:')
         
         labels_frame = ttk.Frame(frame)
         modifier_label = ttk.Label(labels_frame, text='Modifiers')
@@ -342,8 +342,8 @@ class Frontend(object):
         separator.grid(row=5, column=0, columnspan=3, sticky='EW', pady=10)
     
         labels_frame.grid(row=6, column=1, pady=padding_y)
-        modifier_label.grid(row=0, column=1, padx=(5, 55))
-        key_label.grid(row=0, column=3, padx=(50, 10))
+        modifier_label.grid(row=0, column=1, padx=(10, 50))
+        key_label.grid(row=0, column=3, padx=(50, 0))
         
         play_pause_label.grid(row=7, column=0, sticky='E')
         play_pause_modifiers.grid(row=7, column=1, sticky='W')
