@@ -42,7 +42,8 @@ You can open the settings again by right-clicking on the app's system tray icon.
 The registry key used to start the app on Windows startup needs to be updated to the new `.exe` path. Restarting the app will resolve that.
 
 Quit the app by pressing on "Quit" within the system tray icon menu, or end the process in Task Manager.
-
+***
+## FAQ
 ### How Do I Disable Certain Hotkeys?
 1. Uncheck all of the modifier checkboxes
 2. In the `Key` dropdown, select the empty option at the top.
