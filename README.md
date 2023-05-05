@@ -58,6 +58,9 @@ Quit the app by pressing on "Quit" within the system tray icon menu, or end the 
 ### How Do I Disable Certain Hotkeys?
 1. Uncheck all of the `Modifiers` checkboxes.
 2. In the `Key` dropdown, select the empty option at the top.
+    <p>
+    <img src="./images/unbind.png" width="50%" height="50%">
+    </p>
 ### Where Is My Information Saved?
 1. Press `Win+R` to bring up the "Run" menu, or type in "Run" within your Windows search bar.
 1. Enter the following in the "Open" input field:
