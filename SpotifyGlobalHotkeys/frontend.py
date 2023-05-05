@@ -14,8 +14,6 @@ from global_hotkeys import keycodes
 class Frontend(object):
     def __init__(self, app):
         self.app = app
-        self.modified = False
-        self.modified_cred = False
         self.icon_path = app.icon_path
 
         image = Image.open(self.icon_path)
@@ -39,15 +37,15 @@ class Frontend(object):
         self.SettingsWindow()
 
     def SettingsWindow(self):
-        global KEY_OPTIONS
+        global KEY_OPTIONS, modified_cred
+        modified_cred = False
         
         def set_modified(event=None):
-            self.modified = True
             save_button.config(state=tk.NORMAL)
             
         def set_modified_cred(event=None):
-            self.modified_cred = True
-            self.modified = True
+            global modified_cred
+            modified_cred = True
             save_button.config(state=tk.NORMAL)
         
         def handle_keypress(virtual_keycode, entry):
@@ -85,7 +83,6 @@ class Frontend(object):
         def parse_hotkey_string(hotkey_str):
             modifiers = {'ctrl': False, 'alt': False, 'shift': False}
             key = ''
-
             if 'control' in hotkey_str:
                 modifiers['ctrl'] = True
                 hotkey_str = hotkey_str.replace('control', '')
@@ -97,7 +94,6 @@ class Frontend(object):
                 hotkey_str = hotkey_str.replace('shift', '')
             if '+' in hotkey_str:
                 hotkey_str = hotkey_str.replace('+', '')
-
             key = hotkey_str.strip()
             return modifiers, key
         
@@ -106,7 +102,6 @@ class Frontend(object):
             self.app.client_id = client_id_entry.get()
             self.app.client_secret = client_secret_entry.get()
             self.app.device_id = device_id_entry.get()
-            
             self.app.hotkeys['play/pause'] = update_hotkey_entry(play_pause_entry, play_pause_modifiers, ctrl_play_pause_var, alt_play_pause_var, shift_play_pause_var)
             self.app.hotkeys['prev_track'] = update_hotkey_entry(prev_track_entry, prev_track_modifiers, ctrl_prev_track_var, alt_prev_track_var, shift_prev_track_var)
             self.app.hotkeys['next_track'] = update_hotkey_entry(next_track_entry, next_track_modifiers, ctrl_next_track_var, alt_next_track_var, shift_next_track_var)
@@ -148,8 +143,9 @@ class Frontend(object):
             self.app.SaveConfig()
         
         def start_action():
+            global modified_cred
             set_input_fields()
-            if self.modified_cred and not self.app.CreateToken():
+            if modified_cred and not self.app.CreateToken():
                 return
             else:
                 root.destroy()
