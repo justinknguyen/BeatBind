@@ -12,7 +12,6 @@ vk_key_names = {
 	'caps_lock':0x14,
 	'escape':0x1B,
 	'space':0x20,
-	' ':0x20,
 	'page_up':0x21,
 	'page_down':0x22,
 	'end':0x23,
