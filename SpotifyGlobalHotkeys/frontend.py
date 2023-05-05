@@ -15,6 +15,8 @@ from global_hotkeys import keycodes
 class Frontend(object):
     def __init__(self, app):
         self.app = app
+        self.modified = False
+        self.modified_cred = False
         self.icon_path = app.icon_path
 
         image = Image.open(self.icon_path)
@@ -41,6 +43,13 @@ class Frontend(object):
     def SettingsWindow(self):
         global KEY_OPTIONS
         
+        def set_modified(event=None):
+            self.modified = True
+            save_button.config(state=tk.NORMAL)
+            
+        def set_modified_cred(event=None):
+            self.modified_cred = True
+        
         def handle_keypress(virtual_keycode, entry):
             decimal_to_keyname = {int(hex_value): key for key, hex_value in keycodes.vk_key_names.items()}
             key_name = decimal_to_keyname.get(virtual_keycode)
@@ -52,12 +61,17 @@ class Frontend(object):
                 entry.insert(0, key_name)
 
         def listen_for_key_events(entry):
-            while entry.focus_get() == entry:
-                for key_name, virtual_keycode in keycodes.vk_key_names.items():
-                    if win32api.GetAsyncKeyState(virtual_keycode) & 0x8000:
-                        handle_keypress(virtual_keycode, entry)
-                entry.update_idletasks()
-                entry.update()
+            while True:
+                try:
+                    if entry.focus_get() != entry:
+                        break
+                    for key_name, virtual_keycode in keycodes.vk_key_names.items():
+                        if win32api.GetAsyncKeyState(virtual_keycode) & 0x8000:
+                            handle_keypress(virtual_keycode, entry)
+                    entry.update_idletasks()
+                    entry.update()
+                except:
+                    break
             
         def autofill_entry(entry, value, hotkey=False):
             entry.delete(0, tk.END)
@@ -115,6 +129,9 @@ class Frontend(object):
             ctrl_checkbox = ttk.Checkbutton(frame, text='Ctrl', variable=ctrl_var)
             alt_checkbox = ttk.Checkbutton(frame, text='Alt', variable=alt_var)
             shift_checkbox = ttk.Checkbutton(frame, text='Shift', variable=shift_var)
+            ctrl_checkbox.config(command=set_modified)
+            alt_checkbox.config(command=set_modified)
+            shift_checkbox.config(command=set_modified)
             return ctrl_checkbox, alt_checkbox, shift_checkbox
                     
         def center_window(window):
@@ -132,7 +149,7 @@ class Frontend(object):
         
         def start_action():
             set_input_fields()
-            if not self.app.CreateToken():
+            if self.modified_cred and not self.app.CreateToken():
                 return
             else:
                 root.destroy()
@@ -178,7 +195,7 @@ class Frontend(object):
         
         # Buttons
         button_frame = ttk.Frame(frame)
-        save_button = ttk.Button(button_frame, text='Save', command=save_action)
+        save_button = ttk.Button(button_frame, text='Save', command=save_action, state=tk.DISABLED)
         start_button = ttk.Button(button_frame, text='Start & Close', command=start_action)
         
         # Checkboxes
@@ -299,6 +316,22 @@ class Frontend(object):
         checkbox_frame = ttk.Frame(frame)
         startup_checkbox = ttk.Checkbutton(checkbox_frame, text='Start on Windows startup', variable=self.app.startup_var)
         minimize_checkbox = ttk.Checkbutton(checkbox_frame, text='Start minimized', variable=self.app.minimize_var)
+        
+        # Check if modified
+        client_id_entry.bind('<KeyRelease>', set_modified)
+        client_secret_entry.bind('<KeyRelease>', set_modified)
+        device_id_entry.bind('<KeyRelease>', set_modified)
+        client_id_entry.bind('<KeyRelease>', set_modified_cred)
+        client_secret_entry.bind('<KeyRelease>', set_modified_cred)
+        device_id_entry.bind('<KeyRelease>', set_modified_cred)
+        
+        play_pause_entry.bind('<KeyRelease>', set_modified)
+        prev_track_entry.bind('<KeyRelease>', set_modified)
+        next_track_entry.bind('<KeyRelease>', set_modified)
+        volume_up_entry.bind('<KeyRelease>', set_modified)
+        volume_down_entry.bind('<KeyRelease>', set_modified)
+        startup_checkbox.config(command=set_modified)
+        minimize_checkbox.config(command=set_modified)
         
         # Grid layout
         client_id_label.grid(row=1, column=0, sticky='E')

@@ -79,11 +79,9 @@ class Backend(object):
     '''
     def CheckTokenExpiry(self):
         cache_file = os.path.join(self.app_folder, '.cache')
-
         if os.path.exists(cache_file):
             with open(cache_file, 'r') as f:
                 cache_data = json.load(f)
-
             expires_at = cache_data['expires_at']
             if datetime.now().timestamp() >= expires_at:
                 print('Cached token has expired')
