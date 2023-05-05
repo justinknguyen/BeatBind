@@ -2,7 +2,7 @@
 This background Python Windows application utilizes the [global_hotkeys](https://github.com/btsdev/global_hotkeys) module to listen for basic hotkeys, allowing users to easily control Spotify without the window focused. The app leverages the power of [Spotify's Web API](https://developer.spotify.com/documentation/web-api) through the use of [Spotipy](https://github.com/spotipy-dev/spotipy), providing seamless integration between the app and the music streaming platform.
 
 <p align="center">
-<img src="image.png" width="50%" height="50%">
+<img src="./images/view.png" width="50%" height="50%">
 </p>
 
 ## Download
@@ -24,14 +24,23 @@ The app requires the user to input three fields:
 1. Enter the following for the `Redirect URI`:
     - http://localhost:8888/callback
 1. Click on the checkbox and then "Save".
-1. Click on the "Settings" button to the top-right. 
+1. Click on the "Settings" button to the top-right.
+    <p align="center">
+    <img src="./images/create-app.png" width="100%" height="100%">
+    </p>
 1. Copy your `Client ID` and `Client Secret` and paste it into the app.
+    <p align="center">
+    <img src="./images/id-and-secret.png" width="100%" height="100%">
+    </p>
 ### Device ID
 1. To obtain your `Device ID`, head to the following link [Get Available Devices](https://developer.spotify.com/documentation/web-api/reference/get-a-users-available-devices).
 1. Click on the green "Try it" button to the right.
 1. Under "RESPONSE SAMPLE", is a list of all of your devices used for Spotify.
 1. Find the device name of your Windows PC, and copy the "id" as this is your `Device ID` (e.g., 1f0a123g9j1201nc...).
 1. Paste the `Device ID` into the app.
+    <p align="center">
+    <img src="./images/devices.png" width="100%" height="100%">
+    </p>
 
 Once you're done, click on `Save` to save your settings. Click on `Start & Close` to close the window and start listening for your hotkeys!
 
