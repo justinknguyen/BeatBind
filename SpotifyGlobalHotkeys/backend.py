@@ -93,7 +93,6 @@ class Backend(object):
             self.CreateToken()
             
     def RefreshToken(self):
-        time.sleep(self.expires_in - 60)  # Sleep until the token needs to be refreshed
         print('Refreshing token')
         self.token_data = self.auth_manager.refresh_access_token(self.auth_manager.get_cached_token()['refresh_token'])
         self.token = self.token_data['access_token']
@@ -102,10 +101,7 @@ class Backend(object):
     def RefreshTokenThread(self):
         while True:
             time.sleep(self.expires_in - 60)  # Sleep until the token needs to be refreshed
-            print('Refreshing token')
-            self.token_data = self.auth_manager.refresh_access_token(self.auth_manager.get_cached_token()['refresh_token'])
-            self.token = self.token_data['access_token']
-            self.expires_in = self.token_data['expires_in']
+            self.RefreshToken()
             
     def CreateToken(self):
         print('Creating token')
