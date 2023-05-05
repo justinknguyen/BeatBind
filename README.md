@@ -45,7 +45,7 @@ Quit the app by pressing on "Quit" within the system tray icon menu, or end the 
 ***
 ## FAQ
 ### How Do I Disable Certain Hotkeys?
-1. Uncheck all of the modifier checkboxes
+1. Uncheck all of the `Modifiers` checkboxes.
 2. In the `Key` dropdown, select the empty option at the top.
 ### Where Is My Information Saved?
 1. Press `Win+R` to bring up the "Run" menu, or type in "Run" within your Windows search bar.
