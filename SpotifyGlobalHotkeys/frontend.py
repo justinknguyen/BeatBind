@@ -263,6 +263,12 @@ class Frontend(object):
             for entry, default_value in zip(hotkey_entries, hotkey_defaults):
                 autofill_entry(entry, default_value)
                 
+            for entry, key, default_value, ctrl_var, alt_var, shift_var in zip(hotkey_entries, hotkey_keys, hotkey_defaults, ctrl_vars, alt_vars, shift_vars):
+                modifiers = autofill_entry(entry, default_value, hotkey=True)
+                ctrl_var.set(modifiers['ctrl'])
+                alt_var.set(modifiers['alt'])
+                shift_var.set(modifiers['shift'])
+                
             self.app.startup_var.set(False)
             self.app.minimize_var.set(False)
         
@@ -317,6 +323,7 @@ class Frontend(object):
         self.menu.run()
         
 KEY_OPTIONS = [
+    "",
     "a",
     "b",
     "c",

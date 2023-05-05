@@ -12,18 +12,13 @@ You can build the `.exe` yourself with the provided build command in the `build.
 
 ## Instructions
 A list of default [hotkeys](#hotkeys) are provided for guidance and convenience. <br>
-The app requires the user to input five fields: 
-- [Spotify Username](#spotify-username)
+The app requires the user to input three fields: 
 - [Client ID](#client-id-client-secret-and-redirect-uri)
 - [Client Secret](#client-id-client-secret-and-redirect-uri)
-- [Redirect URI](#client-id-client-secret-and-redirect-uri)
 - [Device ID](#device-id)
 
-### Spotify Username
-1. `Spotify Username` is the username of your Spotify account.
-
-### Client ID, Client Secret, and Redirect URI
-1. To obtain the `Client ID`, `Client Secret`, and `Redirect URI`, head to the following link [Spotify for Developers](https://developer.spotify.com/).
+### Client ID and Client Secret
+1. To obtain the `Client ID` and `Client Secret`, head to the following link [Spotify for Developers](https://developer.spotify.com/).
 1. Sign-in and click on your profile in the top-right corner, then click on "Dashboard".
 1. Click on the "Create app" button to the right.
 1. Enter any "App name" and "App description" you want.
@@ -31,17 +26,13 @@ The app requires the user to input five fields:
     - http://localhost:8888/callback
 1. Click on the checkbox and then "Save".
 1. Click on the "Settings" button to the top-right. 
-1. Copy your `Client ID`, `Client Secret`, and `Redirect URI` and paste it into the app.
+1. Copy your `Client ID` and `Client Secret` and paste it into the app.
 ### Device ID
 1. To obtain your `Device ID`, head to the following link [Get Available Devices](https://developer.spotify.com/documentation/web-api/reference/get-a-users-available-devices).
 1. Click on the green "Try it" button to the right.
 1. Under "RESPONSE SAMPLE", is a list of all of your devices used for Spotify.
 1. Find the device name of your Windows PC, and copy the "id" as this is your `Device ID` (e.g., 1f0a123g9j1201nc...).
 1. Paste the `Device ID` into the app.
-
-### Hotkeys
-- This program uses the [global_hotkeys](https://github.com/btsdev/global_hotkeys) module to listen for hotkeys.
-- Please refer to the list of keycodes [here](https://github.com/btsdev/global_hotkeys#list-of-the-available-keys) for the `Key` input field.
 
 Once you're done, click on `Save` to save your settings. Click on `Start & Close` to close the window and start listening for your hotkeys! <br>
 You can open the settings again by right-clicking on the app's system tray icon.

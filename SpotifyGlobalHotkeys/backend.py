@@ -102,10 +102,27 @@ class Backend(object):
             
     def CreateToken(self):
         print('Creating token')
+        
         cache_file = os.path.join(self.app_folder, '.cache')
         # Delete cache file if it exists
         if os.path.exists(cache_file):
             os.remove(cache_file)
+            
+        # check if Client ID or Secret are correct
+        try:
+            response = requests.post('https://accounts.spotify.com/api/token', 
+                                    data={'grant_type': 'client_credentials'},
+                                    auth=(self.client_id, self.client_secret),
+                                    timeout=5)
+            if response.status_code == 200:
+                pass
+            else:
+                self.ErrorMessage(response.content)
+                return False
+        except requests.exceptions.RequestException as e:
+            self.ErrorMessage(e)
+            return False
+
         try:
             self.auth_manager = SpotifyOAuth(scope='user-modify-playback-state,user-read-playback-state',
                                             client_id=self.client_id,
@@ -115,7 +132,7 @@ class Backend(object):
         except SpotifyOauthError as e:
             self.ErrorMessage(e)
             return False
-        
+    
         try:
             self.token_data = self.auth_manager.get_access_token()
         except SpotifyOauthError as e:
@@ -314,13 +331,18 @@ class Backend(object):
         def volume_down():
             self.AdjustVolume(-5)
 
-        bindings = [
-            [self.hotkeys['play/pause'].split('+'), None, play_pause],
-            [self.hotkeys['prev_track'].split('+'), None, previous],
-            [self.hotkeys['next_track'].split('+'), None, next],
-            [self.hotkeys['volume_up'].split('+'), None, volume_up],
-            [self.hotkeys['volume_down'].split('+'), None, volume_down]
-        ]
+        # Create the bindings list, removing any empty hotkeys
+        bindings = []
+        for hotkey_name, hotkey_func in [
+            ('play/pause', play_pause),
+            ('prev_track', previous),
+            ('next_track', next),
+            ('volume_up', volume_up),
+            ('volume_down', volume_down)
+        ]:
+            hotkey = self.hotkeys[hotkey_name].split('+')
+            if all(hotkey):
+                bindings.append([hotkey, None, hotkey_func])
 
         # Register all of our keybindings
         register_hotkeys(bindings)
@@ -334,10 +356,8 @@ class Backend(object):
         config = {
             'startup': self.startup_var.get(),
             'minimize': self.minimize_var.get(),
-            'username': self.username,
             'client_id': self.client_id,
             'client_secret': self.client_secret,
-            'redirect_uri': self.redirect_uri,
             'device_id': self.device_id,
             'hotkeys': self.hotkeys
         }
