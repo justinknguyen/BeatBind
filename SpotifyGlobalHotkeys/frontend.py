@@ -75,6 +75,7 @@ class Frontend(object):
             x = (window.winfo_screenwidth() // 2) - (width // 2)
             y = (window.winfo_screenheight() // 2) - (height // 2)
             window.geometry(f'{width}x{height}+{x}+{y}')
+            window.after(1, lambda: window.focus_force())
             
         def save_action():
             set_input_fields()
@@ -97,6 +98,7 @@ class Frontend(object):
         root.withdraw()
         root.title('Spotify Global Hotkeys')
         root.iconbitmap(self.icon_path)
+        root.focus_force()
 
         # Create a frame with padding
         frame = ttk.Frame(root, padding=20)

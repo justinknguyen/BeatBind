@@ -68,7 +68,7 @@ class Backend(object):
         # Set up wake-up event listener
         app_class = win32gui.WNDCLASS()
         app_class.lpfnWndProc = self.WndProc
-        app_class.lpszClassName = "SpotifyGlobalHotkeysApp"
+        app_class.lpszClassName = 'SpotifyGlobalHotkeysApp'
         app_class.hInstance = win32api.GetModuleHandle()
         class_atom = win32gui.RegisterClass(app_class)
         self.hwnd = win32gui.CreateWindowEx(0, class_atom, None, 0, 0, 0, 0, 0, None, None, app_class.hInstance, None)
