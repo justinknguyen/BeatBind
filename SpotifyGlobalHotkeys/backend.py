@@ -93,6 +93,13 @@ class Backend(object):
             self.CreateToken()
             
     def RefreshToken(self):
+        time.sleep(self.expires_in - 60)  # Sleep until the token needs to be refreshed
+        print('Refreshing token')
+        self.token_data = self.auth_manager.refresh_access_token(self.auth_manager.get_cached_token()['refresh_token'])
+        self.token = self.token_data['access_token']
+        self.expires_in = self.token_data['expires_in']
+            
+    def RefreshTokenThread(self):
         while True:
             time.sleep(self.expires_in - 60)  # Sleep until the token needs to be refreshed
             print('Refreshing token')
@@ -108,7 +115,7 @@ class Backend(object):
         if os.path.exists(cache_file):
             os.remove(cache_file)
             
-        # check if Client ID or Secret are correct
+        # Check if Client ID or Secret are correct
         try:
             response = requests.post('https://accounts.spotify.com/api/token', 
                                     data={'grant_type': 'client_credentials'},
@@ -158,7 +165,7 @@ class Backend(object):
         # Start the loop to refresh the token before it expires, if not already running
         if not self.refresh_thread_running:
             print('Created refresh thread')
-            refresh_thread = threading.Thread(target=self.RefreshToken)
+            refresh_thread = threading.Thread(target=self.RefreshTokenThread)
             refresh_thread.daemon = True
             refresh_thread.start()
             self.refresh_thread_running = True
@@ -279,7 +286,7 @@ class Backend(object):
         if message == win32con.WM_POWERBROADCAST:
             if wParam == win32con.PBT_APMRESUMEAUTOMATIC:  # System is waking up from sleep
                 print("System woke up from sleep")
-                self.CreateToken()
+                self.RefreshToken()
         return win32gui.DefWindowProc(hWnd, message, wParam, lParam)
     
     def UpdateStartupRegistry(self):
