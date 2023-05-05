@@ -209,7 +209,7 @@ class Frontend(object):
         alt_play_pause_var = tk.BooleanVar()
         shift_play_pause_var = tk.BooleanVar()
         play_pause_modifiers = ttk.Frame(frame)
-        play_pause_entry = tk.Entry(play_pause_modifiers, width=width, justify='center')
+        play_pause_entry = ttk.Entry(play_pause_modifiers, width=width, justify='center')
         play_pause_entry.bind('<FocusIn>', lambda event: listen_for_key_events(play_pause_entry))
         ctrl_play_pause_checkbox, alt_play_pause_checkbox, shift_play_pause_checkbox = \
             create_modifiers(play_pause_modifiers, ctrl_play_pause_var, alt_play_pause_var, shift_play_pause_var)
@@ -222,7 +222,7 @@ class Frontend(object):
         alt_prev_track_var = tk.BooleanVar()
         shift_prev_track_var = tk.BooleanVar()
         prev_track_modifiers = ttk.Frame(frame)
-        prev_track_entry = tk.Entry(prev_track_modifiers, width=width, justify='center')
+        prev_track_entry = ttk.Entry(prev_track_modifiers, width=width, justify='center')
         prev_track_entry.bind('<FocusIn>', lambda event: listen_for_key_events(prev_track_entry))
         ctrl_prev_track_checkbox, alt_prev_track_checkbox, shift_prev_track_checkbox = \
             create_modifiers(prev_track_modifiers, ctrl_prev_track_var, alt_prev_track_var, shift_prev_track_var)
@@ -235,7 +235,7 @@ class Frontend(object):
         alt_next_track_var = tk.BooleanVar()
         shift_next_track_var = tk.BooleanVar()
         next_track_modifiers = ttk.Frame(frame)
-        next_track_entry = tk.Entry(next_track_modifiers, width=width, justify='center')
+        next_track_entry = ttk.Entry(next_track_modifiers, width=width, justify='center')
         next_track_entry.bind('<FocusIn>', lambda event: listen_for_key_events(next_track_entry))
         ctrl_next_track_checkbox, alt_next_track_checkbox, shift_next_track_checkbox = \
             create_modifiers(next_track_modifiers, ctrl_next_track_var, alt_next_track_var, shift_next_track_var)
@@ -248,7 +248,7 @@ class Frontend(object):
         alt_volume_up_var = tk.BooleanVar()
         shift_volume_up_var = tk.BooleanVar()
         volume_up_modifiers = ttk.Frame(frame)
-        volume_up_entry = tk.Entry(volume_up_modifiers, width=width, justify='center')
+        volume_up_entry = ttk.Entry(volume_up_modifiers, width=width, justify='center')
         volume_up_entry.bind('<FocusIn>', lambda event: listen_for_key_events(volume_up_entry))
         ctrl_volume_up_checkbox, alt_volume_up_checkbox, shift_volume_up_checkbox = \
             create_modifiers(volume_up_modifiers, ctrl_volume_up_var, alt_volume_up_var, shift_volume_up_var)
@@ -261,7 +261,7 @@ class Frontend(object):
         alt_volume_down_var = tk.BooleanVar()
         shift_volume_down_var = tk.BooleanVar()
         volume_down_modifiers = ttk.Frame(frame)
-        volume_down_entry = tk.Entry(volume_down_modifiers, width=width, justify='center')
+        volume_down_entry = ttk.Entry(volume_down_modifiers, width=width, justify='center')
         volume_down_entry.bind('<FocusIn>', lambda event: listen_for_key_events(volume_down_entry))
         ctrl_volume_down_checkbox, alt_volume_down_checkbox, shift_volume_down_checkbox = \
             create_modifiers(volume_down_modifiers, ctrl_volume_down_var, alt_volume_down_var, shift_volume_down_var)
