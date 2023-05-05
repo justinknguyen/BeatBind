@@ -42,7 +42,7 @@ The app requires the user to input three fields:
     <img src="./images/devices.png" width="100%" height="100%">
     </p>
 
-Once you're done, click on `Save` to save your settings. Click on `Start & Close` to close the window and start listening for your hotkeys!
+Once you're done, click on `Save` within the app to save your settings. Click on `Start & Close` to close the window and start listening for your hotkeys!
 
 You can open the settings again by right-clicking on the app's system tray icon.
 
