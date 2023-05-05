@@ -2,7 +2,7 @@
 This background Python Windows application utilizes the [global_hotkeys](https://github.com/btsdev/global_hotkeys) module to listen for basic hotkeys, allowing users to easily control Spotify without the window focused. The app leverages the power of [Spotify's Web API](https://developer.spotify.com/documentation/web-api) through the use of [Spotipy](https://github.com/spotipy-dev/spotipy), providing seamless integration between the app and the music streaming platform.
 
 <p align="center">
-<img src="./images/view.png" width="50%" height="50%">
+<img src="./images/view.png" width="60%" height="60%">
 </p>
 
 ## Download
@@ -57,9 +57,9 @@ Quit the app by pressing on "Quit" within the system tray icon menu, or end the 
 ## FAQ
 ### How Do I Disable Certain Hotkeys?
 1. Uncheck all of the `Modifiers` checkboxes.
-2. In the `Key` dropdown, select the empty option at the top.
+2. In the `Key` field, press "Backspace" or "Delete" on your keyboard to clear the field.
     <p>
-    <img src="./images/unbind.png" width="50%" height="50%">
+    <img src="./images/unbind.png" width="70%" height="70%">
     </p>
 ### Where Is My Information Saved?
 1. Press `Win+R` to bring up the "Run" menu, or type in "Run" within your Windows search bar.
