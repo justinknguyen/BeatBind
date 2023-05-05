@@ -6,7 +6,9 @@ path = print(os.path.dirname(ttkthemes.__file__)) # place the path in the last b
 '''
 Build Command:
 
-python -m nuitka --onefile ^
+python -m nuitka ^
+--onefile ^
+--mingw64 ^
 --disable-console ^
 --include-package=tkinter ^
 --include-package=ttkthemes ^
@@ -16,4 +18,5 @@ python -m nuitka --onefile ^
 --output-file=SpotifyGlobalHotkeys.exe ^
 --include-data-dir="{path}=ttkthemes" ^
 app.py
+
 '''
