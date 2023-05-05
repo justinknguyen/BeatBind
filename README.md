@@ -11,7 +11,6 @@ Download the latest version from the [Releases](https://github.com/justinknguyen
 You can build the `.exe` yourself with the provided build command in the `build.py` file.
 
 ## Instructions
-A list of default [hotkeys](#hotkeys) are provided for guidance and convenience. <br>
 The app requires the user to input three fields: 
 - [Client ID](#client-id-client-secret-and-redirect-uri)
 - [Client Secret](#client-id-client-secret-and-redirect-uri)
@@ -34,7 +33,8 @@ The app requires the user to input three fields:
 1. Find the device name of your Windows PC, and copy the "id" as this is your `Device ID` (e.g., 1f0a123g9j1201nc...).
 1. Paste the `Device ID` into the app.
 
-Once you're done, click on `Save` to save your settings. Click on `Start & Close` to close the window and start listening for your hotkeys! <br>
+Once you're done, click on `Save` to save your settings. Click on `Start & Close` to close the window and start listening for your hotkeys!
+
 You can open the settings again by right-clicking on the app's system tray icon.
 
 ***
@@ -43,6 +43,9 @@ The registry key used to start the app on Windows startup needs to be updated to
 
 Quit the app by pressing on "Quit" within the system tray icon menu, or end the process in Task Manager.
 
+### How Do I Disable Certain Hotkeys?
+1. Uncheck all of the modifier checkboxes
+2. In the `Key` dropdown, select the empty option at the top.
 ### Where Is My Information Saved?
 1. Press `Win+R` to bring up the "Run" menu, or type in "Run" within your Windows search bar.
 1. Enter the following in the "Open" input field:

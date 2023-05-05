@@ -290,8 +290,8 @@ class Frontend(object):
         separator.grid(row=5, column=0, columnspan=3, sticky='EW', pady=10)
     
         labels_frame.grid(row=6, column=1, pady=padding_y)
-        modifier_label.grid(row=0, column=1, padx=(70, 50))
-        key_label.grid(row=0, column=3, padx=(40, 40))
+        modifier_label.grid(row=0, column=1, padx=(5, 55))
+        key_label.grid(row=0, column=3, padx=(50, 10))
         
         play_pause_label.grid(row=7, column=0, sticky='E')
         play_pause_modifiers.grid(row=7, column=1, sticky='W')
