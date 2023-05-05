@@ -24,10 +24,10 @@ The app requires the user to input three fields:
 1. Enter the following for the `Redirect URI`:
     - http://localhost:8888/callback
 1. Click on the checkbox and then "Save".
-1. Click on the "Settings" button to the top-right.
     <p align="center">
     <img src="./images/create-app.png" width="100%" height="100%">
     </p>
+1. Click on the "Settings" button to the top-right.
 1. Copy your `Client ID` and `Client Secret` and paste it into the app.
     <p align="center">
     <img src="./images/id-and-secret.png" width="100%" height="100%">
