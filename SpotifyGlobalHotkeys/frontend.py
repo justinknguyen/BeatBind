@@ -47,6 +47,8 @@ class Frontend(object):
             
         def set_modified_cred(event=None):
             self.modified_cred = True
+            self.modified = True
+            save_button.config(state=tk.NORMAL)
         
         def handle_keypress(virtual_keycode, entry):
             decimal_to_keyname = {int(hex_value): key for key, hex_value in keycodes.vk_key_names.items()}
@@ -316,13 +318,9 @@ class Frontend(object):
         minimize_checkbox = ttk.Checkbutton(checkbox_frame, text='Start minimized', variable=self.app.minimize_var)
         
         # Check if modified
-        client_id_entry.bind('<KeyRelease>', set_modified)
-        client_secret_entry.bind('<KeyRelease>', set_modified)
-        device_id_entry.bind('<KeyRelease>', set_modified)
         client_id_entry.bind('<KeyRelease>', set_modified_cred)
         client_secret_entry.bind('<KeyRelease>', set_modified_cred)
         device_id_entry.bind('<KeyRelease>', set_modified_cred)
-        
         play_pause_entry.bind('<KeyRelease>', set_modified)
         prev_track_entry.bind('<KeyRelease>', set_modified)
         next_track_entry.bind('<KeyRelease>', set_modified)
