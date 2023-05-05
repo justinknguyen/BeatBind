@@ -4,7 +4,6 @@ import psutil
 import pystray
 import win32api
 import win32con
-import keyboard
 import json.decoder
 import tkinter as tk
 from PIL import Image
@@ -27,7 +26,6 @@ class Frontend(object):
 
     def Quit(self, icon, item):
         self.menu.stop()
-        keyboard.unhook_all()  # Unhook all keys before exiting
         
         # Find the process by name
         for proc in psutil.process_iter(['name']):
