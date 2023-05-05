@@ -21,8 +21,10 @@ The app requires the user to input three fields:
 1. Sign-in and click on your profile in the top-right corner, then click on "Dashboard".
 1. Click on the "Create app" button to the right.
 1. Enter any "App name" and "App description" you want.
-1. Enter the following for the `Redirect URI`:
-    - http://localhost:8888/callback
+1. Enter the following for the "Redirect URI":
+    ```
+    http://localhost:8888/callback
+    ```
 1. Click on the checkbox and then "Save".
     <p align="center">
     <img src="./images/create-app.png" width="100%" height="100%">
