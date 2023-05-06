@@ -85,14 +85,17 @@ class Backend(object):
             expires_at = cache_data['expires_at']
             if datetime.now().timestamp() >= expires_at:
                 print('Cached token has expired')
-                with open(self.config_path, 'r') as f:
-                    config = json.load(f)
-                    self.auth_manager = SpotifyOAuth(scope='user-modify-playback-state,user-read-playback-state',
-                                                    client_id=config.get('client_id', ''),
-                                                    client_secret=config.get('client_secret', ''),
-                                                    redirect_uri='http://localhost:8888/callback',
-                                                    cache_path=cache_file)
-                self.RefreshToken()
+                if os.path.exists(self.config_path):
+                    with open(self.config_path, 'r') as f:
+                        config = json.load(f)
+                        self.auth_manager = SpotifyOAuth(scope='user-modify-playback-state,user-read-playback-state',
+                                                        client_id=config.get('client_id', ''),
+                                                        client_secret=config.get('client_secret', ''),
+                                                        redirect_uri='http://localhost:8888/callback',
+                                                        cache_path=cache_file)
+                    self.RefreshToken()
+                else:
+                    self.CreateToken()
         else:
             print('Could not find .cache file. Creating token...')
             self.CreateToken()
