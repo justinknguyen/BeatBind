@@ -103,11 +103,6 @@ class Backend(object):
             
     def CreateToken(self):
         print('Creating token')
-        
-        cache_file = os.path.join(self.app_folder, '.cache')
-        # Delete cache file if it exists
-        if os.path.exists(cache_file):
-            os.remove(cache_file)
             
         # Check if Client ID or Secret are correct
         try:
@@ -123,7 +118,11 @@ class Backend(object):
         except requests.exceptions.RequestException as e:
             self.ErrorMessage(e)
             return False
-
+        
+        cache_file = os.path.join(self.app_folder, '.cache')
+        # Delete cache file if it exists
+        if os.path.exists(cache_file):
+            os.remove(cache_file)
         try:
             self.auth_manager = SpotifyOAuth(scope='user-modify-playback-state,user-read-playback-state',
                                             client_id=self.client_id,
@@ -143,15 +142,15 @@ class Backend(object):
         self.token = self.token_data['access_token']
         self.expires_in = self.token_data['expires_in']
         
-        # Check if the device id is valid
+        # Check if the Device ID is valid
         response = requests.get('https://api.spotify.com/v1/me/player/devices', headers={'Authorization': f'Bearer {self.token}'})
         if response.status_code == 200:
             devices = response.json()['devices']
             device_id = self.device_id
             if device_id in [device['id'] for device in devices]:
-                print(f'Device ID {device_id} is valid')
+                print(f'Device ID is valid')
             else:
-                self.ErrorMessage(f'Device ID {device_id} is not valid')
+                self.ErrorMessage(f'Device ID is not valid')
                 return False
         else:
             print(f'Error getting devices: {response.status_code} {response.reason}')

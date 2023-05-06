@@ -146,6 +146,11 @@ class Frontend(object):
         def start_action():
             global modified_cred
             set_input_fields()
+
+            if client_id_entry.get() == '' or client_secret_entry.get() == '' or device_id_entry.get() == '':
+                self.app.CreateToken()
+                return
+            
             if modified_cred and not self.app.CreateToken():
                 return
             else:
