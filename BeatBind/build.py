@@ -19,9 +19,9 @@ python -m nuitka ^
 --output-file=BeatBind.exe ^
 --include-data-dir="{path}=ttkthemes" ^
 app.py
-'''
 
-'''
+--------------------------------------------------
+
 PyInstaller Build Command:
 
 pyinstaller --onefile --noconsole --add-data "icon.ico;." --icon=icon.ico -n "BeatBind" app.py
