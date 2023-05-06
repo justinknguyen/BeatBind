@@ -366,7 +366,10 @@ class Backend(object):
             # Save the config to the file
             with open(self.config_path, 'w') as f:
                 json.dump(config, f)
+            print('Config saved')
+            return True
         except IOError as e:
             print(f'Error saving config: {e}')
         except Exception as e:
             print(f'Unexpected error while saving config: {e}')
+        return False

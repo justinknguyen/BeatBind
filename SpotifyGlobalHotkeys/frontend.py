@@ -140,7 +140,8 @@ class Frontend(object):
             
         def save_action():
             set_input_fields()
-            self.app.SaveConfig()
+            if self.app.SaveConfig():
+                save_button.config(state=tk.DISABLED)
         
         def start_action():
             global modified_cred
