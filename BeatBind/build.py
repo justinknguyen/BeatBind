@@ -1,10 +1,11 @@
 import ttkthemes
 import os
 
-path = print(os.path.dirname(ttkthemes.__file__)) # place the path in the last build command option
+# place the path in the last build command option if using Nuitka
+path = print(os.path.dirname(ttkthemes.__file__)) 
 
 '''
-Build Command:
+Nuitka Build Command:
 
 python -m nuitka ^
 --onefile ^
@@ -18,5 +19,10 @@ python -m nuitka ^
 --output-file=BeatBind.exe ^
 --include-data-dir="{path}=ttkthemes" ^
 app.py
+'''
 
+'''
+PyInstaller Build Command:
+
+pyinstaller --onefile --noconsole --add-data "icon.ico;." --icon=icon.ico -n "BeatBind" app.py
 '''
