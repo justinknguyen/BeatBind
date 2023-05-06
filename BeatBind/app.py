@@ -37,7 +37,7 @@ def main():
         
         # If minimize is True, do not open the Settings window
         if config.get('minimize', False):
-            backend.CreateToken()
+            backend.RefreshToken()
             if not frontend.menu.visible:
                 frontend.run()
         else:
