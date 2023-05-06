@@ -10,6 +10,10 @@ Download the latest version from the [Releases](https://github.com/justinknguyen
 
 You can build the `.exe` yourself with the provided build command in the `build.py` file.
 
+## Requirements
+- Windows 10/11
+- Spotify Desktop App or Web Player
+
 ## Instructions
 The app requires the user to input three fields: 
 - [Client ID](#client-id-and-client-secret)
@@ -38,7 +42,7 @@ The app requires the user to input three fields:
 1. To obtain your `Device ID`, head to the following link [Get Available Devices](https://developer.spotify.com/documentation/web-api/reference/get-a-users-available-devices).
 1. Click on the green "Try it" button to the right.
 1. Under "RESPONSE SAMPLE", is a list of all of your devices used for Spotify.
-1. Find the device name of your Windows PC, and copy the "id" as this is your `Device ID` (e.g., 1f0a123g9j1201nc...).
+1. Choose any device you want to control, and copy the "id" which is the `Device ID` (e.g., 1f0a123g9j1201nc...).
 1. Paste the `Device ID` into the app.
     <p align="center">
     <img src="./images/devices.png" width="100%" height="100%">
