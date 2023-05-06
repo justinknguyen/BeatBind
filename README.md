@@ -67,5 +67,9 @@ Quit the app by pressing on "Quit" within the system tray icon menu, or end the 
     ```
     %appdata%
     ```
-1. Your information is stored locally within the `.../AppData/Roaming/.spotify_global_hotkeys` folder. It stores your configuration settings and the token information required to interact with Spotify's Web API.
+1. Your information is stored locally within the `.../AppData/Roaming/.beatbind` folder. It stores your configuration settings and the token information required to interact with Spotify's Web API.
+### What Information Is Stored?
+There are two files stored:
+- `config.json`, which contains your Client ID, Secret, Device ID, and your hotkey combinations.
+- `.cache`, which contains your token information to communicate with the Spotify app.
 
