@@ -13,11 +13,11 @@ def main():
     def count_running_instances():
         count = 0
         for process in psutil.process_iter(['name']):
-            if process.info['name'] == 'SpotifyGlobalHotkeys.exe':
+            if process.info['name'] == 'BeatBind.exe':
                 count += 1
         return count
     if count_running_instances() > 2:
-        print('SpotifyGlobalHotkeys.exe is already running. Exiting...')
+        print('BeatBind.exe is already running. Exiting...')
         sys.exit()
     
     print('Starting the application...')

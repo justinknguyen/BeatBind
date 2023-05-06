@@ -15,7 +15,7 @@ python -m nuitka ^
 --enable-plugin=tk-inter ^
 --include-data-file="icon.ico=./" ^
 --windows-icon-from-ico=icon.ico ^
---output-file=SpotifyGlobalHotkeys.exe ^
+--output-file=BeatBind.exe ^
 --include-data-dir="{path}=ttkthemes" ^
 app.py
 

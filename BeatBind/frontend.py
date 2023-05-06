@@ -17,7 +17,7 @@ class Frontend(object):
         self.icon_path = app.icon_path
 
         image = Image.open(self.icon_path)
-        self.menu = pystray.Icon('name', image, 'Spotify Global Hotkeys', menu=pystray.Menu(self.SettingsAction(), self.QuitAction()))
+        self.menu = pystray.Icon('name', image, 'BeatBind', menu=pystray.Menu(self.SettingsAction(), self.QuitAction()))
         
     def QuitAction(self):
         return pystray.MenuItem('Quit', self.Quit)
@@ -27,7 +27,7 @@ class Frontend(object):
         
         # Find the process by name
         for proc in psutil.process_iter(['name']):
-            if proc.info['name'] == 'SpotifyGlobalHotkeys.exe':
+            if proc.info['name'] == 'BeatBind.exe':
                 proc.kill()
     
     def SettingsAction(self):
@@ -159,7 +159,7 @@ class Frontend(object):
         # Create the GUI
         root = ThemedTk(theme='breeze')
         root.withdraw()
-        root.title('Spotify Global Hotkeys')
+        root.title('BeatBind')
         root.iconbitmap(self.icon_path)
         root.focus_force()
 
