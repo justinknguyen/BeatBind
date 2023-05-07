@@ -4,6 +4,7 @@ import psutil
 import pystray
 import win32api
 import win32con
+import webbrowser
 import json.decoder
 import tkinter as tk
 from PIL import Image
@@ -128,6 +129,9 @@ class Frontend(object):
             alt_checkbox.config(command=set_modified)
             shift_checkbox.config(command=set_modified)
             return ctrl_checkbox, alt_checkbox, shift_checkbox
+        
+        def link_callback(url):
+            webbrowser.open_new_tab(url)
                     
         def center_window(window):
             window.update_idletasks()
@@ -184,10 +188,13 @@ class Frontend(object):
         next_track_label = ttk.Label(frame, text='Next Track:')
         volume_up_label = ttk.Label(frame, text='Volume Up:')
         volume_down_label = ttk.Label(frame, text='Volume Down:')
-        
         labels_frame = ttk.Frame(frame)
         modifier_label = ttk.Label(labels_frame, text='Modifiers')
         key_label = ttk.Label(labels_frame, text='Key')
+        
+        source_frame = ttk.Frame(frame)
+        source_link = ttk.Label(source_frame, text='GitHub Source', font=('TkDefaultFont', 10, 'underline'), foreground='#3DAEE9', cursor='hand2')
+        source_link.bind('<Button-1>', lambda event: link_callback('https://github.com/justinknguyen/BeatBind'))
         
         # Entries
         width = 40
@@ -359,9 +366,13 @@ class Frontend(object):
         button_frame.grid(row=12, column=0, columnspan=2, pady=10)
         save_button.pack(side='left', padx=(0, 5))
         start_button.pack(side='left', padx=(5, 0))
+        
         checkbox_frame.grid(row=13, column=0, columnspan=2, pady=10)
         startup_checkbox.pack(side='left', padx=(0, 5))
         minimize_checkbox.pack(side='left', padx=(5, 0))
+        
+        source_frame.grid(row=14, column=0, columnspan=2, pady=10)
+        source_link.pack(side='left')
        
         # Center window and focus
         center_window(root)
