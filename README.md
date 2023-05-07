@@ -24,8 +24,7 @@ The app requires the user to input three fields:
 1. To obtain the `Client ID` and `Client Secret`, head to the following link [Spotify for Developers](https://developer.spotify.com/).
 1. Sign-in and click on your profile in the top-right corner, then click on "Dashboard".
 1. Click on the "Create app" button to the right.
-1. Enter any "App name" and "App description" you want.
-1. Enter the following for the "Redirect URI":
+1. Enter any "App name" and "App description" you want. Then enter the following for the "Redirect URI":
     ```
     http://localhost:8888/callback
     ```
@@ -41,8 +40,7 @@ The app requires the user to input three fields:
 ### Device ID
 1. To obtain your `Device ID`, head to the following link [Get Available Devices](https://developer.spotify.com/documentation/web-api/reference/get-a-users-available-devices).
 1. Click on the green "Try it" button to the right.
-1. Under "RESPONSE SAMPLE", is a list of all of your devices used for Spotify.
-1. Choose any device you want to control, and copy the "id" which is the `Device ID` (e.g., 1f0a123g9j1201nc...).
+1. Under "RESPONSE SAMPLE", is a list of all of your devices used for Spotify. Choose any device you want to control, and copy the "id" which is the `Device ID` (e.g., 1f0a123g9j1201nc...).
 1. Paste the `Device ID` into the app.
     <p align="center">
     <img src="./images/devices.png" width="100%" height="100%">
