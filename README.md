@@ -12,7 +12,7 @@ You can build the `.exe` yourself with the provided build command in the `build.
 
 ## Requirements
 - Windows 10/11
-- Spotify Desktop App
+- Spotify on your device of choice
 
 ## Instructions
 The app requires the user to input three fields: 
