@@ -168,7 +168,7 @@ class Frontend(object):
         # Create the GUI
         root = ThemedTk(theme='breeze')
         root.withdraw()
-        root.title('BeatBind')
+        root.title('BeatBind (v1.0.0)')
         root.iconbitmap(self.icon_path)
         root.focus_force()
 
