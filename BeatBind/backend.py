@@ -87,6 +87,7 @@ class Backend(object):
                                                 client_secret=config.get('client_secret', ''),
                                                 redirect_uri='http://localhost:8888/callback',
                                                 cache_path=cache_file)
+            self.RefreshToken()
             # Start the loop to refresh the token before it expires, if not already running
             if not self.refresh_thread_running:
                 print('Created refresh thread')
@@ -95,6 +96,7 @@ class Backend(object):
                 refresh_thread.start()
                 self.refresh_thread_running = True
         else:
+            print('Could not find .cache file. Creating token...')
             self.CreateToken()
         
     def CheckTokenExpiry(self):
@@ -105,7 +107,14 @@ class Backend(object):
             expires_at = cache_data['expires_at']
             if datetime.now().timestamp() >= expires_at:
                 print('Cached token has expired')
-                self.StartupMinimizeTokenRefresh()
+                with open(self.config_path, 'r') as f:
+                    config = json.load(f)
+                    self.auth_manager = SpotifyOAuth(scope='user-modify-playback-state,user-read-playback-state',
+                                                    client_id=config.get('client_id', ''),
+                                                    client_secret=config.get('client_secret', ''),
+                                                    redirect_uri='http://localhost:8888/callback',
+                                                    cache_path=cache_file)
+                self.RefreshToken()
         else:
             print('Could not find .cache file. Creating token...')
             self.CreateToken()
