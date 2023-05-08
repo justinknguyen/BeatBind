@@ -1,4 +1,6 @@
 # <img src="./BeatBind/icon.ico" width="4%" height="5%"> BeatBind - Spotify Global Hotkeys
+Ever wanted to control Spotify and adjust it's volume separately from your game volume without alt+tabbing? This app solves your problem.
+
 This background Python Windows application utilizes the [global_hotkeys](https://github.com/btsdev/global_hotkeys) module to listen for basic hotkeys, allowing users to easily control Spotify without the window focused. The app leverages the power of [Spotify's Web API](https://developer.spotify.com/documentation/web-api) through the use of [Spotipy](https://github.com/spotipy-dev/spotipy), providing seamless integration between the app and the music streaming platform.
 
 <p align="center">
@@ -33,7 +35,7 @@ The app requires the user to input three fields:
     <img src="./images/create-app.png" width="100%" height="100%">
     </p>
 1. Click on the "Settings" button to the top-right.
-1. Copy your `Client ID` and `Client Secret` and paste it into the app.
+1. Copy your `Client ID` and `Client Secret` (press "View client secret") and paste it into the app.
     <p align="center">
     <img src="./images/id-and-secret.png" width="100%" height="100%">
     </p>
