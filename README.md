@@ -1,5 +1,5 @@
 # <img src="./BeatBind/icon.ico" width="4%" height="5%"> BeatBind - Spotify Global Hotkeys
-Ever wanted to control Spotify and adjust it's volume separately from your game volume without alt+tabbing? This app solves your problem.
+Are you tired of constantly switching back and forth between your game and Spotify just to adjust the volume? With this app, you can finally control Spotify and adjust its volume separately, all without the hassle of alt+tabbing. Say goodbye to interruptions and hello to seamless audio management.
 
 This background Python Windows application utilizes the [global_hotkeys](https://github.com/btsdev/global_hotkeys) module to listen for basic hotkeys, allowing users to easily control Spotify without the window focused. The app leverages the power of [Spotify's Web API](https://developer.spotify.com/documentation/web-api) through the use of [Spotipy](https://github.com/spotipy-dev/spotipy), providing seamless integration between the app and the music streaming platform.
 
