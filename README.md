@@ -6,6 +6,7 @@ This background Python Windows application utilizes the [global_hotkeys](https:/
 <p align="center">
 <img src="./images/view.png" width="40%" height="40%">
 </p>
+
 ## Download
 Download the latest version from the [Releases](https://github.com/justinknguyen/Spotify-Global-Hotkeys/releases) page.
 
