@@ -66,4 +66,5 @@ You can open the settings again by right-clicking on the app's system tray icon.
 There are two files stored within the `.../AppData/Roaming/.beatbind` folder:
 - `config.json`, which contains your Client ID, Secret, Device ID, and your hotkey combinations.
 - `.cache`, which contains your token information to communicate with the Spotify app.
-
+### Why Isn't The App Starting on Startup?
+You likely changed the location of the app file. The registry key used to start the app on Windows startup needs to be updated to the new `.exe` path. Starting the app again will update the path in the registry key and should resolve the issue.
