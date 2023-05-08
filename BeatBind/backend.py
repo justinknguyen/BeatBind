@@ -87,7 +87,13 @@ class Backend(object):
                                                 client_secret=config.get('client_secret', ''),
                                                 redirect_uri='http://localhost:8888/callback',
                                                 cache_path=cache_file)
-            self.RefreshToken()
+            # Start the loop to refresh the token before it expires, if not already running
+            if not self.refresh_thread_running:
+                print('Created refresh thread')
+                refresh_thread = threading.Thread(target=self.RefreshTokenThread)
+                refresh_thread.daemon = True
+                refresh_thread.start()
+                self.refresh_thread_running = True
         else:
             self.CreateToken()
         
