@@ -96,7 +96,7 @@ class Backend(object):
                 refresh_thread.start()
                 self.refresh_thread_running = True
         else:
-            print('Could not find .cache file. Creating token...')
+            print('Could not find config file. Creating token...')
             self.CreateToken()
         
     def CheckTokenExpiry(self):
