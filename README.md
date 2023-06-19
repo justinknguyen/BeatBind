@@ -19,6 +19,7 @@ Download the latest version from the [Releases](https://github.com/justinknguyen
 You can build the `.exe` yourself with the provided build command in the `build.py` file.
 ## Requirements
 - Windows 10/11
+- Spotify Premium
 - Spotify on your device of choice
 ## Instructions
 The app requires the user to input three fields: 
@@ -43,14 +44,8 @@ The app requires the user to input three fields:
     <img src="./images/id-and-secret.png" width="100%" height="100%">
     </p>
 ### Device ID
-1. To obtain your `Device ID`, head to the following link [Get Available Devices](https://developer.spotify.com/documentation/web-api/reference/get-a-users-available-devices).
-1. Click on the green "Try it" button to the right.
-1. Choose any device you want to control under "RESPONSE SAMPLE", and copy the "id" which is the `Device ID`.
-    - Note: if you don't see any devices listed, just play music on one of your devices and try again. 
-1. Paste the `Device ID` into the app.
-    <p align="center">
-    <img src="./images/devices.png" width="100%" height="100%">
-    </p>
+1. To obtain your `Device ID`, press the button "Get Devices" in the app once your `Client ID` and `Client Secret` are filled in.
+1. Click on the drop-down arrow and select your device of choice.
 
 Once you're done, click on `Save` within the app to save your settings. Click on `Start & Close` to close the window and start listening for your hotkeys!
 

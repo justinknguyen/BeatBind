@@ -77,6 +77,10 @@ class Backend(object):
         )
 
     # --------------------------------------------------------------------------------------- #
+    
+    def TokenExists(self):
+        cache_file = os.path.join(self.app_folder, ".cache")
+        return os.path.exists(cache_file)
 
     def StartupMinimizeTokenRefresh(self):
         cache_file = os.path.join(self.app_folder, ".cache")
@@ -183,23 +187,6 @@ class Backend(object):
 
         self.token = self.token_data["access_token"]
         self.expires_in = self.token_data["expires_in"]
-
-        # Check if the Device ID is valid
-        response = requests.get(
-            "https://api.spotify.com/v1/me/player/devices",
-            headers={"Authorization": f"Bearer {self.token}"},
-            timeout=5,
-        )
-        if response.status_code == 200:
-            devices = response.json()["devices"]
-            device_id = self.device_id
-            if device_id in [device["id"] for device in devices]:
-                print("Device ID is valid")
-            else:
-                self.ErrorMessage("Device ID is not valid")
-                return False
-        else:
-            print(f"Error getting devices: {response.status_code} {response.reason}")
 
         # Start the loop to refresh the token before it expires, if not already running
         if not self.refresh_thread_running:
@@ -319,6 +306,16 @@ class Backend(object):
             print(f"Error fetching playback state: {e}")
             self.HandleConnectionError()
             return None
+        
+    def GetDevices(self):
+        headers = {"Authorization": "Bearer " + self.token}
+        url = "https://api.spotify.com/v1/me/player/devices"
+        try:
+            response = requests.get(url, headers=headers, timeout=5)
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            print(f"Error fetching devices: {e}")
 
     # --------------------------------------------------------------------------------------- #
 

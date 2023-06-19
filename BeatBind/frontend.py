@@ -174,6 +174,12 @@ class Frontend(object):
             y = (window.winfo_screenheight() // 2) - (height // 2)
             window.geometry(f"{width}x{height}+{x}+{y}")
             window.after(1, lambda: window.focus_force())
+            
+        def device_action():
+            set_input_fields()
+            if not self.app.TokenExists():
+                self.app.CreateToken()
+            update_devices()
 
         def save_action():
             set_input_fields()
@@ -191,7 +197,7 @@ class Frontend(object):
             ):
                 self.app.CreateToken()
                 return
-
+            
             if MODIFIED_CRED and not self.app.CreateToken():
                 return
             else:
@@ -205,7 +211,7 @@ class Frontend(object):
         # Create the GUI
         root = ThemedTk(theme="breeze")
         root.withdraw()
-        root.title("BeatBind (v1.0.1)")
+        root.title("BeatBind (v1.1.0)")
         root.iconbitmap(self.icon_path)
         root.focus_force()
 
@@ -243,12 +249,31 @@ class Frontend(object):
         )
 
         # Entries
-        width = 40
-        client_id_entry = ttk.Entry(frame, width=width)
-        client_secret_entry = ttk.Entry(frame, width=width)
-        device_id_entry = ttk.Entry(frame, width=width)
-
+        client_id_entry = ttk.Entry(frame, width=42)
+        client_secret_entry = ttk.Entry(frame, width=42)
+        device_id_entry = ttk.Combobox(frame, width=40)
+        
+        def update_devices():
+            devices_data = self.app.GetDevices()
+            if "devices" in devices_data:
+                devices = {device["name"]: device["id"] for device in devices_data["devices"]}
+                device_id_entry['values'] = list(devices.keys())
+            
+            def on_device_changed(event):
+                set_modified_cred()
+                device_name = device_id_entry.get()
+                device_id = devices.get(device_name)
+                if device_id is not None:
+                    device_id_entry.set(device_id)
+                    device_id_entry.selection_clear()
+                    frame.focus()
+                    
+            device_id_entry.bind("<<ComboboxSelected>>", on_device_changed)
+        
         # Buttons
+        devices_button = ttk.Button(
+            frame, text="Get Devices", command=device_action
+        )
         button_frame = ttk.Frame(frame)
         save_button = ttk.Button(
             button_frame, text="Save", command=save_action, state=tk.DISABLED
@@ -495,7 +520,6 @@ class Frontend(object):
         # Check if modified
         client_id_entry.bind("<KeyRelease>", set_modified_cred)
         client_secret_entry.bind("<KeyRelease>", set_modified_cred)
-        device_id_entry.bind("<KeyRelease>", set_modified_cred)
         play_pause_entry.bind("<KeyRelease>", set_modified)
         prev_track_entry.bind("<KeyRelease>", set_modified)
         next_track_entry.bind("<KeyRelease>", set_modified)
@@ -511,33 +535,35 @@ class Frontend(object):
         client_secret_entry.grid(row=2, column=1)
         device_id_label.grid(row=4, column=0, sticky="E")
         device_id_entry.grid(row=4, column=1)
+        
+        devices_button.grid(row=5, column=1)
 
-        separator.grid(row=5, column=0, columnspan=3, sticky="EW", pady=10)
+        separator.grid(row=6, column=0, columnspan=3, sticky="EW", pady=10)
 
-        labels_frame.grid(row=6, column=1, pady=padding_y)
+        labels_frame.grid(row=7, column=1, pady=padding_y)
         modifier_label.grid(row=0, column=1, padx=(10, 50))
         key_label.grid(row=0, column=3, padx=(50, 0))
 
-        play_pause_label.grid(row=7, column=0, sticky="E")
-        play_pause_modifiers.grid(row=7, column=1, sticky="W")
-        prev_track_label.grid(row=8, column=0, sticky="E")
-        prev_track_modifiers.grid(row=8, column=1, sticky="W")
-        next_track_label.grid(row=9, column=0, sticky="E")
-        next_track_modifiers.grid(row=9, column=1, sticky="W")
-        volume_up_label.grid(row=10, column=0, sticky="E")
-        volume_up_modifiers.grid(row=10, column=1, sticky="W")
-        volume_down_label.grid(row=11, column=0, sticky="E")
-        volume_down_modifiers.grid(row=11, column=1, sticky="W")
+        play_pause_label.grid(row=8, column=0, sticky="E")
+        play_pause_modifiers.grid(row=8, column=1, sticky="W")
+        prev_track_label.grid(row=9, column=0, sticky="E")
+        prev_track_modifiers.grid(row=9, column=1, sticky="W")
+        next_track_label.grid(row=10, column=0, sticky="E")
+        next_track_modifiers.grid(row=10, column=1, sticky="W")
+        volume_up_label.grid(row=11, column=0, sticky="E")
+        volume_up_modifiers.grid(row=11, column=1, sticky="W")
+        volume_down_label.grid(row=12, column=0, sticky="E")
+        volume_down_modifiers.grid(row=12, column=1, sticky="W")
 
-        button_frame.grid(row=12, column=0, columnspan=2, pady=10)
+        button_frame.grid(row=13, column=0, columnspan=2, pady=10)
         save_button.pack(side="left", padx=(0, 5))
         start_button.pack(side="left", padx=(5, 0))
 
-        checkbox_frame.grid(row=13, column=0, columnspan=2, pady=10)
+        checkbox_frame.grid(row=14, column=0, columnspan=2, pady=10)
         startup_checkbox.pack(side="left", padx=(0, 5))
         minimize_checkbox.pack(side="left", padx=(5, 0))
 
-        source_frame.grid(row=14, column=0, columnspan=2, pady=10)
+        source_frame.grid(row=15, column=0, columnspan=2, pady=10)
         source_link.pack(side="left")
 
         # Center window and focus
@@ -545,6 +571,9 @@ class Frontend(object):
         root.deiconify()
         root.update()
         root.focus_force()
+        
+        if self.app.TokenExists():
+            update_devices()
 
         # Run the GUI
         root.mainloop()
