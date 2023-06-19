@@ -46,6 +46,7 @@ The app requires the user to input three fields:
 ### Device ID
 1. To obtain your `Device ID`, press the button "Get Devices" in the app once your `Client ID` and `Client Secret` are filled in.
 1. Click on the drop-down arrow and select your device of choice.
+    - Note: if you don't see your device listed, open the Spotify app on that device and play something, then check again.
 
 Once you're done, click on `Save` within the app to save your settings. Click on `Start & Close` to close the window and start listening for your hotkeys!
 
