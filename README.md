@@ -55,7 +55,7 @@ You can open the settings again by right-clicking on the app's system tray icon.
 ### How Do I Update The App?
 You can just replace your existing file(s) with the updated version. The config files are still saved within the `.../AppData/Roaming/.beatbind` folder, so your settings won't be lost.
 
-Note: If your app keeps crashing after an update, you'll have to delete the `.../AppData/Roaming/.beatbind` folder and reinput your settings.
+Note: If your app keeps crashing after an update, you'll have to delete the `.../AppData/Roaming/.beatbind` folder and reinput your settings. See [Where Is My Information Saved?](#where-is-my-information-saved).
 ### How Do I Disable Certain Hotkeys?
 1. Uncheck all of the `Modifiers` checkboxes.
 2. In the `Key` field, press "Backspace" or "Delete" on your keyboard to clear the field.
