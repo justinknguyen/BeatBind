@@ -52,6 +52,11 @@ Once you're done, click on `Save` within the app to save your settings. Click on
 
 You can open the settings again by right-clicking on the app's system tray icon.
 ## FAQ
+- [How Do I Update The App?](#how-do-i-update-the-app)
+- [How Do I Disable Certain Hotkeys?](#how-do-i-disable-certain-hotkeys)
+- [Where Is My Information Saved?](#where-is-my-information-saved)
+- [What Information Is Saved?](#what-information-is-saved)
+- [Why Isn't The App Starting on Startup?](#why-isnt-the-app-starting-on-startup)
 ### How Do I Update The App?
 You can just replace your existing file(s) with the updated version. The config files are still saved within the `.../AppData/Roaming/.beatbind` folder, so your settings won't be lost.
 
