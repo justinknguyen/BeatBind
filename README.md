@@ -80,3 +80,6 @@ There are two files stored within the `.../AppData/Roaming/.beatbind` folder:
 - `.cache`, which contains your token information to communicate with the Spotify app.
 ### Why Isn't The App Starting on Startup?
 You likely changed the location of the app file. The registry key used to start the app on Windows startup needs to be updated to the new `.exe` path. Starting the app again will update the path in the registry key and should resolve the issue.
+
+## Donate
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://paypal.me/OrbitUT?country.x=CA&locale.x=en_US)
