@@ -6,6 +6,7 @@ path = print(os.path.dirname(ttkthemes.__file__))
 
 '''
 Nuitka Build Command:
+(replace '--onefile' with '--standalone' to create an .exe that depends on other files)
 
 python -m nuitka ^
 --onefile ^
