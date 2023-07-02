@@ -286,9 +286,9 @@ class Backend(object):
             data = response.json()
             volume = data["device"]["volume_percent"]
             if (volume + 5) > 100:
-                return 95
+                return 100
             elif (volume - 5) < 0:
-                return 5
+                return 0
             return volume
         except Exception as e:
             print(f"Error: {e}")
