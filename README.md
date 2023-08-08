@@ -21,6 +21,8 @@ You can build the `.exe` yourself with the provided build command in the `build.
 - Windows 10/11
 - Spotify Premium
 - Spotify on your device of choice
+## Known Issues
+- There are rare cases where hotkeys stop registering on system wake up from sleep. You must press `Start & Close` button again to fix the listener and try to disable Windows Fast Startup. If the bug keeps occurring after disabling Fast Startup, please create an Issue ticket.
 ## Instructions
 The app requires the user to input three fields: 
 - [Client ID](#client-id-and-client-secret)
