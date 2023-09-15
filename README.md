@@ -10,7 +10,7 @@ Are you tired of constantly switching back and forth between your game and Spoti
 This background Python Windows application utilizes the [global_hotkeys](https://github.com/btsdev/global_hotkeys) module to listen for basic hotkeys, allowing users to easily control Spotify without the window focused. The app leverages the power of [Spotify's Web API](https://developer.spotify.com/documentation/web-api) through the use of [Spotipy](https://github.com/spotipy-dev/spotipy), providing seamless integration between the app and the music streaming platform.
 
 <p align="center">
-    <img src="./images/view.png" width="40%" height="40%"> <br>
+    <img src="./images/view.png" width="40%" height="40%"> <br> <br>
     <a href="https://paypal.me/OrbitUT?country.x=CA&locale.x=en_US">
         <img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee">
     </a>
