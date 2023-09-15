@@ -10,8 +10,15 @@ Are you tired of constantly switching back and forth between your game and Spoti
 This background Python Windows application utilizes the [global_hotkeys](https://github.com/btsdev/global_hotkeys) module to listen for basic hotkeys, allowing users to easily control Spotify without the window focused. The app leverages the power of [Spotify's Web API](https://developer.spotify.com/documentation/web-api) through the use of [Spotipy](https://github.com/spotipy-dev/spotipy), providing seamless integration between the app and the music streaming platform.
 
 <p align="center">
-<img src="./images/view.png" width="40%" height="40%">
+    <img src="./images/view.png" width="40%" height="40%"> <br>
+    <a href="https://paypal.me/OrbitUT?country.x=CA&locale.x=en_US">
+        <img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee">
+    </a>
 </p>
+
+
+
+
 
 ## Download
 Download the latest version from the [Releases](https://github.com/justinknguyen/Spotify-Global-Hotkeys/releases) page.
@@ -83,6 +90,3 @@ There are two files stored within the `.../AppData/Roaming/.beatbind` folder:
 - `.cache`, which contains your token information to communicate with the Spotify app.
 ### Why Isn't The App Starting on Startup?
 You likely changed the location of the app file. The registry key used to start the app on Windows startup needs to be updated to the new `.exe` path. Starting the app again will update the path in the registry key and should resolve the issue.
-
-## Donate
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://paypal.me/OrbitUT?country.x=CA&locale.x=en_US)
