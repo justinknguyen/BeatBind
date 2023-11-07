@@ -16,9 +16,7 @@ This background Python Windows application utilizes the [global_hotkeys](https:/
     </a>
 </p>
 
-
-
-
+Please see [FAQ](#faq) for more information or if you encounter any issues. If your issue isn't listed, please create an Issue ticket.
 
 ## Download
 Download the latest version from the [Releases](https://github.com/justinknguyen/Spotify-Global-Hotkeys/releases) page.
@@ -43,12 +41,12 @@ The app requires the user to input three fields:
     ```
 1. Click on the checkbox and then "Save".
     <p align="center">
-    <img src="./images/create-app.png" width="100%" height="100%">
+    <img src="./images/create-app.png" width="70%" height="70%">
     </p>
 1. Click on the "Settings" button to the top-right.
 1. Copy your `Client ID` and `Client Secret` (press "View client secret") and paste it into the app.
     <p align="center">
-    <img src="./images/id-and-secret.png" width="100%" height="100%">
+    <img src="./images/id-and-secret.png" width="70%" height="70%">
     </p>
 ### Device ID
 1. To obtain your `Device ID`, press the button "Get Devices" in the app once your `Client ID` and `Client Secret` are filled in.
@@ -85,7 +83,7 @@ Note: If your app keeps crashing after an update, you'll have to delete the `...
 1. Uncheck all of the `Modifiers` checkboxes.
 2. In the `Key` field, press "Backspace" or "Delete" on your keyboard to clear the field.
     <p>
-    <img src="./images/unbind.png" width="70%" height="70%">
+    <img src="./images/unbind.png" width="40%" height="40%">
     </p>
 ### Why Isn't The App Starting on Startup?
 This happens if the location of the app file was changed. The registry key used to start the app on Windows startup needs to be updated to the new `.exe` path. Starting the app again will update the path in the registry key and should resolve the issue.
