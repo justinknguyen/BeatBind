@@ -28,9 +28,6 @@ You can build the `.exe` yourself with the provided build command in the `build.
 - Windows 10/11
 - Spotify Premium
 - Spotify on your device of choice
-## Known Issue
-- Bug: there are rare cases where hotkeys stop registering on system wake up from sleep. You must press `Start & Close` button again to fix the listener.
-    - Solution: try to disable Windows Fast Startup. If the bug keeps occurring after disabling Fast Startup, please create an Issue ticket.
 ## Instructions
 The app requires the user to input three fields: 
 - [Client ID](#client-id-and-client-secret)
@@ -68,6 +65,7 @@ You can open the settings again by right-clicking on the app's system tray icon.
 - [How Do I Disable Certain Hotkeys?](#how-do-i-disable-certain-hotkeys)
 - [Why Isn't The App Starting on Startup?](#why-isnt-the-app-starting-on-startup)
 - [Why Is The App Not Starting?](#why-is-the-app-not-starting)
+- [My Hotkeys Stop Registering After Waking From Sleep](#my-hotkeys-stop-registering-after-waking-from-sleep)
 ### Where Is My Information Saved?
 1. Press `Win+R` to bring up the "Run" menu, or type in "Run" within your Windows search bar.
 1. Enter the following in the "Open" input field:
@@ -82,7 +80,7 @@ There are two files stored within the `.../AppData/Roaming/.beatbind` folder:
 ### How Do I Update The App?
 You can just replace your existing file(s) with the updated version. The config files are still saved within the `.../AppData/Roaming/.beatbind` folder, so your settings won't be lost.
 
-Note: If your app keeps crashing after an update, you'll have to delete the `.../AppData/Roaming/.beatbind` folder and reinput your settings. See [Where Is My Information Saved?](#where-is-my-information-saved).
+Note: If your app keeps crashing after an update, you'll have to delete the `.../AppData/Roaming/.beatbind` folder and reinput your settings.
 ### How Do I Disable Certain Hotkeys?
 1. Uncheck all of the `Modifiers` checkboxes.
 2. In the `Key` field, press "Backspace" or "Delete" on your keyboard to clear the field.
@@ -90,8 +88,10 @@ Note: If your app keeps crashing after an update, you'll have to delete the `...
     <img src="./images/unbind.png" width="70%" height="70%">
     </p>
 ### Why Isn't The App Starting on Startup?
-You likely changed the location of the app file. The registry key used to start the app on Windows startup needs to be updated to the new `.exe` path. Starting the app again will update the path in the registry key and should resolve the issue.
+This happens if the location of the app file was changed. The registry key used to start the app on Windows startup needs to be updated to the new `.exe` path. Starting the app again will update the path in the registry key and should resolve the issue.
 ### Why Is The App Not Starting?
 Windows could be flagging it as a virus. Downloading the `.zip` folder instead or adding the `.exe` file to allowed files under Windows Security could fix your issue.
 
 If that still doesn’t work, check to see if you have the following folder, and then delete it: `.../AppData/Roaming/.beatbind`.
+### My Hotkeys Stop Registering After Waking From Sleep.
+There are rare cases where hotkeys stop registering on system wake up from sleep, and pressing `Start & Close` button again fixes the listener. For a more permanent fix, try disabling Windows Fast Startup. If the bug keeps occurring after disabling Fast Startup, please create an Issue ticket.
