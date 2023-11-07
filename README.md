@@ -88,8 +88,8 @@ Note: If your app keeps crashing after an update, you'll have to delete the `...
 ### Why Isn't The App Starting on Startup?
 This happens if the location of the app file was changed. The registry key used to start the app on Windows startup needs to be updated to the new `.exe` path. Starting the app again will update the path in the registry key and should resolve the issue.
 ### Why Is The App Not Starting?
-Windows could be flagging it as a virus. Downloading the `.zip` folder instead or adding the `.exe` file to allowed files under Windows Security could fix your issue.
-
-If that still doesn’t work, check to see if you have the following folder, and then delete it: `.../AppData/Roaming/.beatbind`.
+- If you had "Start minimized" checked, you can find the app's icon hidden within your system tray and then right-click on it to find the settings menu.
+- Windows could be flagging it as a virus. Downloading the `.zip` folder instead or adding the `.exe` file to allowed files under Windows Security could fix your issue.
+- Check to see if you have the following folder, and then delete it: `.../AppData/Roaming/.beatbind`.
 ### My Hotkeys Stop Registering After Waking From Sleep
 There are rare cases where hotkeys stop registering on system wake up from sleep, and pressing `Start & Close` button again fixes the listener. For a more permanent fix, try disabling Windows Fast Startup. If the bug keeps occurring after disabling Fast Startup, please create an Issue ticket.
