@@ -40,12 +40,12 @@ The app requires the user to input three fields:
     http://localhost:8888/callback
     ```
 1. Click on the checkbox and then "Save".
-    <p align="center">
+    <p>
     <img src="./images/create-app.png" width="70%" height="70%">
     </p>
 1. Click on the "Settings" button to the top-right.
 1. Copy your `Client ID` and `Client Secret` (press "View client secret") and paste it into the app.
-    <p align="center">
+    <p>
     <img src="./images/id-and-secret.png" width="70%" height="70%">
     </p>
 ### Device ID
