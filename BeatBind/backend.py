@@ -36,6 +36,7 @@ class Backend(object):
         # Spotify credentials
         self.client_id = None
         self.client_secret = None
+        self.port = None
         self.device_id = None
 
         # Global hotkeys
@@ -52,6 +53,7 @@ class Backend(object):
         self.volume_up_hotkey = None
         self.volume_down_hotkey = None
         self.last_volume = None
+        self.muted_volume = None
 
         # Startup and minimize
         self.startup_var = None
@@ -91,7 +93,7 @@ class Backend(object):
                     scope="user-modify-playback-state,user-read-playback-state",
                     client_id=config.get("client_id", ""),
                     client_secret=config.get("client_secret", ""),
-                    redirect_uri="http://localhost:8888/callback",
+                    redirect_uri=f"http://localhost:{self.port}/callback",
                     cache_path=cache_file,
                 )
             self.RefreshToken()
@@ -120,7 +122,7 @@ class Backend(object):
                         scope="user-modify-playback-state,user-read-playback-state",
                         client_id=config.get("client_id", ""),
                         client_secret=config.get("client_secret", ""),
-                        redirect_uri="http://localhost:8888/callback",
+                        redirect_uri=f"http://localhost:{self.port}/callback",
                         cache_path=cache_file,
                     )
                 self.RefreshToken()
@@ -172,7 +174,7 @@ class Backend(object):
                 scope="user-modify-playback-state,user-read-playback-state",
                 client_id=self.client_id,
                 client_secret=self.client_secret,
-                redirect_uri="http://localhost:8888/callback",
+                redirect_uri=f"http://localhost:{self.port}/callback",
                 cache_path=cache_file,
             )
         except SpotifyOauthError as e:
@@ -266,6 +268,10 @@ class Backend(object):
 
         headers = {"Authorization": "Bearer " + self.token}
         self.last_volume = self.GetCurrentVolume()
+        if (self.last_volume - 5) < 0:
+            self.last_volume = 5
+        elif (self.last_volume + 5) > 100:
+            self.last_volume = 95
         url = f"https://api.spotify.com/v1/me/player/volume?volume_percent={self.last_volume + amount}&device_id={self.device_id}"
         try:
             response = requests.put(url, headers=headers, timeout=5)
@@ -274,6 +280,23 @@ class Backend(object):
                 print("Volume up")
             else:
                 print("Volume down")
+        except Exception as e:
+            print(f"Error: {e}")
+            
+    def Mute(self):
+        self.CheckTokenExpiry()
+
+        headers = {"Authorization": "Bearer " + self.token}
+        if self.GetCurrentVolume() != 0:
+            self.muted_volume = self.GetCurrentVolume()
+            url = f"https://api.spotify.com/v1/me/player/volume?volume_percent=0&device_id={self.device_id}"
+            print("Muting")
+        else:
+            url = f"https://api.spotify.com/v1/me/player/volume?volume_percent={self.muted_volume}&device_id={self.device_id}"
+            print("Unmuting")
+        try:
+            response = requests.put(url, headers=headers, timeout=5)
+            response.raise_for_status()
         except Exception as e:
             print(f"Error: {e}")
 
@@ -285,10 +308,6 @@ class Backend(object):
             response.raise_for_status()
             data = response.json()
             volume = data["device"]["volume_percent"]
-            if (volume + 5) > 100:
-                return 95
-            elif (volume - 5) < 0:
-                return 5
             return volume
         except Exception as e:
             print(f"Error: {e}")
@@ -383,6 +402,9 @@ class Backend(object):
 
         def volume_down():
             self.AdjustVolume(-5)
+            
+        def mute():
+            self.Mute()
 
         # Create the bindings list, removing any empty hotkeys
         bindings = []
@@ -392,6 +414,7 @@ class Backend(object):
             ("next_track", next_track),
             ("volume_up", volume_up),
             ("volume_down", volume_down),
+            ("mute", mute),
         ]:
             hotkey = self.hotkeys[hotkey_name].split("+")
             if all(hotkey):
@@ -411,6 +434,7 @@ class Backend(object):
             "minimize": self.minimize_var.get(),
             "client_id": self.client_id,
             "client_secret": self.client_secret,
+            "port": self.port,
             "device_id": self.device_id,
             "hotkeys": self.hotkeys,
         }

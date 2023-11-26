@@ -36,6 +36,7 @@ def main():
             for key, default_value in [
                 ("client_id", ""),
                 ("client_secret", ""),
+                ("port", ""),
                 ("device_id", ""),
             ]:
                 setattr(backend, key, config.get(key, default_value))
@@ -45,6 +46,7 @@ def main():
                 ("next_track", "control+alt+shift+right"),
                 ("volume_up", "control+alt+shift+up"),
                 ("volume_down", "control+alt+shift+down"),
+                ("mute", "control+alt+shift+space"),
             ]:
                 backend.hotkeys[key] = hotkeys.get(key, default_value)
 

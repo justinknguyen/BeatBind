@@ -122,6 +122,7 @@ class Frontend(object):
             self.app.SetStartup(self.app.startup_var.get())
             self.app.client_id = client_id_entry.get()
             self.app.client_secret = client_secret_entry.get()
+            self.app.port = port_entry.get()
             self.app.device_id = device_id_entry.get()
             self.app.hotkeys["play/pause"] = update_hotkey_entry(
                 play_pause_entry,
@@ -152,6 +153,12 @@ class Frontend(object):
                 ctrl_volume_down_var,
                 alt_volume_down_var,
                 shift_volume_down_var,
+            )
+            self.app.hotkeys["mute"] = update_hotkey_entry(
+                mute_entry,
+                ctrl_mute_var,
+                alt_mute_var,
+                shift_mute_var,
             )
 
         def create_modifiers(frame, ctrl_var, alt_var, shift_var):
@@ -193,6 +200,7 @@ class Frontend(object):
             if (
                 client_id_entry.get() == ""
                 or client_secret_entry.get() == ""
+                or port_entry.get() == ""
                 or device_id_entry.get() == ""
             ):
                 self.app.CreateToken()
@@ -211,7 +219,7 @@ class Frontend(object):
         # Create the GUI
         root = ThemedTk(theme="breeze")
         root.withdraw()
-        root.title("BeatBind (v1.1.0)")
+        root.title("BeatBind (v1.2.0)")
         root.iconbitmap(self.icon_path)
         root.focus_force()
 
@@ -225,12 +233,15 @@ class Frontend(object):
         # Labels
         client_id_label = ttk.Label(frame, text="Client ID:")
         client_secret_label = ttk.Label(frame, text="Client Secret:")
+        port_label = ttk.Label(frame, text="Port:")
         device_id_label = ttk.Label(frame, text="Device ID:")
+        
         play_pause_label = ttk.Label(frame, text="Play/Pause:")
         prev_track_label = ttk.Label(frame, text="Previous Track:")
         next_track_label = ttk.Label(frame, text="Next Track:")
         volume_up_label = ttk.Label(frame, text="Volume Up:")
         volume_down_label = ttk.Label(frame, text="Volume Down:")
+        mute_label = ttk.Label(frame, text="Mute:")
         labels_frame = ttk.Frame(frame)
         modifier_label = ttk.Label(labels_frame, text="Modifiers")
         key_label = ttk.Label(labels_frame, text="Key")
@@ -251,6 +262,7 @@ class Frontend(object):
         # Entries
         client_id_entry = ttk.Entry(frame, width=42)
         client_secret_entry = ttk.Entry(frame, width=42)
+        port_entry = ttk.Entry(frame, width=42)
         device_id_entry = ttk.Combobox(frame, width=40)
         
         def update_devices():
@@ -413,23 +425,50 @@ class Frontend(object):
         alt_volume_down_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
         shift_volume_down_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
         volume_down_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
+        
+        ctrl_mute_var = tk.BooleanVar()
+        alt_mute_var = tk.BooleanVar()
+        shift_mute_var = tk.BooleanVar()
+        mute_modifiers = ttk.Frame(frame)
+        mute_entry = ttk.Entry(
+            mute_modifiers, width=width, justify="center"
+        )
+        mute_entry.bind(
+            "<FocusIn>", lambda event: listen_for_key_events(mute_entry)
+        )
+        (
+            ctrl_mute_checkbox,
+            alt_mute_checkbox,
+            shift_mute_checkbox,
+        ) = create_modifiers(
+            mute_modifiers,
+            ctrl_mute_var,
+            alt_mute_var,
+            shift_mute_var,
+        )
+        ctrl_mute_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
+        alt_mute_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
+        shift_mute_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
+        mute_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
         # Autofill entries
-        entries = [client_id_entry, client_secret_entry, device_id_entry]
+        entries = [client_id_entry, client_secret_entry, port_entry, device_id_entry]
         hotkey_entries = [
             play_pause_entry,
             prev_track_entry,
             next_track_entry,
             volume_up_entry,
             volume_down_entry,
+            mute_entry,
         ]
-        keys = ["client_id", "client_secret", "device_id"]
+        keys = ["client_id", "client_secret", "port", "device_id"]
         hotkey_keys = [
             "play/pause",
             "prev_track",
             "next_track",
             "volume_up",
             "volume_down",
+            "mute",
         ]
         hotkey_defaults = [
             "control+alt+shift+p",
@@ -437,6 +476,7 @@ class Frontend(object):
             "control+alt+shift+right",
             "control+alt+shift+up",
             "control+alt+shift+down",
+            "control+alt+shift+space",
         ]
 
         ctrl_vars = [
@@ -445,6 +485,7 @@ class Frontend(object):
             ctrl_next_track_var,
             ctrl_volume_up_var,
             ctrl_volume_down_var,
+            ctrl_mute_var,
         ]
         alt_vars = [
             alt_play_pause_var,
@@ -452,6 +493,7 @@ class Frontend(object):
             alt_next_track_var,
             alt_volume_up_var,
             alt_volume_down_var,
+            alt_mute_var,
         ]
         shift_vars = [
             shift_play_pause_var,
@@ -459,6 +501,7 @@ class Frontend(object):
             shift_next_track_var,
             shift_volume_up_var,
             shift_volume_down_var,
+            shift_mute_var,
         ]
 
         if os.path.exists(self.app.config_path):
@@ -520,11 +563,13 @@ class Frontend(object):
         # Check if modified
         client_id_entry.bind("<KeyRelease>", set_modified_cred)
         client_secret_entry.bind("<KeyRelease>", set_modified_cred)
+        port_entry.bind("<KeyRelease>", set_modified_cred)
         play_pause_entry.bind("<KeyRelease>", set_modified)
         prev_track_entry.bind("<KeyRelease>", set_modified)
         next_track_entry.bind("<KeyRelease>", set_modified)
         volume_up_entry.bind("<KeyRelease>", set_modified)
         volume_down_entry.bind("<KeyRelease>", set_modified)
+        mute_entry.bind("<KeyRelease>", set_modified)
         startup_checkbox.config(command=set_modified)
         minimize_checkbox.config(command=set_modified)
 
@@ -533,6 +578,8 @@ class Frontend(object):
         client_id_entry.grid(row=1, column=1)
         client_secret_label.grid(row=2, column=0, sticky="E")
         client_secret_entry.grid(row=2, column=1)
+        port_label.grid(row=3, column=0, sticky="E")
+        port_entry.grid(row=3, column=1)
         device_id_label.grid(row=4, column=0, sticky="E")
         device_id_entry.grid(row=4, column=1)
         
@@ -554,16 +601,18 @@ class Frontend(object):
         volume_up_modifiers.grid(row=11, column=1, sticky="W")
         volume_down_label.grid(row=12, column=0, sticky="E")
         volume_down_modifiers.grid(row=12, column=1, sticky="W")
+        mute_label.grid(row=13, column=0, sticky="E")
+        mute_modifiers.grid(row=13, column=1, sticky="W")
 
-        button_frame.grid(row=13, column=0, columnspan=2, pady=10)
+        button_frame.grid(row=14, column=0, columnspan=2, pady=10)
         save_button.pack(side="left", padx=(0, 5))
         start_button.pack(side="left", padx=(5, 0))
 
-        checkbox_frame.grid(row=14, column=0, columnspan=2, pady=10)
+        checkbox_frame.grid(row=15, column=0, columnspan=2, pady=10)
         startup_checkbox.pack(side="left", padx=(0, 5))
         minimize_checkbox.pack(side="left", padx=(5, 0))
 
-        source_frame.grid(row=15, column=0, columnspan=2, pady=10)
+        source_frame.grid(row=16, column=0, columnspan=2, pady=10)
         source_link.pack(side="left")
 
         # Center window and focus
