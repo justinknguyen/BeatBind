@@ -28,14 +28,17 @@ You can build the `.exe` yourself with the provided build command in the `build.
 - Spotify on your device of choice
 ## Instructions
 The app requires the user to input three fields: 
-- [Client ID](#client-id-and-client-secret)
-- [Client Secret](#client-id-and-client-secret)
+- [Client ID](#client-id-client-secret-and-port)
+- [Client Secret](#client-id-client-secret-and-port)
+- [Port](#client-id-client-secret-and-port)
 - [Device ID](#device-id)
-### Client ID and Client Secret
+### Client ID, Client Secret, and Port
 1. To obtain the `Client ID` and `Client Secret`, head to the following link [Spotify for Developers](https://developer.spotify.com/).
 1. Sign-in and click on your profile in the top-right corner, then click on "Dashboard".
 1. Click on the "Create app" button to the right.
-1. Enter any "App name" and "App description" you want. Then enter the following for the "Redirect URI":
+1. Enter any "App name" and "App description" you want.
+1. In the app, populate the `Port` field with a port (e.g., 8888, 8000, 8080).
+1. Back on the website, enter the following into "Redirect URI" with the port you chose, in this example I use port 8888:
     ```
     http://localhost:8888/callback
     ```
@@ -78,7 +81,10 @@ There are two files stored within the `.../AppData/Roaming/.beatbind` folder:
 ### How Do I Update The App?
 You can just replace your existing file(s) with the updated version. The config files are still saved within the `.../AppData/Roaming/.beatbind` folder, so your settings won't be lost.
 
-Note: If your app keeps crashing after an update, you'll have to delete the `.../AppData/Roaming/.beatbind` folder and reinput your settings.
+Note: If your app keeps crashing after an update, you'll have to delete the `.../AppData/Roaming/.beatbind` folder and reinput your settings, or update your config.json file ([Where Is My Information Saved?](#where-is-my-information-saved)). Here is the current format your config should look like:
+```
+{"startup": true, "minimize": true, "client_id": "{your client id}", "client_secret": "{your client secret}", "port": "{your port e.g., 8888}", "device_id": "{your device id}", "hotkeys": {"play/pause": "control+alt+shift+p", "prev_track": "control+alt+shift+left", "next_track": "control+alt+shift+right", "volume_up": "control+alt+shift+up", "volume_down": "control+alt+shift+down", "mute": "control+alt+shift+space"}}
+```
 ### How Do I Disable Certain Hotkeys?
 1. Uncheck all of the `Modifiers` checkboxes.
 2. In the `Key` field, press "Backspace" or "Delete" on your keyboard to clear the field.
