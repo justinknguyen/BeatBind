@@ -38,7 +38,7 @@ The app requires the user to input three fields:
 1. Click on the "Create app" button to the right.
 1. Enter any "App name" and "App description" you want.
 1. (v1.2.0) In the app, populate the `Port` field with a port (e.g., 8888, 8000, 8080).
-1. Back on the website, enter the following into "Redirect URI" with the port you chose, in this example I use port 8888:
+1. Back on the website, enter the following into "Redirect URI" with the port you chose. If you are on v1.1.0 and below, use port 8888:
     ```
     http://localhost:8888/callback
     ```
