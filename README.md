@@ -30,14 +30,14 @@ You can build the `.exe` yourself with the provided build command in the `build.
 The app requires the user to input three fields: 
 - [Client ID](#client-id-client-secret-and-port)
 - [Client Secret](#client-id-client-secret-and-port)
-- [Port](#client-id-client-secret-and-port)
+- [Port](#client-id-client-secret-and-port) (v1.2.0)
 - [Device ID](#device-id)
 ### Client ID, Client Secret, and Port
 1. To obtain the `Client ID` and `Client Secret`, head to the following link [Spotify for Developers](https://developer.spotify.com/).
 1. Sign-in and click on your profile in the top-right corner, then click on "Dashboard".
 1. Click on the "Create app" button to the right.
 1. Enter any "App name" and "App description" you want.
-1. In the app, populate the `Port` field with a port (e.g., 8888, 8000, 8080).
+1. (v1.2.0) In the app, populate the `Port` field with a port (e.g., 8888, 8000, 8080).
 1. Back on the website, enter the following into "Redirect URI" with the port you chose, in this example I use port 8888:
     ```
     http://localhost:8888/callback
