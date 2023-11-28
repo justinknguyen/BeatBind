@@ -81,7 +81,7 @@ There are two files stored within the `.../AppData/Roaming/.beatbind` folder:
 ### How Do I Update The App?
 You can just replace your existing file(s) with the updated version. The config files are still saved within the `.../AppData/Roaming/.beatbind` folder, so your settings won't be lost.
 
-Note: If your app keeps crashing after an update, you'll have to delete the `.../AppData/Roaming/.beatbind` folder and reinput your settings, or update your config.json file ([Where Is My Information Saved?](#where-is-my-information-saved)). Here is the current format your config should look like:
+Note: If your app keeps crashing after an update, you'll have to delete the `.../AppData/Roaming/.beatbind` folder and reinput your settings, or update your config.json file ([Where Is My Information Saved?](#where-is-my-information-saved)). Here is the current format your config should look like for v1.2.0+:
 ```
 {"startup": true, "minimize": true, "client_id": "{your client id}", "client_secret": "{your client secret}", "port": "{your port e.g., 8888}", "device_id": "{your device id}", "hotkeys": {"play/pause": "control+alt+shift+p", "prev_track": "control+alt+shift+left", "next_track": "control+alt+shift+right", "volume_up": "control+alt+shift+up", "volume_down": "control+alt+shift+down", "mute": "control+alt+shift+space"}}
 ```
