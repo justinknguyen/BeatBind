@@ -30,7 +30,7 @@ You can build the `.exe` yourself with the provided build command in the `build.
 The app requires the user to input three fields: 
 - [Client ID](#client-id-client-secret-and-port)
 - [Client Secret](#client-id-client-secret-and-port)
-- [Port](#client-id-client-secret-and-port) (v1.2.0+)
+- [Port](#client-id-client-secret-and-port) (only for v1.2.0+)
 - [Device ID](#device-id)
 ### Client ID, Client Secret, and Port
 1. To obtain the `Client ID` and `Client Secret`, head to the following link [Spotify for Developers](https://developer.spotify.com/).
