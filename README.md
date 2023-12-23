@@ -18,7 +18,12 @@ This background Python Windows application utilizes the [global_hotkeys](https:/
 
 Please see [FAQ](#faq) for more information or if you encounter any issues. If your issue isn't listed, please create an Issue ticket.
 
-Plans to refactor to C# soon!
+## Future Plans
+Plans to refactor to C# soon! Also, will solve the following problems:
+- Modularity
+- Extensibility
+- Update friendly
+- No more false virus flags
 
 ## Download
 Download the latest version from the [Releases](https://github.com/justinknguyen/Spotify-Global-Hotkeys/releases) page.
