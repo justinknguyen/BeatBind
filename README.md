@@ -19,7 +19,7 @@ This background Python Windows application utilizes the [global_hotkeys](https:/
 Please see [FAQ](#faq) for more information or if you encounter any issues. If your issue isn't listed, please create an Issue ticket.
 
 ## Future Plans
-Plans to refactor to C# soon! Also, will solve the following problems:
+Plans to refactor to C# soon! It will solve the following problems:
 - Modularity
 - Extensibility
 - Update friendly
