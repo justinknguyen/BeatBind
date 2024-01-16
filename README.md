@@ -18,6 +18,14 @@ This background Python Windows application utilizes the [global_hotkeys](https:/
 
 Please see [FAQ](#faq) for more information or if you encounter any issues. If your issue isn't listed, please create an Issue ticket.
 
+## Table of Contents
+- [Future Plans](#future-plans)
+- [Download](#download)
+- [Requirements](#requirements)
+- [Instructions](#instructions)
+- [Troubleshooting](#troubleshooting)
+- [FAQ](#faq)
+
 ## Future Plans
 Plans to refactor to C# soon! It will solve the following problems:
 - Modularity
@@ -39,7 +47,7 @@ You can build the `.exe` yourself with the provided build command in the `build.
 The app requires the user to input three fields: 
 - [Client ID](#client-id-client-secret-and-port)
 - [Client Secret](#client-id-client-secret-and-port)
-- [Port](#client-id-client-secret-and-port) (only for v1.2.0+)
+- [Port](#client-id-client-secret-and-port)
 - [Device ID](#device-id)
   
 ### Client ID, Client Secret, and Port
@@ -47,8 +55,9 @@ The app requires the user to input three fields:
 1. Sign-in and click on your profile in the top-right corner, then click on "Dashboard".
 1. Click on the "Create app" button to the right.
 1. Enter any "App name" and "App description" you want.
-1. (v1.2.0+) In the app, populate the `Port` field with a port (e.g., 8888, 8000, 8080).
-1. Back on the website, enter the following into "Redirect URI" with the port you chose. If you are on v1.1.0 and below, use port 8888:
+1. In the app, populate the `Port` field with a port (e.g., 8888, 8000, 8080).
+    - There's a possibility that the port you chose is being used on your network, if so, choose a different port.
+1. Back on the website, enter the following into "Redirect URI" with the port you chose (e.g., 8888):
     ```
     http://localhost:8888/callback
     ```
@@ -70,6 +79,13 @@ The app requires the user to input three fields:
 Once you're done, click on `Save` within the app to save your settings. Click on `Start & Close` to close the window and start listening for your hotkeys!
 
 You can open the settings again by right-clicking on the app's system tray icon.
+
+## Troubleshooting
+Please go through the below steps before creating an Issue ticket.
+1. Make sure your Client Id and Secret is correct and matches what is displayed in the Spotify developer site.
+1. See if you're able to see the app within the system tray after pressing `Start & Close`.
+1. Check if you have the Spotify desktop app installed, and make sure the Device Id selected is the correct one.
+1. After confirming the above and it still doesn’t work, I think it could be a port problem and you’re already using the selected port on your network. Choose a different port in the app and also change the Redirect URI in the Spotify developer site.
 
 ## FAQ
 - [Where Is My Information Saved?](#where-is-my-information-saved)
