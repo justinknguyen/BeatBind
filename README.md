@@ -85,7 +85,7 @@ Please go through the below steps before creating an Issue ticket.
 1. Make sure your Client ID and Secret is correct and matches what is displayed in the Spotify developer site.
 1. Check if you have the Spotify desktop app installed, and make sure the Device ID selected is the correct one.
 1. Check if you're able to see the app within the system tray after pressing `Start & Close`. If your app is not starting, please see [Why Is The App Not Starting?](#why-is-the-app-not-starting)
-1. After confirming the above and it still doesn’t work, I think it could be a port problem and you’re already using the selected port on your network. Choose a different port in the app and also change the Redirect URI in the Spotify developer site.
+1. After confirming the above and it still doesn’t work, it is likely a port problem and you’re already using the selected port on your network. Choose a different port in the app, and also change the Redirect URI set in the Spotify developer site.
 
 ## FAQ
 - [Where Is My Information Saved?](#where-is-my-information-saved)
