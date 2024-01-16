@@ -44,7 +44,7 @@ You can build the `.exe` yourself with the provided build command in the `build.
 - Spotify on your device of choice
   
 ## Instructions
-The app requires the user to input three fields: 
+The app requires the user to input four fields: 
 - [Client ID](#client-id-client-secret-and-port)
 - [Client Secret](#client-id-client-secret-and-port)
 - [Port](#client-id-client-secret-and-port)
