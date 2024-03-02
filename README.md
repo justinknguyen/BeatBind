@@ -38,7 +38,7 @@ Download the latest version from the [Releases](https://github.com/justinknguyen
 
 The `.exe` file is within the root of the BeatBind folder with the other files and folders. Search or sort by file type to find the `.exe` file.
 
-You can build the `.exe` yourself with the provided build command in the `build.py` file.
+You can build the `.exe` yourself with the provided build command in the [build.py](https://github.com/justinknguyen/BeatBind/blob/main/BeatBind/build.py) file.
 
 ## Requirements
 - Windows 10/11
