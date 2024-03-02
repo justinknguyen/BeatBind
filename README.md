@@ -1,6 +1,6 @@
 # <img src="./BeatBind/icon.ico" width="4%" height="5%"> BeatBind - Spotify Global Hotkeys
 ![build](https://img.shields.io/badge/build-passing-brightgreen)
-[![version](https://img.shields.io/badge/version-1.2.0-blue)](https://github.com/justinknguyen/BeatBind/releases/tag/v1.2.0)
+[![version](https://img.shields.io/badge/version-1.3.0-blue)](https://github.com/justinknguyen/BeatBind/releases/tag/v1.3.0)
 ![python](https://img.shields.io/badge/python-3.10.9-yellow)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/justinknguyen/BeatBind/issues)
 
@@ -34,7 +34,7 @@ Plans to refactor to C# soon! It will solve the following problems:
 - No more false virus flags
 
 ## Download
-Download the latest version from the [Releases](https://github.com/justinknguyen/Spotify-Global-Hotkeys/releases) page.
+Download the latest version from the [Releases](https://github.com/justinknguyen/BeatBind/releases) page.
 
 You can build the `.exe` yourself with the provided build command in the `build.py` file.
 
@@ -82,57 +82,50 @@ You can open the settings again by right-clicking on the app's system tray icon.
 
 ## Troubleshooting
 Please go through the below steps before creating an Issue ticket.
-1. If your app is not starting/opening, please see [Why Is The App Not Starting?](#why-is-the-app-not-starting)
-2. If your app is not starting on Windows startup, please see [Why Isn't The App Starting on Startup?](#why-isnt-the-app-starting-on-startup) and [Not launching on startup. #5](https://github.com/justinknguyen/BeatBind/issues/5)
+1. If your app is not starting/opening, please see [Why Is The App Crashing?](#why-is-the-app-crashing)
+2. If your app is not starting on Windows startup, please see [Why Isn't The App Starting on Windows Startup?](#why-isnt-the-app-starting-on-windows-startup) and [Not launching on startup. #5](https://github.com/justinknguyen/BeatBind/issues/5)
 1. Make sure your Client ID and Secret is correct and matches what is displayed in the Spotify developer site.
-1. Check if you have the Spotify desktop app installed, and make sure the Device ID selected is the correct one.
+1. Check if you have the Spotify app installed, and make sure the Device ID selected is the correct one.
 1. Check if you're able to see the app within the system tray after pressing `Start & Close`.
 1. After confirming the above and it still doesn’t work, it is likely a port problem and you’re already using the selected port on your network. Choose a different port in the app, and also change the Redirect URI set in the Spotify developer site.
 
 ## FAQ
+- [How Do I Disable Certain Hotkeys?](#how-do-i-disable-certain-hotkeys)
 - [Where Is My Information Saved?](#where-is-my-information-saved)
 - [What Information Is Saved?](#what-information-is-saved)
 - [How Do I Update The App?](#how-do-i-update-the-app)
-- [How Do I Disable Certain Hotkeys?](#how-do-i-disable-certain-hotkeys)
-- [Why Isn't The App Starting on Startup?](#why-isnt-the-app-starting-on-startup)
-- [Why Is The App Not Starting?](#why-is-the-app-not-starting)
+- [Why Isn't The App Starting on Windows Startup?](#why-isnt-the-app-starting-on-windows-startup)
+- [Why Is The App Crashing?](#why-is-the-app-crashing)
 - [My Hotkeys Stop Registering After Waking From Sleep](#my-hotkeys-stop-registering-after-waking-from-sleep)
-
-### Where Is My Information Saved?
-1. Press `Win+R` to bring up the "Run" menu, or type in "Run" within your Windows search bar.
-1. Enter the following in the "Open" input field:
-    ```
-    %appdata%
-    ```
-1. Your information is stored locally within the `.../AppData/Roaming/.beatbind` folder. It stores your configuration settings and the token information required to interact with Spotify's Web API.
-   
-### What Information Is Saved?
-There are two files stored within the `.../AppData/Roaming/.beatbind` folder:
-- `config.json`, which contains your Client ID, Secret, Device ID, and your hotkey combinations.
-- `.cache`, which contains your token information to communicate with the Spotify app.
-
-### How Do I Update The App?
-You can just replace your existing file(s) with the updated version. The config files are still saved within the `.../AppData/Roaming/.beatbind` folder, so your settings won't be lost.
-
-Note: If your app keeps crashing after an update, you'll have to delete the `.../AppData/Roaming/.beatbind` folder and reinput your settings, or update your config.json file ([Where Is My Information Saved?](#where-is-my-information-saved)). Here is the current format your config should look like for v1.2.0+:
-```
-{"startup": true, "minimize": true, "client_id": "{your client id}", "client_secret": "{your client secret}", "port": "{your port e.g., 8888}", "device_id": "{your device id}", "hotkeys": {"play/pause": "control+alt+shift+p", "prev_track": "control+alt+shift+left", "next_track": "control+alt+shift+right", "volume_up": "control+alt+shift+up", "volume_down": "control+alt+shift+down", "mute": "control+alt+shift+space"}}
-```
 
 ### How Do I Disable Certain Hotkeys?
 1. Uncheck all of the `Modifiers` checkboxes.
-2. In the `Key` field, press "Backspace" or "Delete" on your keyboard to clear the field.
+1. In the `Key` field, press "Backspace" or "Delete" on your keyboard to clear the field.
     <p>
     <img src="./images/unbind.png" width="40%" height="40%">
     </p>
 
-### Why Isn't The App Starting on Startup?
-This happens if the location of the app file was changed. The registry key used to start the app on Windows startup needs to be updated to the new `.exe` path. Starting the app again will update the path in the registry key and should resolve the issue.
+### Where Is My Information Saved?
+Your information is stored locally within the `BeatBind` folder. It stores your configuration settings and the token information required to interact with Spotify's Web API.
+   
+### What Information Is Saved?
+There are two files stored within the `BeatBind` folder:
+- `beatbind-config.json`, which contains your Client ID, Secret, Port, Device ID, and your hotkey combinations.
+- `.cache`, which contains your token information to communicate with the Spotify app.
 
-### Why Is The App Not Starting?
+### How Do I Update The App?
+1. Copy and save your `beatbind-config.json` somewhere
+1. Replace your `BeatBind` folder with the updated version
+1. Paste inside the folder your saved `beatbind-config.json`
+
+### Why Isn't The App Starting on Windows Startup?
+This happens if the location of the `.exe` file was changed. The registry key used to start the app on Windows startup needs to be updated to the new `.exe` path. Starting the app again will update the path in the registry key and should resolve the issue.
+
+### Why Is The App Crashing?
 - If you had "Start minimized" checked, you can find the app's icon hidden within your system tray and then right-click on it to find the settings menu.
-- Windows could be flagging it as a virus. Downloading the `.zip` folder instead or adding the `.exe` file to allowed files under Windows Security could fix your issue.
-- Check to see if you have the following folder, and then delete it: `.../AppData/Roaming/.beatbind`. Please see [Where Is My Information Saved?](#where-is-my-information-saved) to find the folder.
+- Within your `BeatBind` folder, delete the following files and try to open it again:
+    - `beatbind-config.json`
+    - `.cache`
   
 ### My Hotkeys Stop Registering After Waking From Sleep
 There are rare cases where hotkeys stop registering on system wake up from sleep, and pressing `Start & Close` button again fixes the listener. For a more permanent fix, try disabling Windows Fast Startup. If the bug keeps occurring after disabling Fast Startup, please create an Issue ticket.
