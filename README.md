@@ -66,7 +66,7 @@ The app requires the user to input four fields:
     <img src="./images/create-app.png" width="70%" height="70%">
     </p>
 1. Click on the "Settings" button to the top-right.
-1. Copy your `Client ID` and `Client Secret` (press "View client secret") and paste it into the app.
+1. Copy your `Client ID` and `Client Secret` (press "View client secret") and paste it into the BeatBind app.
     <p>
     <img src="./images/id-and-secret.png" width="70%" height="70%">
     </p>
