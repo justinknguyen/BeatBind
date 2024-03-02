@@ -34,7 +34,9 @@ Plans to refactor to C# soon! It will solve the following problems:
 - No more false virus flags
 
 ## Download
-Download the latest version from the [Releases](https://github.com/justinknguyen/BeatBind/releases) page.
+Download the latest version from the [Releases](https://github.com/justinknguyen/BeatBind/releases) page. 
+
+The `.exe` file is within the root of the BeatBind folder with the other files and folders. Search or sort by file type to find the `.exe` file.
 
 You can build the `.exe` yourself with the provided build command in the `build.py` file.
 
