@@ -14,6 +14,7 @@ import win32con
 import win32gui
 from global_hotkeys import *
 from spotipy.oauth2 import SpotifyOAuth, SpotifyOauthError
+from constants import *
 
 
 class Backend(object):
@@ -28,9 +29,9 @@ class Backend(object):
             return os.path.join(base_path, relative_path)
 
         # Create paths
-        self.app_folder = os.path.join(os.environ["APPDATA"], ".beatbind")
+        self.app_folder = os.path.dirname(os.path.abspath(__file__))
         os.makedirs(self.app_folder, exist_ok=True)
-        self.config_path = os.path.join(self.app_folder, "config.json")
+        self.config_path = os.path.join(self.app_folder, "beatbind-config.json")
         self.icon_path = resource_path("icon.ico")
 
         # Spotify credentials
@@ -79,23 +80,290 @@ class Backend(object):
         )
 
     # --------------------------------------------------------------------------------------- #
-    
+    """
+    API Calls
+    """
+
+    def PlayPause(self):
+        if self.token:
+            self.CheckTokenExpiry()
+
+            is_playing = self.GetPlaybackState()
+            if is_playing is None:
+                return
+
+            headers = {"Authorization": "Bearer " + self.token}
+            if is_playing:
+                # Pause the music
+                url = f"https://api.spotify.com/v1/me/player/pause?device_id={self.device_id}"
+            else:
+                # Play the music
+                url = f"https://api.spotify.com/v1/me/player/play?device_id={self.device_id}"
+            try:
+                response = requests.put(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                if is_playing:
+                    print("Paused music")
+                else:
+                    print("Playing music")
+            except Exception as e:
+                print(f"Error: {e}")
+
+    def PrevNext(self, command):
+        if self.token:
+            self.CheckTokenExpiry()
+
+            headers = {"Authorization": "Bearer " + self.token}
+            url = f"https://api.spotify.com/v1/me/player/{command}?device_id={self.device_id}"
+            try:
+                response = requests.post(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                if command == "previous":
+                    print("Previous track")
+                else:
+                    print("Next track")
+            except Exception as e:
+                print(f"Error: {e}")
+
+    def AdjustVolume(self, amount):
+        if self.token:
+            self.CheckTokenExpiry()
+
+            headers = {"Authorization": "Bearer " + self.token}
+            self.last_volume = self.GetCurrentVolume()
+            if (self.last_volume - VOLUME) < 0:
+                self.last_volume = VOLUME
+            elif (self.last_volume + VOLUME) > 100:
+                self.last_volume = 100 - VOLUME
+            url = f"https://api.spotify.com/v1/me/player/volume?volume_percent={self.last_volume + amount}&device_id={self.device_id}"
+            try:
+                response = requests.put(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                if amount > 0:
+                    print("Volume up")
+                else:
+                    print("Volume down")
+            except Exception as e:
+                print(f"Error: {e}")
+
+    def Mute(self):
+        if self.token:
+            self.CheckTokenExpiry()
+
+            headers = {"Authorization": "Bearer " + self.token}
+            if self.GetCurrentVolume() != 0:
+                self.muted_volume = self.GetCurrentVolume()
+                url = f"https://api.spotify.com/v1/me/player/volume?volume_percent=0&device_id={self.device_id}"
+                print("Muting")
+            else:
+                url = f"https://api.spotify.com/v1/me/player/volume?volume_percent={self.muted_volume}&device_id={self.device_id}"
+                print("Unmuting")
+            try:
+                response = requests.put(url, headers=headers, timeout=5)
+                response.raise_for_status()
+            except Exception as e:
+                print(f"Error: {e}")
+
+    def GetCurrentVolume(self):
+        if self.token:
+            headers = {"Authorization": "Bearer " + self.token}
+            url = "https://api.spotify.com/v1/me/player"
+            try:
+                response = requests.get(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                data = response.json()
+                volume = data["device"]["volume_percent"]
+                return volume
+            except Exception as e:
+                print(f"Error: {e}")
+                return self.last_volume
+
+    def GetPlaybackState(self):
+        if self.token:
+            headers = {"Authorization": "Bearer " + self.token}
+            url = "https://api.spotify.com/v1/me/player"
+            try:
+                response = requests.get(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                playback_data = response.json()
+                return playback_data["is_playing"]
+            except Exception as e:
+                print(f"Error fetching playback state: {e}")
+                self.HandleConnectionError()
+                return None
+
+    def GetDevices(self):
+        if self.token:
+            headers = {"Authorization": "Bearer " + self.token}
+            url = "https://api.spotify.com/v1/me/player/devices"
+            try:
+                response = requests.get(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                return response.json()
+            except Exception as e:
+                print(f"Error fetching devices: {e}")
+
+    def HandleConnectionError(self):
+        # Connection error occurs when device is no longer active, so play music on specific device id
+        headers = {"Authorization": "Bearer " + self.token}
+        url = f"https://api.spotify.com/v1/me/player/play?device_id={self.device_id}"
+        try:
+            response = requests.put(url, headers=headers, timeout=5)
+            if response.status_code == 403:  # The music is already playing
+                # pause music on specific device id
+                url = f"https://api.spotify.com/v1/me/player/pause?device_id={self.device_id}"
+                response = requests.put(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                print("Paused music")
+                return
+            response.raise_for_status()
+            print("Playing music")
+        except Exception as e:
+            print(f"Error: {e}")
+
+    # --------------------------------------------------------------------------------------- #
+    """
+    Configurations
+    """
+
+    def ErrorMessage(self, message):
+        messagebox.showerror("Error", message)
+
+    def WndProc(self, hWnd, message, wParam, lParam):
+        if message == win32con.WM_POWERBROADCAST:
+            if (
+                wParam == win32con.PBT_APMRESUMEAUTOMATIC
+            ):  # System is waking up from sleep
+                print("System woke up from sleep")
+                self.RefreshToken()
+        return win32gui.DefWindowProc(hWnd, message, wParam, lParam)
+
+    def UpdateStartupRegistry(self):
+        key_path = r"Software\Microsoft\Windows\CurrentVersion\Run"
+        app_name = "BeatBind"
+        exe_path = os.path.realpath(sys.argv[0])
+        key = reg.OpenKey(reg.HKEY_CURRENT_USER, key_path, 0, reg.KEY_ALL_ACCESS)
+
+        try:
+            registry_value, _ = reg.QueryValueEx(key, app_name)
+            if registry_value != exe_path:
+                reg.SetValueEx(key, app_name, 0, reg.REG_SZ, exe_path)
+        except FileNotFoundError:
+            print("Could not find the startup registry key")
+
+        reg.CloseKey(key)
+
+    def SetStartup(self, enabled):
+        key = reg.HKEY_CURRENT_USER
+        sub_key = r"Software\Microsoft\Windows\CurrentVersion\Run"
+        app_name = "BeatBind"
+
+        with reg.OpenKey(key, sub_key, 0, reg.KEY_ALL_ACCESS) as reg_key:
+            if enabled:
+                exe_path = os.path.realpath(sys.argv[0])
+                reg.SetValueEx(reg_key, app_name, 0, reg.REG_SZ, exe_path)
+            else:
+                try:
+                    reg.DeleteValue(reg_key, app_name)
+                except FileNotFoundError:
+                    pass
+
+    def StopHotkeyListener(self):
+        stop_checking_hotkeys()
+        clear_hotkeys()
+
+    def StartHotkeyListener(self):
+        print("Listening to hotkeys...")
+
+        # Our keybinding event handlers.
+        def play_pause():
+            self.PlayPause()
+
+        def previous_track():
+            self.PrevNext("previous")
+
+        def next_track():
+            self.PrevNext("next")
+
+        def volume_up():
+            self.AdjustVolume(VOLUME)
+
+        def volume_down():
+            self.AdjustVolume(-VOLUME)
+
+        def mute():
+            self.Mute()
+
+        # Create the bindings list, removing any empty hotkeys
+        bindings = []
+        for hotkey_name, hotkey_func in [
+            ("play/pause", play_pause),
+            ("prev_track", previous_track),
+            ("next_track", next_track),
+            ("volume_up", volume_up),
+            ("volume_down", volume_down),
+            ("mute", mute),
+        ]:
+            hotkey = self.hotkeys[hotkey_name].split("+")
+            if all(hotkey):
+                bindings.append([hotkey, None, hotkey_func])
+
+        # Register all of our keybindings
+        register_hotkeys(bindings)
+
+        # Finally, start listening for keypresses
+        start_checking_hotkeys()
+
+    def SaveConfig(self):
+        print("Saving config")
+        # Add the hotkeys to the config dictionary
+        config = {
+            "startup": self.startup_var.get(),
+            "minimize": self.minimize_var.get(),
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "port": self.port,
+            "device_id": self.device_id,
+            "hotkeys": self.hotkeys,
+        }
+        try:
+            # Save the config to the file with indentation for readability
+            with open(self.config_path, "w") as f:
+                json.dump(config, f, indent=4)
+            print("Config saved")
+            return True
+        except IOError as e:
+            print(f"Error saving config: {e}")
+        except Exception as e:
+            print(f"Unexpected error while saving config: {e}")
+        return False
+
+    # --------------------------------------------------------------------------------------- #
+    """
+    Spotify Token Management
+    """
+
     def TokenExists(self):
         cache_file = os.path.join(self.app_folder, ".cache")
         return os.path.exists(cache_file)
 
-    def StartupMinimizeTokenRefresh(self):
+    def StartupTokenRefresh(self):
         cache_file = os.path.join(self.app_folder, ".cache")
         if os.path.exists(self.config_path):
             with open(self.config_path, "r") as f:
                 config = json.load(f)
-                self.auth_manager = SpotifyOAuth(
-                    scope="user-modify-playback-state,user-read-playback-state",
-                    client_id=config.get("client_id", ""),
-                    client_secret=config.get("client_secret", ""),
-                    redirect_uri=f"http://localhost:{self.port}/callback",
-                    cache_path=cache_file,
-                )
+                try:
+                    self.auth_manager = SpotifyOAuth(
+                        scope="user-modify-playback-state,user-read-playback-state",
+                        client_id=config.get("client_id", ""),
+                        client_secret=config.get("client_secret", ""),
+                        redirect_uri=f"http://localhost:{self.port}/callback",
+                        cache_path=cache_file,
+                    )
+                except:
+                    print("Invalid config.")
+                    return
+
             self.RefreshToken()
             # Start the loop to refresh the token before it expires, if not already running
             if not self.refresh_thread_running:
@@ -199,253 +467,3 @@ class Backend(object):
             self.refresh_thread_running = True
 
         return True
-
-    def HandleConnectionError(self):
-        # Connection error occurs when device is no longer active, so play music on specific device id
-        headers = {"Authorization": "Bearer " + self.token}
-        url = f"https://api.spotify.com/v1/me/player/play?device_id={self.device_id}"
-        try:
-            response = requests.put(url, headers=headers, timeout=5)
-            if response.status_code == 403:  # The music is already playing
-                # pause music on specific device id
-                url = f"https://api.spotify.com/v1/me/player/pause?device_id={self.device_id}"
-                response = requests.put(url, headers=headers, timeout=5)
-                response.raise_for_status()
-                print("Paused music")
-                return
-            response.raise_for_status()
-            print("Playing music")
-        except Exception as e:
-            print(f"Error: {e}")
-
-    def PlayPause(self):
-        self.CheckTokenExpiry()
-
-        is_playing = self.GetPlaybackState()
-        if is_playing is None:
-            return
-
-        headers = {"Authorization": "Bearer " + self.token}
-        if is_playing:
-            # Pause the music
-            url = (
-                f"https://api.spotify.com/v1/me/player/pause?device_id={self.device_id}"
-            )
-        else:
-            # Play the music
-            url = (
-                f"https://api.spotify.com/v1/me/player/play?device_id={self.device_id}"
-            )
-        try:
-            response = requests.put(url, headers=headers, timeout=5)
-            response.raise_for_status()
-            if is_playing:
-                print("Paused music")
-            else:
-                print("Playing music")
-        except Exception as e:
-            print(f"Error: {e}")
-
-    def PrevNext(self, command):
-        self.CheckTokenExpiry()
-
-        headers = {"Authorization": "Bearer " + self.token}
-        url = (
-            f"https://api.spotify.com/v1/me/player/{command}?device_id={self.device_id}"
-        )
-        try:
-            response = requests.post(url, headers=headers, timeout=5)
-            response.raise_for_status()
-            if command == "previous":
-                print("Previous track")
-            else:
-                print("Next track")
-        except Exception as e:
-            print(f"Error: {e}")
-
-    def AdjustVolume(self, amount):
-        self.CheckTokenExpiry()
-
-        headers = {"Authorization": "Bearer " + self.token}
-        self.last_volume = self.GetCurrentVolume()
-        if (self.last_volume - 5) < 0:
-            self.last_volume = 5
-        elif (self.last_volume + 5) > 100:
-            self.last_volume = 95
-        url = f"https://api.spotify.com/v1/me/player/volume?volume_percent={self.last_volume + amount}&device_id={self.device_id}"
-        try:
-            response = requests.put(url, headers=headers, timeout=5)
-            response.raise_for_status()
-            if amount > 0:
-                print("Volume up")
-            else:
-                print("Volume down")
-        except Exception as e:
-            print(f"Error: {e}")
-            
-    def Mute(self):
-        self.CheckTokenExpiry()
-
-        headers = {"Authorization": "Bearer " + self.token}
-        if self.GetCurrentVolume() != 0:
-            self.muted_volume = self.GetCurrentVolume()
-            url = f"https://api.spotify.com/v1/me/player/volume?volume_percent=0&device_id={self.device_id}"
-            print("Muting")
-        else:
-            url = f"https://api.spotify.com/v1/me/player/volume?volume_percent={self.muted_volume}&device_id={self.device_id}"
-            print("Unmuting")
-        try:
-            response = requests.put(url, headers=headers, timeout=5)
-            response.raise_for_status()
-        except Exception as e:
-            print(f"Error: {e}")
-
-    def GetCurrentVolume(self):
-        headers = {"Authorization": "Bearer " + self.token}
-        url = "https://api.spotify.com/v1/me/player"
-        try:
-            response = requests.get(url, headers=headers, timeout=5)
-            response.raise_for_status()
-            data = response.json()
-            volume = data["device"]["volume_percent"]
-            return volume
-        except Exception as e:
-            print(f"Error: {e}")
-            return self.last_volume
-
-    def GetPlaybackState(self):
-        headers = {"Authorization": "Bearer " + self.token}
-        url = "https://api.spotify.com/v1/me/player"
-        try:
-            response = requests.get(url, headers=headers, timeout=5)
-            response.raise_for_status()
-            playback_data = response.json()
-            return playback_data["is_playing"]
-        except Exception as e:
-            print(f"Error fetching playback state: {e}")
-            self.HandleConnectionError()
-            return None
-        
-    def GetDevices(self):
-        headers = {"Authorization": "Bearer " + self.token}
-        url = "https://api.spotify.com/v1/me/player/devices"
-        try:
-            response = requests.get(url, headers=headers, timeout=5)
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            print(f"Error fetching devices: {e}")
-
-    # --------------------------------------------------------------------------------------- #
-
-    def ErrorMessage(self, message):
-        messagebox.showerror("Error", message)
-
-    def WndProc(self, hWnd, message, wParam, lParam):
-        if message == win32con.WM_POWERBROADCAST:
-            if (
-                wParam == win32con.PBT_APMRESUMEAUTOMATIC
-            ):  # System is waking up from sleep
-                print("System woke up from sleep")
-                self.RefreshToken()
-        return win32gui.DefWindowProc(hWnd, message, wParam, lParam)
-
-    def UpdateStartupRegistry(self):
-        key_path = r"Software\Microsoft\Windows\CurrentVersion\Run"
-        app_name = "BeatBind"
-        exe_path = os.path.realpath(sys.argv[0])
-        key = reg.OpenKey(reg.HKEY_CURRENT_USER, key_path, 0, reg.KEY_ALL_ACCESS)
-
-        try:
-            registry_value, _ = reg.QueryValueEx(key, app_name)
-            if registry_value != exe_path:
-                reg.SetValueEx(key, app_name, 0, reg.REG_SZ, exe_path)
-        except FileNotFoundError:
-            print("Could not find the startup registry key")
-
-        reg.CloseKey(key)
-
-    def SetStartup(self, enabled):
-        key = reg.HKEY_CURRENT_USER
-        sub_key = r"Software\Microsoft\Windows\CurrentVersion\Run"
-        app_name = "BeatBind"
-
-        with reg.OpenKey(key, sub_key, 0, reg.KEY_ALL_ACCESS) as reg_key:
-            if enabled:
-                exe_path = os.path.realpath(sys.argv[0])
-                reg.SetValueEx(reg_key, app_name, 0, reg.REG_SZ, exe_path)
-            else:
-                try:
-                    reg.DeleteValue(reg_key, app_name)
-                except FileNotFoundError:
-                    pass
-
-    def StopHotkeyListener(self):
-        stop_checking_hotkeys()
-        clear_hotkeys()
-
-    def StartHotkeyListener(self):
-        print("Listening to hotkeys...")
-
-        # Our keybinding event handlers.
-        def play_pause():
-            self.PlayPause()
-
-        def previous_track():
-            self.PrevNext("previous")
-
-        def next_track():
-            self.PrevNext("next")
-
-        def volume_up():
-            self.AdjustVolume(5)
-
-        def volume_down():
-            self.AdjustVolume(-5)
-            
-        def mute():
-            self.Mute()
-
-        # Create the bindings list, removing any empty hotkeys
-        bindings = []
-        for hotkey_name, hotkey_func in [
-            ("play/pause", play_pause),
-            ("prev_track", previous_track),
-            ("next_track", next_track),
-            ("volume_up", volume_up),
-            ("volume_down", volume_down),
-            ("mute", mute),
-        ]:
-            hotkey = self.hotkeys[hotkey_name].split("+")
-            if all(hotkey):
-                bindings.append([hotkey, None, hotkey_func])
-
-        # Register all of our keybindings
-        register_hotkeys(bindings)
-
-        # Finally, start listening for keypresses
-        start_checking_hotkeys()
-
-    def SaveConfig(self):
-        print("Saving config")
-        # Add the hotkeys to the config dictionary
-        config = {
-            "startup": self.startup_var.get(),
-            "minimize": self.minimize_var.get(),
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "port": self.port,
-            "device_id": self.device_id,
-            "hotkeys": self.hotkeys,
-        }
-        try:
-            # Save the config to the file
-            with open(self.config_path, "w") as f:
-                json.dump(config, f)
-            print("Config saved")
-            return True
-        except IOError as e:
-            print(f"Error saving config: {e}")
-        except Exception as e:
-            print(f"Unexpected error while saving config: {e}")
-        return False

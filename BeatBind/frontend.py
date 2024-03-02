@@ -11,6 +11,7 @@ import win32api
 from global_hotkeys import keycodes
 from PIL import Image
 from ttkthemes import ThemedTk
+from constants import *
 
 
 class Frontend(object):
@@ -38,21 +39,18 @@ class Frontend(object):
                 proc.kill()
 
     def SettingsAction(self):
-        return pystray.MenuItem("Settings", self.OpenSettings)
-
-    def OpenSettings(self):
-        self.SettingsWindow()
+        return pystray.MenuItem("Settings", self.SettingsWindow)
 
     def SettingsWindow(self):
-        global KEY_OPTIONS, MODIFIED_CRED
-        MODIFIED_CRED = False
+        global KEY_OPTIONS, modifiedCredentials
+        modifiedCredentials = False
 
         def set_modified(event=None):
             save_button.config(state=tk.NORMAL)
 
         def set_modified_cred(event=None):
-            global MODIFIED_CRED
-            MODIFIED_CRED = True
+            global modifiedCredentials
+            modifiedCredentials = True
             save_button.config(state=tk.NORMAL)
 
         def handle_keypress(virtual_keycode, entry):
@@ -181,12 +179,12 @@ class Frontend(object):
             y = (window.winfo_screenheight() // 2) - (height // 2)
             window.geometry(f"{width}x{height}+{x}+{y}")
             window.after(1, lambda: window.focus_force())
-            
+
         def device_action():
             set_input_fields()
             if not self.app.TokenExists():
                 self.app.CreateToken()
-            update_devices()
+                update_devices()
 
         def save_action():
             set_input_fields()
@@ -194,7 +192,7 @@ class Frontend(object):
                 save_button.config(state=tk.DISABLED)
 
         def start_action():
-            global MODIFIED_CRED
+            global modifiedCredentials
             set_input_fields()
 
             if (
@@ -205,8 +203,8 @@ class Frontend(object):
             ):
                 self.app.CreateToken()
                 return
-            
-            if MODIFIED_CRED and not self.app.CreateToken():
+
+            if modifiedCredentials and not self.app.CreateToken():
                 return
             else:
                 root.destroy()
@@ -219,7 +217,7 @@ class Frontend(object):
         # Create the GUI
         root = ThemedTk(theme="breeze")
         root.withdraw()
-        root.title("BeatBind (v1.2.0)")
+        root.title("BeatBind (v1.3.0)")
         root.iconbitmap(self.icon_path)
         root.focus_force()
 
@@ -235,7 +233,7 @@ class Frontend(object):
         client_secret_label = ttk.Label(frame, text="Client Secret:")
         port_label = ttk.Label(frame, text="Port:")
         device_id_label = ttk.Label(frame, text="Device ID:")
-        
+
         play_pause_label = ttk.Label(frame, text="Play/Pause:")
         prev_track_label = ttk.Label(frame, text="Previous Track:")
         next_track_label = ttk.Label(frame, text="Next Track:")
@@ -264,13 +262,18 @@ class Frontend(object):
         client_secret_entry = ttk.Entry(frame, width=42)
         port_entry = ttk.Entry(frame, width=42)
         device_id_entry = ttk.Combobox(frame, width=40)
-        
+
         def update_devices():
             devices_data = self.app.GetDevices()
+            if devices_data is None:
+                return
+
             if "devices" in devices_data:
-                devices = {device["name"]: device["id"] for device in devices_data["devices"]}
-                device_id_entry['values'] = list(devices.keys())
-            
+                devices = {
+                    device["name"]: device["id"] for device in devices_data["devices"]
+                }
+                device_id_entry["values"] = list(devices.keys())
+
             def on_device_changed(event):
                 set_modified_cred()
                 device_name = device_id_entry.get()
@@ -279,13 +282,11 @@ class Frontend(object):
                     device_id_entry.set(device_id)
                     device_id_entry.selection_clear()
                     frame.focus()
-                    
+
             device_id_entry.bind("<<ComboboxSelected>>", on_device_changed)
-        
+
         # Buttons
-        devices_button = ttk.Button(
-            frame, text="Get Devices", command=device_action
-        )
+        devices_button = ttk.Button(frame, text="Get Devices", command=device_action)
         button_frame = ttk.Frame(frame)
         save_button = ttk.Button(
             button_frame, text="Save", command=save_action, state=tk.DISABLED
@@ -425,17 +426,13 @@ class Frontend(object):
         alt_volume_down_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
         shift_volume_down_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
         volume_down_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
-        
+
         ctrl_mute_var = tk.BooleanVar()
         alt_mute_var = tk.BooleanVar()
         shift_mute_var = tk.BooleanVar()
         mute_modifiers = ttk.Frame(frame)
-        mute_entry = ttk.Entry(
-            mute_modifiers, width=width, justify="center"
-        )
-        mute_entry.bind(
-            "<FocusIn>", lambda event: listen_for_key_events(mute_entry)
-        )
+        mute_entry = ttk.Entry(mute_modifiers, width=width, justify="center")
+        mute_entry.bind("<FocusIn>", lambda event: listen_for_key_events(mute_entry))
         (
             ctrl_mute_checkbox,
             alt_mute_checkbox,
@@ -582,7 +579,7 @@ class Frontend(object):
         port_entry.grid(row=3, column=1)
         device_id_label.grid(row=4, column=0, sticky="E")
         device_id_entry.grid(row=4, column=1)
-        
+
         devices_button.grid(row=5, column=1)
 
         separator.grid(row=6, column=0, columnspan=3, sticky="EW", pady=10)
@@ -620,7 +617,7 @@ class Frontend(object):
         root.deiconify()
         root.update()
         root.focus_force()
-        
+
         if self.app.TokenExists():
             update_devices()
 
@@ -631,124 +628,3 @@ class Frontend(object):
         self.app.UpdateStartupRegistry()
         self.app.StartHotkeyListener()
         self.menu.run()
-
-
-KEY_OPTIONS = [
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "f",
-    "g",
-    "h",
-    "i",
-    "j",
-    "k",
-    "l",
-    "m",
-    "n",
-    "o",
-    "p",
-    "q",
-    "r",
-    "s",
-    "t",
-    "u",
-    "v",
-    "w",
-    "x",
-    "y",
-    "z",
-    "0",
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "f1",
-    "f2",
-    "f3",
-    "f4",
-    "f5",
-    "f6",
-    "f7",
-    "f8",
-    "f9",
-    "f10",
-    "f11",
-    "f12",
-    "f13",
-    "f14",
-    "f15",
-    "f16",
-    "f17",
-    "f18",
-    "f19",
-    "f20",
-    "f21",
-    "f22",
-    "f23",
-    "f24",
-    "=",
-    ",",
-    "-",
-    ".",
-    "/",
-    "`",
-    ";",
-    "[",
-    "\\",
-    "]",
-    "'",
-    "`",
-    "backspace",
-    "tab",
-    "clear",
-    "enter",
-    "pause",
-    "caps_lock",
-    "escape",
-    "space",
-    "page_up",
-    "page_down",
-    "end",
-    "home",
-    "left",
-    "up",
-    "right",
-    "down",
-    "print",
-    "scroll_lock",
-    "enter",
-    "print_screen",
-    "insert",
-    "delete",
-    "numpad_0",
-    "numpad_1",
-    "numpad_2",
-    "numpad_3",
-    "numpad_4",
-    "numpad_5",
-    "numpad_6",
-    "numpad_7",
-    "numpad_8",
-    "numpad_9",
-    "multiply_key",
-    "add_key",
-    "subtract_key",
-    "decimal_key",
-    "divide_key",
-    "num_lock",
-    "volume_mute",
-    "volume_down",
-    "volume_up",
-    "next_track",
-    "previous_track",
-    "stop_media",
-    "play/pause_media",
-]

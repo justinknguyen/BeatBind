@@ -51,10 +51,9 @@ def main():
                 backend.hotkeys[key] = hotkeys.get(key, default_value)
 
         # If minimize is True, do not open the Settings window
-        if config.get("minimize", False):
-            backend.StartupMinimizeTokenRefresh()
-            if not frontend.menu.visible:
-                frontend.run()
+        backend.StartupTokenRefresh()
+        if config.get("minimize", False) and not frontend.menu.visible:
+            frontend.run()
         else:
             frontend.SettingsWindow()
     else:

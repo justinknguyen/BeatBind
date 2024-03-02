@@ -11,3 +11,4 @@ dist/
 */app.dist/
 */app.onefile-build/
 *.pyc
+/BeatBind/BeatBind
