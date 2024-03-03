@@ -46,6 +46,10 @@ You can build the `.exe` yourself with the provided build command in the [build.
 - Spotify on your device of choice
   
 ## Instructions
+After downloading the `.zip` folder, extract the contents somewhere on your computer. 
+
+*If you extracted it to your Program Files folder, you'll need to run the app in admin mode to be able to write and save your settings and token.
+
 The app requires the user to input four fields: 
 - [Client ID](#client-id-client-secret-and-port)
 - [Client Secret](#client-id-client-secret-and-port)
