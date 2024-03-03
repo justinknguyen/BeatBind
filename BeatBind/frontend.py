@@ -602,6 +602,7 @@ class Frontend(object):
         client_id_entry.bind("<KeyRelease>", set_modified_cred)
         client_secret_entry.bind("<KeyRelease>", set_modified_cred)
         port_entry.bind("<KeyRelease>", set_modified_cred)
+        volume_entry.bind("<KeyRelease>", set_modified)
         volume_entry.bind("<<Increment>>", set_modified)
         volume_entry.bind("<<Decrement>>", set_modified)
         play_pause_entry.bind("<KeyRelease>", set_modified)
