@@ -1,5 +1,3 @@
-VOLUME = 5
-
 KEY_OPTIONS = [
     "a",
     "b",
@@ -118,4 +116,5 @@ KEY_OPTIONS = [
     "previous_track",
     "stop_media",
     "play/pause_media",
+    "fn",
 ]

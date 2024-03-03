@@ -14,7 +14,6 @@ import win32con
 import win32gui
 from global_hotkeys import *
 from spotipy.oauth2 import SpotifyOAuth, SpotifyOauthError
-from constants import *
 
 
 class Backend(object):
@@ -55,6 +54,9 @@ class Backend(object):
         self.volume_down_hotkey = None
         self.last_volume = None
         self.muted_volume = None
+
+        # Volume adjustment
+        self.volume = 5
 
         # Startup and minimize
         self.startup_var = None
@@ -131,10 +133,13 @@ class Backend(object):
 
             headers = {"Authorization": "Bearer " + self.token}
             self.last_volume = self.GetCurrentVolume()
-            if (self.last_volume - VOLUME) < 0:
-                self.last_volume = VOLUME
-            elif (self.last_volume + VOLUME) > 100:
-                self.last_volume = 100 - VOLUME
+            if self.last_volume is None:
+                self.last_volume = 50  # assume 50%
+
+            if (self.last_volume - int(self.volume)) < 0:
+                self.last_volume = int(self.volume)
+            elif (self.last_volume + int(self.volume)) > 100:
+                self.last_volume = 100 - int(self.volume)
             url = f"https://api.spotify.com/v1/me/player/volume?volume_percent={self.last_volume + amount}&device_id={self.device_id}"
             try:
                 response = requests.put(url, headers=headers, timeout=5)
@@ -286,10 +291,10 @@ class Backend(object):
             self.PrevNext("next")
 
         def volume_up():
-            self.AdjustVolume(VOLUME)
+            self.AdjustVolume(int(self.volume))
 
         def volume_down():
-            self.AdjustVolume(-VOLUME)
+            self.AdjustVolume(-int(self.volume))
 
         def mute():
             self.Mute()
@@ -324,6 +329,7 @@ class Backend(object):
             "client_secret": self.client_secret,
             "port": self.port,
             "device_id": self.device_id,
+            "volume": self.volume,
             "hotkeys": self.hotkeys,
         }
         try:

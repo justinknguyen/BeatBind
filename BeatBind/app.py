@@ -36,8 +36,9 @@ def main():
             for key, default_value in [
                 ("client_id", ""),
                 ("client_secret", ""),
-                ("port", ""),
+                ("port", "8888"),
                 ("device_id", ""),
+                ("volume", 5),
             ]:
                 setattr(backend, key, config.get(key, default_value))
             for key, default_value in [

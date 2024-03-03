@@ -122,6 +122,7 @@ class Frontend(object):
             self.app.client_secret = client_secret_entry.get()
             self.app.port = port_entry.get()
             self.app.device_id = device_id_entry.get()
+            self.app.volume = volume_entry.get()
             self.app.hotkeys["play/pause"] = update_hotkey_entry(
                 play_pause_entry,
                 ctrl_play_pause_var,
@@ -167,6 +168,22 @@ class Frontend(object):
             alt_checkbox.config(command=set_modified)
             shift_checkbox.config(command=set_modified)
             return ctrl_checkbox, alt_checkbox, shift_checkbox
+
+        def validate_volume(P):
+            # Check if the input is empty (allowing deletion)
+            if P == "":
+                return True
+            try:
+                # Convert the string to an integer
+                value = int(P)
+                # Check if the value is within 0-100 and the string is a valid representation (no leading zeros)
+                if 0 <= value <= 100 and P == str(value):
+                    return True
+            except ValueError:
+                # Conversion to integer failed, meaning it's not a valid integer
+                return False
+            # If none of the above conditions are met, return False
+            return False
 
         def link_callback(url):
             webbrowser.open_new_tab(url)
@@ -240,6 +257,7 @@ class Frontend(object):
         volume_up_label = ttk.Label(frame, text="Volume Up:")
         volume_down_label = ttk.Label(frame, text="Volume Down:")
         mute_label = ttk.Label(frame, text="Mute:")
+        volume_label = ttk.Label(frame, text="Volume Inc/Dec:")
         labels_frame = ttk.Frame(frame)
         modifier_label = ttk.Label(labels_frame, text="Modifiers")
         key_label = ttk.Label(labels_frame, text="Key")
@@ -262,6 +280,16 @@ class Frontend(object):
         client_secret_entry = ttk.Entry(frame, width=42)
         port_entry = ttk.Entry(frame, width=42)
         device_id_entry = ttk.Combobox(frame, width=40)
+        vcmd = (root.register(validate_volume), "%P")
+        volume_entry = ttk.Spinbox(
+            frame,
+            from_=0,
+            to=100,
+            width=5,
+            increment=1,
+            validate="all",
+            validatecommand=vcmd,
+        )
 
         def update_devices():
             devices_data = self.app.GetDevices()
@@ -449,7 +477,21 @@ class Frontend(object):
         mute_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
         # Autofill entries
-        entries = [client_id_entry, client_secret_entry, port_entry, device_id_entry]
+        entries = [
+            client_id_entry,
+            client_secret_entry,
+            port_entry,
+            device_id_entry,
+            volume_entry,
+        ]
+        keys = ["client_id", "client_secret", "port", "device_id", "volume"]
+        keys_defaults = [
+            "",
+            "",
+            "8888",
+            "",
+            5,
+        ]
         hotkey_entries = [
             play_pause_entry,
             prev_track_entry,
@@ -458,7 +500,6 @@ class Frontend(object):
             volume_down_entry,
             mute_entry,
         ]
-        keys = ["client_id", "client_secret", "port", "device_id"]
         hotkey_keys = [
             "play/pause",
             "prev_track",
@@ -506,8 +547,8 @@ class Frontend(object):
                 config = json.load(f)
                 hotkeys = config["hotkeys"]
 
-                for entry, key in zip(entries, keys):
-                    autofill_entry(entry, config.get(key, ""))
+                for entry, key, default_value in zip(entries, keys, keys_defaults):
+                    autofill_entry(entry, config.get(key, default_value))
 
                 for entry, key, default_value, ctrl_var, alt_var, shift_var in zip(
                     hotkey_entries,
@@ -527,7 +568,7 @@ class Frontend(object):
                 self.app.startup_var.set(config.get("startup", False))
                 self.app.minimize_var.set(config.get("minimize", False))
         else:
-            for entry, default_value in zip(hotkey_entries, hotkey_defaults):
+            for entry, key, default_value in zip(entries, keys, keys_defaults):
                 autofill_entry(entry, default_value)
 
             for entry, key, default_value, ctrl_var, alt_var, shift_var in zip(
@@ -561,6 +602,8 @@ class Frontend(object):
         client_id_entry.bind("<KeyRelease>", set_modified_cred)
         client_secret_entry.bind("<KeyRelease>", set_modified_cred)
         port_entry.bind("<KeyRelease>", set_modified_cred)
+        volume_entry.bind("<<Increment>>", set_modified)
+        volume_entry.bind("<<Decrement>>", set_modified)
         play_pause_entry.bind("<KeyRelease>", set_modified)
         prev_track_entry.bind("<KeyRelease>", set_modified)
         next_track_entry.bind("<KeyRelease>", set_modified)
@@ -579,37 +622,38 @@ class Frontend(object):
         port_entry.grid(row=3, column=1)
         device_id_label.grid(row=4, column=0, sticky="E")
         device_id_entry.grid(row=4, column=1)
-
         devices_button.grid(row=5, column=1)
+        volume_label.grid(row=6, column=0, sticky="E")
+        volume_entry.grid(row=6, column=1, sticky="W")
 
-        separator.grid(row=6, column=0, columnspan=3, sticky="EW", pady=10)
+        separator.grid(row=7, column=0, columnspan=3, sticky="EW", pady=10)
 
-        labels_frame.grid(row=7, column=1, pady=padding_y)
-        modifier_label.grid(row=0, column=1, padx=(10, 50))
-        key_label.grid(row=0, column=3, padx=(50, 0))
+        labels_frame.grid(row=8, column=1, pady=padding_y)
+        modifier_label.grid(row=0, column=1, padx=(0, 50))
+        key_label.grid(row=0, column=3, padx=(40, 0))
 
-        play_pause_label.grid(row=8, column=0, sticky="E")
-        play_pause_modifiers.grid(row=8, column=1, sticky="W")
-        prev_track_label.grid(row=9, column=0, sticky="E")
-        prev_track_modifiers.grid(row=9, column=1, sticky="W")
-        next_track_label.grid(row=10, column=0, sticky="E")
-        next_track_modifiers.grid(row=10, column=1, sticky="W")
-        volume_up_label.grid(row=11, column=0, sticky="E")
-        volume_up_modifiers.grid(row=11, column=1, sticky="W")
-        volume_down_label.grid(row=12, column=0, sticky="E")
-        volume_down_modifiers.grid(row=12, column=1, sticky="W")
-        mute_label.grid(row=13, column=0, sticky="E")
-        mute_modifiers.grid(row=13, column=1, sticky="W")
+        play_pause_label.grid(row=9, column=0, sticky="E")
+        play_pause_modifiers.grid(row=9, column=1, sticky="W")
+        prev_track_label.grid(row=10, column=0, sticky="E")
+        prev_track_modifiers.grid(row=10, column=1, sticky="W")
+        next_track_label.grid(row=11, column=0, sticky="E")
+        next_track_modifiers.grid(row=11, column=1, sticky="W")
+        volume_up_label.grid(row=12, column=0, sticky="E")
+        volume_up_modifiers.grid(row=12, column=1, sticky="W")
+        volume_down_label.grid(row=13, column=0, sticky="E")
+        volume_down_modifiers.grid(row=13, column=1, sticky="W")
+        mute_label.grid(row=14, column=0, sticky="E")
+        mute_modifiers.grid(row=14, column=1, sticky="W")
 
-        button_frame.grid(row=14, column=0, columnspan=2, pady=10)
+        button_frame.grid(row=15, column=0, columnspan=2, pady=10)
         save_button.pack(side="left", padx=(0, 5))
         start_button.pack(side="left", padx=(5, 0))
 
-        checkbox_frame.grid(row=15, column=0, columnspan=2, pady=10)
+        checkbox_frame.grid(row=16, column=0, columnspan=2, pady=10)
         startup_checkbox.pack(side="left", padx=(0, 5))
         minimize_checkbox.pack(side="left", padx=(5, 0))
 
-        source_frame.grid(row=16, column=0, columnspan=2, pady=10)
+        source_frame.grid(row=17, column=0, columnspan=2, pady=10)
         source_link.pack(side="left")
 
         # Center window and focus
