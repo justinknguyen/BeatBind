@@ -116,9 +116,9 @@ There are two files stored within the `BeatBind` folder:
 - `.cache`, which contains your token information to communicate with the Spotify app.
 
 ### How Do I Update The App?
-1. Copy and save your `beatbind-config.json` somewhere
+1. Copy and save your `beatbind-config.json` and `.cache` files somewhere
 1. Replace your `BeatBind` folder with the updated version
-1. Paste inside the folder your saved `beatbind-config.json`
+1. Paste inside the folder your saved `beatbind-config.json` and `.cache` files
 
 ### Why Isn't The App Starting on Windows Startup?
 This happens if the location of the `.exe` file was changed. The registry key used to start the app on Windows startup needs to be updated to the new `.exe` path. Starting the app again will update the path in the registry key and should resolve the issue.
