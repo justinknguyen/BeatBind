@@ -88,8 +88,9 @@ You can open the settings again by right-clicking on the app's system tray icon.
 
 ## Troubleshooting
 Please go through the below steps before creating an Issue ticket.
+1. If your settings are not saving, try to move your BeatBind folder to a different directory. If you placed it in your Program Files folder, then it needs to run in admin mode to be able to save and write files.
 1. If your app is not starting/opening, please see [Why Is The App Crashing?](#why-is-the-app-crashing)
-2. If your app is not starting on Windows startup, please see [Why Isn't The App Starting on Windows Startup?](#why-isnt-the-app-starting-on-windows-startup) and [Not launching on startup. #5](https://github.com/justinknguyen/BeatBind/issues/5)
+1. If your app is not starting on Windows startup, please see [Why Isn't The App Starting on Windows Startup?](#why-isnt-the-app-starting-on-windows-startup) and [Not launching on startup. #5](https://github.com/justinknguyen/BeatBind/issues/5)
 1. Make sure your Client ID and Secret is correct and matches what is displayed in the Spotify developer site.
 1. Check if you have the Spotify app installed, and make sure the Device ID selected is the correct one.
 1. Check if you're able to see the app within the system tray after pressing `Start & Close`.
