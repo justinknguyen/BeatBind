@@ -65,14 +65,14 @@ The app requires the user to input three fields:
    http://localhost:8888/callback
    ```
 1. Click on the checkbox and then "Save".
-<p>
-<img src="./images/create-app.png" width="70%" height="70%">
-</p>
+    <p>
+    <img src="./images/create-app.png" width="70%" height="70%">
+    </p>
 1. Click on the "Settings" button to the top-right.
 1. Copy your `Client ID` and `Client Secret` (press "View client secret") and paste it into the BeatBind app.
-<p>
-<img src="./images/id-and-secret.png" width="70%" height="70%">
-</p>
+    <p>
+    <img src="./images/id-and-secret.png" width="70%" height="70%">
+    </p>
 
 ### Device ID
 
@@ -116,9 +116,9 @@ Unfortunately, the endpoints used in Spotify's Web API only works for Spotify pr
 
 1. Uncheck all of the `Modifiers` checkboxes.
 1. In the `Key` field, press "Backspace" or "Delete" on your keyboard to clear the field.
-<p>
-<img src="./images/unbind.png" width="40%" height="40%">
-</p>
+    <p>
+    <img src="./images/unbind.png" width="40%" height="40%">
+    </p>
 
 ### Where Is My Information Saved?
 
@@ -149,9 +149,8 @@ This happens if the location of the `.exe` file was changed. The registry key us
 
 1. If you had "Start minimized" checked, you can find the app's icon hidden within your system tray and then right-click on it to find the settings menu.
 1. Within your `BeatBind` folder, delete the following files and try to open it again:
-
-- `beatbind-config.json`
-- `.cache`
+    - `beatbind-config.json`
+    - `.cache`
 
 ### My Hotkeys Stop Registering After Waking From Sleep
 
