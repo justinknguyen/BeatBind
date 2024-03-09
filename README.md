@@ -19,19 +19,11 @@ This background Python Windows application utilizes the [global_hotkeys](https:/
 Please see [FAQ](#faq) for more information or if you encounter any issues. If your issue isn't listed, please create an Issue ticket.
 
 ## Table of Contents
-- [Future Plans](#future-plans)
 - [Download](#download)
 - [Requirements](#requirements)
 - [Instructions](#instructions)
 - [Troubleshooting](#troubleshooting)
 - [FAQ](#faq)
-
-## Future Plans
-Plans to refactor to C# soon! It will solve the following problems:
-- Modularity
-- Extensibility
-- Update friendly
-- No more false virus flags
 
 ## Download
 Download the latest version from the [Releases](https://github.com/justinknguyen/BeatBind/releases) page. 
@@ -43,6 +35,7 @@ You can build the `.exe` yourself with the provided build command in the [build.
 ## Requirements
 - Windows 10/11
 - Spotify Premium
+    - Unfortunately, the endpoints used in Spotify's Web API only works for premium users, so it's not possible for this app to work for free users. There are other apps online that work locally instead, allowing it to work for free and premium users.
 - Spotify on your device of choice
   
 ## Instructions
