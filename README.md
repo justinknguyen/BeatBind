@@ -44,18 +44,16 @@ After downloading the `.zip` folder, extract the contents somewhere on your comp
 *If you extracted it to your Program Files folder, you'll need to run the app in admin mode to be able to write and save your settings and token.
 
 The app requires the user to input four fields: 
-- [Client ID](#client-id-client-secret-and-port)
-- [Client Secret](#client-id-client-secret-and-port)
-- [Port](#client-id-client-secret-and-port)
+- [Client ID](#client-id-and-client-secret)
+- [Client Secret](#client-id-and-client-secret)
 - [Device ID](#device-id)
   
-### Client ID, Client Secret, and Port
+### Client ID and Client Secret
 1. To obtain the `Client ID` and `Client Secret`, head to the following link [Spotify for Developers](https://developer.spotify.com/).
 1. Sign-in and click on your profile in the top-right corner, then click on "Dashboard".
 1. Click on the "Create app" button to the right.
 1. Enter any "App name" and "App description" you want.
-1. In the app, populate the `Port` field with a port (e.g., 8888, 8000, 8080).
-    - There's a possibility that the port you chose is being used on your network, if so, choose a different port.
+1. In the app, you can change the `Port` field if it's already being used on your local network
 1. Back on the website, enter the following into "Redirect URI" with the port you chose (e.g., 8888):
     ```
     http://localhost:8888/callback
