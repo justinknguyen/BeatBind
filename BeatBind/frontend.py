@@ -159,6 +159,18 @@ class Frontend(object):
                 alt_mute_var,
                 shift_mute_var,
             )
+            self.app.hotkeys["seek_forward"] = update_hotkey_entry(
+                seek_forward_entry,
+                ctrl_seek_forward_var,
+                alt_seek_forward_var,
+                shift_seek_forward_var,
+            )
+            self.app.hotkeys["seek_backward"] = update_hotkey_entry(
+                seek_backward_entry,
+                ctrl_seek_backward_var,
+                alt_seek_backward_var,
+                shift_seek_backward_var,
+            )
 
         def create_modifiers(frame, ctrl_var, alt_var, shift_var):
             ctrl_checkbox = ttk.Checkbutton(frame, text="Ctrl", variable=ctrl_var)
@@ -234,7 +246,7 @@ class Frontend(object):
         # Create the GUI
         root = ThemedTk(theme="breeze")
         root.withdraw()
-        root.title("BeatBind (v1.3.0)")
+        root.title("BeatBind (v1.4.0)")
         root.iconbitmap(self.icon_path)
         root.focus_force()
 
@@ -257,6 +269,9 @@ class Frontend(object):
         volume_up_label = ttk.Label(frame, text="Volume Up:")
         volume_down_label = ttk.Label(frame, text="Volume Down:")
         mute_label = ttk.Label(frame, text="Mute:")
+        seek_forward_label = ttk.Label(frame, text="Seek Forward:")
+        seek_backward_label = ttk.Label(frame, text="Seek Backward:")
+
         volume_label = ttk.Label(frame, text="Volume Inc/Dec:")
         labels_frame = ttk.Frame(frame)
         modifier_label = ttk.Label(labels_frame, text="Modifiers")
@@ -476,6 +491,62 @@ class Frontend(object):
         shift_mute_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
         mute_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
+        ctrl_seek_forward_var = tk.BooleanVar()
+        alt_seek_forward_var = tk.BooleanVar()
+        shift_seek_forward_var = tk.BooleanVar()
+        seek_forward_modifiers = ttk.Frame(frame)
+        seek_forward_entry = ttk.Entry(
+            seek_forward_modifiers, width=width, justify="center"
+        )
+        seek_forward_entry.bind(
+            "<FocusIn>", lambda event: listen_for_key_events(seek_forward_entry)
+        )
+        (
+            ctrl_seek_forward_checkbox,
+            alt_seek_forward_checkbox,
+            shift_seek_forward_checkbox,
+        ) = create_modifiers(
+            seek_forward_modifiers,
+            ctrl_seek_forward_var,
+            alt_seek_forward_var,
+            shift_seek_forward_var,
+        )
+        ctrl_seek_forward_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
+        alt_seek_forward_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
+        shift_seek_forward_checkbox.grid(
+            row=0, column=2, padx=padding_x, pady=padding_y
+        )
+        seek_forward_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
+
+        ctrl_seek_backward_var = tk.BooleanVar()
+        alt_seek_backward_var = tk.BooleanVar()
+        shift_seek_backward_var = tk.BooleanVar()
+        seek_backward_modifiers = ttk.Frame(frame)
+        seek_backward_entry = ttk.Entry(
+            seek_backward_modifiers, width=width, justify="center"
+        )
+        seek_backward_entry.bind(
+            "<FocusIn>", lambda event: listen_for_key_events(seek_backward_entry)
+        )
+        (
+            ctrl_seek_backward_checkbox,
+            alt_seek_backward_checkbox,
+            shift_seek_backward_checkbox,
+        ) = create_modifiers(
+            seek_backward_modifiers,
+            ctrl_seek_backward_var,
+            alt_seek_backward_var,
+            shift_seek_backward_var,
+        )
+        ctrl_seek_backward_checkbox.grid(
+            row=0, column=0, padx=padding_x, pady=padding_y
+        )
+        alt_seek_backward_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
+        shift_seek_backward_checkbox.grid(
+            row=0, column=2, padx=padding_x, pady=padding_y
+        )
+        seek_backward_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
+
         # Autofill entries
         entries = [
             client_id_entry,
@@ -499,6 +570,8 @@ class Frontend(object):
             volume_up_entry,
             volume_down_entry,
             mute_entry,
+            seek_forward_entry,
+            seek_backward_entry,
         ]
         hotkey_keys = [
             "play/pause",
@@ -507,6 +580,8 @@ class Frontend(object):
             "volume_up",
             "volume_down",
             "mute",
+            "seek_forward",
+            "seek_backward",
         ]
         hotkey_defaults = [
             "control+alt+shift+p",
@@ -515,6 +590,8 @@ class Frontend(object):
             "control+alt+shift+up",
             "control+alt+shift+down",
             "control+alt+shift+space",
+            "control+alt+shift+f",
+            "control+alt+shift+b",
         ]
 
         ctrl_vars = [
@@ -524,6 +601,8 @@ class Frontend(object):
             ctrl_volume_up_var,
             ctrl_volume_down_var,
             ctrl_mute_var,
+            ctrl_seek_forward_var,
+            ctrl_seek_backward_var,
         ]
         alt_vars = [
             alt_play_pause_var,
@@ -532,6 +611,8 @@ class Frontend(object):
             alt_volume_up_var,
             alt_volume_down_var,
             alt_mute_var,
+            alt_seek_forward_var,
+            alt_seek_backward_var,
         ]
         shift_vars = [
             shift_play_pause_var,
@@ -540,6 +621,8 @@ class Frontend(object):
             shift_volume_up_var,
             shift_volume_down_var,
             shift_mute_var,
+            shift_seek_forward_var,
+            shift_seek_backward_var,
         ]
 
         if os.path.exists(self.app.config_path):
@@ -611,6 +694,8 @@ class Frontend(object):
         volume_up_entry.bind("<KeyRelease>", set_modified)
         volume_down_entry.bind("<KeyRelease>", set_modified)
         mute_entry.bind("<KeyRelease>", set_modified)
+        seek_forward_entry.bind("<KeyRelease>", set_modified)
+        seek_backward_entry.bind("<KeyRelease>", set_modified)
         startup_checkbox.config(command=set_modified)
         minimize_checkbox.config(command=set_modified)
 
@@ -645,16 +730,20 @@ class Frontend(object):
         volume_down_modifiers.grid(row=13, column=1, sticky="W")
         mute_label.grid(row=14, column=0, sticky="E")
         mute_modifiers.grid(row=14, column=1, sticky="W")
+        seek_forward_label.grid(row=15, column=0, sticky="E")
+        seek_forward_modifiers.grid(row=15, column=1, sticky="W")
+        seek_backward_label.grid(row=16, column=0, sticky="E")
+        seek_backward_modifiers.grid(row=16, column=1, sticky="W")
 
-        button_frame.grid(row=15, column=0, columnspan=2, pady=10)
+        button_frame.grid(row=17, column=0, columnspan=2, pady=10)
         save_button.pack(side="left", padx=(0, 5))
         start_button.pack(side="left", padx=(5, 0))
 
-        checkbox_frame.grid(row=16, column=0, columnspan=2, pady=10)
+        checkbox_frame.grid(row=18, column=0, columnspan=2, pady=10)
         startup_checkbox.pack(side="left", padx=(0, 5))
         minimize_checkbox.pack(side="left", padx=(5, 0))
 
-        source_frame.grid(row=17, column=0, columnspan=2, pady=10)
+        source_frame.grid(row=19, column=0, columnspan=2, pady=10)
         source_link.pack(side="left")
 
         # Center window and focus

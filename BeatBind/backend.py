@@ -46,17 +46,18 @@ class Backend(object):
             "next_track": None,
             "volume_up": None,
             "volume_down": None,
+            "mute": None,
+            "seek_forward": None,
+            "seek_backward": None,
         }
-        self.play_pause_hotkey = None
-        self.prev_track_hotkey = None
-        self.next_track_hotkey = None
-        self.volume_up_hotkey = None
-        self.volume_down_hotkey = None
+
+        # Volume adjustment
+        self.volume = "5"
         self.last_volume = None
         self.muted_volume = None
 
-        # Volume adjustment
-        self.volume = 5
+        # Seek position
+        self.seek_position = 5000
 
         # Startup and minimize
         self.startup_var = None
@@ -168,6 +169,53 @@ class Backend(object):
                 response.raise_for_status()
             except Exception as e:
                 print(f"Error: {e}")
+
+    def SeekForward(self):
+        if self.token:
+            self.CheckTokenExpiry()
+
+            headers = {"Authorization": "Bearer " + self.token}
+            position = self.GetCurrentPlaybackPosition() + self.seek_position
+            url = f"https://api.spotify.com/v1/me/player/seek?position_ms={position}"
+            try:
+                response = requests.put(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                print("Seeking forward")
+            except Exception as e:
+                print(f"Error: {e}")
+
+    def SeekBackward(self):
+        if self.token:
+            self.CheckTokenExpiry()
+
+            headers = {"Authorization": "Bearer " + self.token}
+            position = self.GetCurrentPlaybackPosition() - self.seek_position
+            url = f"https://api.spotify.com/v1/me/player/seek?position_ms={position}"
+            try:
+                response = requests.put(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                print("Seeking backward")
+            except Exception as e:
+                print(f"Error: {e}")
+
+    def GetCurrentPlaybackPosition(self):
+        if self.token:
+            self.CheckTokenExpiry()
+
+            headers = {"Authorization": "Bearer " + self.token}
+            url = "https://api.spotify.com/v1/me/player"
+            try:
+                response = requests.get(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                data = response.json()
+                if data and data["is_playing"]:
+                    return data["progress_ms"]
+                else:
+                    print("Playback is not active or no track is currently playing.")
+                    return None
+            except Exception as e:
+                print(f"Error fetching current playback position: {e}")
+                return None
 
     def GetCurrentVolume(self):
         if self.token:
@@ -299,6 +347,12 @@ class Backend(object):
         def mute():
             self.Mute()
 
+        def seek_forward():
+            self.SeekForward()
+
+        def seek_backward():
+            self.SeekBackward()
+
         # Create the bindings list, removing any empty hotkeys
         bindings = []
         for hotkey_name, hotkey_func in [
@@ -308,6 +362,8 @@ class Backend(object):
             ("volume_up", volume_up),
             ("volume_down", volume_down),
             ("mute", mute),
+            ("seek_forward", seek_forward),
+            ("seek_backward", seek_backward),
         ]:
             hotkey = self.hotkeys[hotkey_name].split("+")
             if all(hotkey):
