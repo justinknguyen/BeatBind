@@ -36,6 +36,7 @@ You can build the `.exe` yourself with the provided build command in the [build.
 
 ## Requirements
 
+- Internet connection
 - Windows 10/11
 - Spotify on your device of choice
 - Spotify Premium
