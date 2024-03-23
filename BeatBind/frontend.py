@@ -123,6 +123,7 @@ class Frontend(object):
             self.app.port = port_entry.get()
             self.app.device_id = device_id_entry.get()
             self.app.volume = volume_entry.get()
+            self.app.rewind_instead_prev = self.app.rewind_instead_prev_var.get()
             self.app.hotkeys["play/pause"] = update_hotkey_entry(
                 play_pause_entry,
                 ctrl_play_pause_var,
@@ -250,6 +251,11 @@ class Frontend(object):
         root.iconbitmap(self.icon_path)
         root.focus_force()
 
+        # Checkboxes
+        self.app.rewind_instead_prev_var = tk.BooleanVar()
+        self.app.startup_var = tk.BooleanVar()
+        self.app.minimize_var = tk.BooleanVar()
+
         # Create a frame with padding
         frame = ttk.Frame(root, padding=20)
         frame.grid(column=0, row=0)
@@ -305,6 +311,11 @@ class Frontend(object):
             validate="all",
             validatecommand=vcmd,
         )
+        rewind_instead_prev_checkbox = ttk.Checkbutton(
+            frame,
+            text="Rewind instead of going to previous song",
+            variable=self.app.rewind_instead_prev_var,
+        )
 
         def update_devices():
             devices_data = self.app.GetDevices()
@@ -337,10 +348,6 @@ class Frontend(object):
         start_button = ttk.Button(
             button_frame, text="Start & Close", command=start_action
         )
-
-        # Checkboxes
-        self.app.startup_var = tk.BooleanVar()
-        self.app.minimize_var = tk.BooleanVar()
 
         # Hotkey Area
         width = 12
@@ -633,6 +640,8 @@ class Frontend(object):
                 for entry, key, default_value in zip(entries, keys, keys_defaults):
                     autofill_entry(entry, config.get(key, default_value))
 
+                self.app.rewind_instead_prev_var.set(config.get("rewind_instead_prev", False))
+
                 for entry, key, default_value, ctrl_var, alt_var, shift_var in zip(
                     hotkey_entries,
                     hotkey_keys,
@@ -653,6 +662,8 @@ class Frontend(object):
         else:
             for entry, key, default_value in zip(entries, keys, keys_defaults):
                 autofill_entry(entry, default_value)
+
+            self.app.rewind_instead_prev_var.set(False)
 
             for entry, key, default_value, ctrl_var, alt_var, shift_var in zip(
                 hotkey_entries,
@@ -688,6 +699,7 @@ class Frontend(object):
         volume_entry.bind("<KeyRelease>", set_modified)
         volume_entry.bind("<<Increment>>", set_modified)
         volume_entry.bind("<<Decrement>>", set_modified)
+        rewind_instead_prev_checkbox.config(command=set_modified)
         play_pause_entry.bind("<KeyRelease>", set_modified)
         prev_track_entry.bind("<KeyRelease>", set_modified)
         next_track_entry.bind("<KeyRelease>", set_modified)
@@ -711,39 +723,40 @@ class Frontend(object):
         devices_button.grid(row=5, column=1)
         volume_label.grid(row=6, column=0, sticky="E")
         volume_entry.grid(row=6, column=1, sticky="W")
+        rewind_instead_prev_checkbox.grid(row=7, column=1, sticky="W")
 
-        separator.grid(row=7, column=0, columnspan=3, sticky="EW", pady=10)
+        separator.grid(row=8, column=0, columnspan=3, sticky="EW", pady=10)
 
-        labels_frame.grid(row=8, column=1, pady=padding_y)
+        labels_frame.grid(row=9, column=1, pady=padding_y)
         modifier_label.grid(row=0, column=1, padx=(0, 50))
         key_label.grid(row=0, column=3, padx=(40, 0))
 
-        play_pause_label.grid(row=9, column=0, sticky="E")
-        play_pause_modifiers.grid(row=9, column=1, sticky="W")
-        prev_track_label.grid(row=10, column=0, sticky="E")
-        prev_track_modifiers.grid(row=10, column=1, sticky="W")
-        next_track_label.grid(row=11, column=0, sticky="E")
-        next_track_modifiers.grid(row=11, column=1, sticky="W")
-        volume_up_label.grid(row=12, column=0, sticky="E")
-        volume_up_modifiers.grid(row=12, column=1, sticky="W")
-        volume_down_label.grid(row=13, column=0, sticky="E")
-        volume_down_modifiers.grid(row=13, column=1, sticky="W")
-        mute_label.grid(row=14, column=0, sticky="E")
-        mute_modifiers.grid(row=14, column=1, sticky="W")
-        seek_forward_label.grid(row=15, column=0, sticky="E")
-        seek_forward_modifiers.grid(row=15, column=1, sticky="W")
-        seek_backward_label.grid(row=16, column=0, sticky="E")
-        seek_backward_modifiers.grid(row=16, column=1, sticky="W")
+        play_pause_label.grid(row=10, column=0, sticky="E")
+        play_pause_modifiers.grid(row=10, column=1, sticky="W")
+        prev_track_label.grid(row=11, column=0, sticky="E")
+        prev_track_modifiers.grid(row=11, column=1, sticky="W")
+        next_track_label.grid(row=12, column=0, sticky="E")
+        next_track_modifiers.grid(row=12, column=1, sticky="W")
+        volume_up_label.grid(row=13, column=0, sticky="E")
+        volume_up_modifiers.grid(row=13, column=1, sticky="W")
+        volume_down_label.grid(row=14, column=0, sticky="E")
+        volume_down_modifiers.grid(row=14, column=1, sticky="W")
+        mute_label.grid(row=15, column=0, sticky="E")
+        mute_modifiers.grid(row=15, column=1, sticky="W")
+        seek_forward_label.grid(row=16, column=0, sticky="E")
+        seek_forward_modifiers.grid(row=16, column=1, sticky="W")
+        seek_backward_label.grid(row=17, column=0, sticky="E")
+        seek_backward_modifiers.grid(row=17, column=1, sticky="W")
 
-        button_frame.grid(row=17, column=0, columnspan=2, pady=10)
+        button_frame.grid(row=18, column=0, columnspan=2, pady=10)
         save_button.pack(side="left", padx=(0, 5))
         start_button.pack(side="left", padx=(5, 0))
 
-        checkbox_frame.grid(row=18, column=0, columnspan=2, pady=10)
+        checkbox_frame.grid(row=19, column=0, columnspan=2, pady=10)
         startup_checkbox.pack(side="left", padx=(0, 5))
         minimize_checkbox.pack(side="left", padx=(5, 0))
 
-        source_frame.grid(row=19, column=0, columnspan=2, pady=10)
+        source_frame.grid(row=20, column=0, columnspan=2, pady=10)
         source_link.pack(side="left")
 
         # Center window and focus

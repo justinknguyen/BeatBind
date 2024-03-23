@@ -51,6 +51,11 @@ class Backend(object):
             "seek_backward": None,
         }
 
+        # Rewind instead of going to previous song settings
+        self.rewind_instead_prev_var = None
+        self.rewind_instead_prev = False
+        self.rewind_threshold = 3000
+
         # Volume adjustment
         self.volume = "5"
         self.last_volume = None
@@ -116,10 +121,22 @@ class Backend(object):
         if self.token:
             self.CheckTokenExpiry()
 
+            rewind = self.rewind_instead_prev and command == "previous" \
+                    and self.GetCurrentPlaybackPosition() > self.rewind_threshold
+
             headers = {"Authorization": "Bearer " + self.token}
             url = f"https://api.spotify.com/v1/me/player/{command}?device_id={self.device_id}"
+
+            # if more than self.rewind_threshold ms have passed since the beginning of the song,
+            # rewind to the beginning instead of changing to previous song
+            if rewind:
+                url = "https://api.spotify.com/v1/me/player/seek?position_ms=0"
+
             try:
-                response = requests.post(url, headers=headers, timeout=5)
+                if rewind:
+                    response = requests.put(url, headers=headers, timeout=5)
+                else:
+                    response = requests.post(url, headers=headers, timeout=5)
                 response.raise_for_status()
                 if command == "previous":
                     print("Previous track")
@@ -386,6 +403,7 @@ class Backend(object):
             "port": self.port,
             "device_id": self.device_id,
             "volume": self.volume,
+            "rewind_instead_prev": self.rewind_instead_prev,
             "hotkeys": self.hotkeys,
         }
         try:

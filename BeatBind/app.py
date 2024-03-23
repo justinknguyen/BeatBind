@@ -39,6 +39,7 @@ def main():
                 ("port", "8888"),
                 ("device_id", ""),
                 ("volume", "5"),
+                ("rewind_instead_prev", False),
             ]:
                 setattr(backend, key, config.get(key, default_value))
             for key, default_value in [
