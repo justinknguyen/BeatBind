@@ -335,11 +335,6 @@ class Frontend(object):
             validate="all",
             validatecommand=vcmd,
         )
-        rewind_instead_prev_checkbox = ttk.Checkbutton(
-            frame,
-            text="Previous Track: rewind to start after 3 seconds",
-            variable=self.app.rewind_instead_prev_var,
-        )
         seek_entry = ttk.Spinbox(
             options_frame,
             from_=0,
@@ -347,6 +342,11 @@ class Frontend(object):
             width=10,
             increment=1,
             validate="all",
+        )
+        rewind_instead_prev_checkbox = ttk.Checkbutton(
+            frame,
+            text="Previous Track: rewind to start after 3 seconds",
+            variable=self.app.rewind_instead_prev_var,
         )
 
         # Buttons
@@ -588,8 +588,16 @@ class Frontend(object):
             volume_entry,
             seek_entry,
         ]
-        keys = ["client_id", "client_secret", "port", "device_id", "volume", "seek"]
-        keys_defaults = ["", "", "8888", "", 5, 5000]
+        keys = [
+            "client_id",
+            "client_secret",
+            "port",
+            "device_id",
+            "volume",
+            "seek",
+            "rewind_instead_prev",
+        ]
+        keys_defaults = ["", "", "8888", "", 5, 5000, False]
         hotkey_entries = [
             play_pause_entry,
             prev_track_entry,
