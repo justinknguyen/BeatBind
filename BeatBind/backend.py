@@ -36,7 +36,7 @@ class Backend(object):
         # Spotify credentials
         self.client_id = None
         self.client_secret = None
-        self.port = None
+        self.port = 8888
         self.device_id = None
 
         # Global hotkeys
@@ -57,7 +57,7 @@ class Backend(object):
         self.rewind_threshold = 3000
 
         # Volume adjustment
-        self.volume = "5"
+        self.volume = 5
         self.last_volume = None
         self.muted_volume = None
 
@@ -121,8 +121,11 @@ class Backend(object):
         if self.token:
             self.CheckTokenExpiry()
 
-            rewind = self.rewind_instead_prev and command == "previous" \
-                    and self.GetCurrentPlaybackPosition() > self.rewind_threshold
+            rewind = (
+                self.rewind_instead_prev
+                and command == "previous"
+                and self.GetCurrentPlaybackPosition() > self.rewind_threshold
+            )
 
             headers = {"Authorization": "Bearer " + self.token}
             url = f"https://api.spotify.com/v1/me/player/{command}?device_id={self.device_id}"
@@ -154,10 +157,10 @@ class Backend(object):
             if self.last_volume is None:
                 self.last_volume = 50  # assume 50%
 
-            if (self.last_volume - int(self.volume)) < 0:
-                self.last_volume = int(self.volume)
-            elif (self.last_volume + int(self.volume)) > 100:
-                self.last_volume = 100 - int(self.volume)
+            if (self.last_volume - self.volume) < 0:
+                self.last_volume = self.volume
+            elif (self.last_volume + self.volume) > 100:
+                self.last_volume = 100 - self.volume
             url = f"https://api.spotify.com/v1/me/player/volume?volume_percent={self.last_volume + amount}&device_id={self.device_id}"
             try:
                 response = requests.put(url, headers=headers, timeout=5)
@@ -403,6 +406,7 @@ class Backend(object):
             "port": self.port,
             "device_id": self.device_id,
             "volume": self.volume,
+            "seek": self.seek_position,
             "rewind_instead_prev": self.rewind_instead_prev,
             "hotkeys": self.hotkeys,
         }
