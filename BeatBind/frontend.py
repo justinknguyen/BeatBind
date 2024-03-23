@@ -337,7 +337,7 @@ class Frontend(object):
         )
         rewind_instead_prev_checkbox = ttk.Checkbutton(
             frame,
-            text="Rewind instead of going to previous song",
+            text="Previous Track: rewind to start after 3 seconds",
             variable=self.app.rewind_instead_prev_var,
         )
         seek_entry = ttk.Spinbox(
