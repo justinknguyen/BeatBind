@@ -1,7 +1,7 @@
 # <img src="./BeatBind/icon.ico" width="4%" height="5%"> BeatBind - Spotify Global Hotkeys
 
 ![build](https://img.shields.io/badge/build-passing-brightgreen)
-[![version](https://img.shields.io/badge/version-1.4.0-blue)](https://github.com/justinknguyen/BeatBind/releases/tag/v1.4.0)
+[![version](https://img.shields.io/badge/version-1.5.0-blue)](https://github.com/justinknguyen/BeatBind/releases/tag/v1.5.0)
 ![python](https://img.shields.io/badge/python-3.10.9-yellow)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/justinknguyen/BeatBind/issues)
 
