@@ -210,6 +210,8 @@ class Backend(object):
 
             headers = {"Authorization": "Bearer " + self.token}
             position = self.GetCurrentPlaybackPosition() - self.seek_position
+            if position < 0:
+                position = 0
             url = f"https://api.spotify.com/v1/me/player/seek?position_ms={position}"
             try:
                 response = requests.put(url, headers=headers, timeout=5)
@@ -228,14 +230,14 @@ class Backend(object):
                 response = requests.get(url, headers=headers, timeout=5)
                 response.raise_for_status()
                 data = response.json()
-                if data and data["is_playing"]:
+                if data:
                     return data["progress_ms"]
                 else:
-                    print("Playback is not active or no track is currently playing.")
-                    return None
+                    print("Unable to obtain playback information")
+                    return 0
             except Exception as e:
                 print(f"Error fetching current playback position: {e}")
-                return None
+                return 0
 
     def GetCurrentVolume(self):
         if self.token:
