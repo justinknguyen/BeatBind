@@ -79,7 +79,13 @@ The app requires the user to input three fields:
 
 1. To obtain your `Device ID`, press the button "Get Devices" in the BeatBind app once your `Client ID` and `Client Secret` are filled in.
 1. Click on the drop-down arrow and select your device of choice.
-   - Note: if you don't see your device listed, open the Spotify app on that device and play something, then check again.
+1. If you don't see your device listed:
+    - Open the Spotify app (not the web player) on that device and play something, then check again.
+    - If you still don't see your devices, manually obtain it by heading to this [link](https://developer.spotify.com/documentation/web-api/reference/get-a-users-available-devices) and then click on the green "Try it" button to the right. Copy and paste the id into the app. 
+        <p>
+        <img src="./images/devices.png" width="70%" height="70%">
+        </p>
+   
 
 Once you're done, click on `Save` within the app to save your settings. Click on `Start & Close` to close the window and start listening for your hotkeys!
 
