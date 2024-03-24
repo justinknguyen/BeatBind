@@ -46,7 +46,7 @@ You can build the `.exe` yourself with the provided build command in the [build.
 
 After downloading the `.zip` folder, extract the contents somewhere on your computer.
 
-\*If you extracted it to your Program Files folder, you'll need to run the app in admin mode to be able to write and save your settings and token.
+\*If you extracted it to your `Program Files` folder, you'll need to run the app in admin mode to be able to write and save your settings and token. I recommend placing it somewhere else.
 
 The app requires the user to input three fields:
 
