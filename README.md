@@ -38,7 +38,7 @@ You can build the `.exe` yourself with the provided build command in the [build.
 
 - Internet connection
 - Windows 10/11
-- Spotify on your device of choice
+- Spotify App on your device of choice
 - Spotify Premium
   - Unfortunately, the endpoints used in Spotify's Web API only works for premium users, so it's not possible for this app to work for free users. There are other apps online that work locally instead, allowing it to work for free and premium users.
 
