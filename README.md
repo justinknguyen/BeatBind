@@ -89,6 +89,7 @@ You can open the settings again by right-clicking on the app's system tray icon.
 
 Please go through the below steps before creating an Issue ticket.
 
+1. Exclude the BeatBind folder from your anti-virus software.
 1. If your settings are not saving, please see [Why Are My Settings Not Saving?](#why-are-my-settings-not-saving)
 1. If your app is not starting/opening, please see [Why Is The App Crashing?](#why-is-the-app-crashing)
 1. If your app is not starting on Windows startup, please see [Why Isn't The App Starting on Windows Startup?](#why-isnt-the-app-starting-on-windows-startup) and [Not launching on startup. #5](https://github.com/justinknguyen/BeatBind/issues/5)
