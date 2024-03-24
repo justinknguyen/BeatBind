@@ -272,7 +272,7 @@ class Frontend(object):
         """
         root = ThemedTk(theme="breeze")
         root.withdraw()
-        root.title("BeatBind (v1.5.0)")
+        root.title("BeatBind (v1.5.1)")
         root.iconbitmap(self.icon_path)
         root.focus_force()
 
@@ -718,6 +718,7 @@ class Frontend(object):
         client_id_entry.bind("<KeyRelease>", set_modified_cred)
         client_secret_entry.bind("<KeyRelease>", set_modified_cred)
         port_entry.bind("<KeyRelease>", set_modified_cred)
+        device_id_entry.bind("<KeyRelease>", set_modified_cred)
         volume_entry.bind("<KeyRelease>", set_modified)
         volume_entry.bind("<<Increment>>", set_modified)
         volume_entry.bind("<<Decrement>>", set_modified)
