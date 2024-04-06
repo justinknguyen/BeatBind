@@ -98,7 +98,8 @@ Please go through the below steps before creating an Issue ticket.
 1. Exclude the BeatBind folder from your anti-virus software.
 1. If your settings are not saving, please see [Why Are My Settings Not Saving?](#why-are-my-settings-not-saving)
 1. If your app is not starting/opening, please see [Why Is The App Crashing?](#why-is-the-app-crashing)
-1. If your app is not starting on Windows startup, please see [Why Isn't The App Starting on Windows Startup?](#why-isnt-the-app-starting-on-windows-startup) and [Not launching on startup. #5](https://github.com/justinknguyen/BeatBind/issues/5)
+1. If your app is not starting on Windows startup, please see [Why Isn't The App Starting on Windows Startup?](#why-isnt-the-app-starting-on-windows-startup)
+1. If you're getting a "Server listening on localhost has not been accessed error", please see [Server Listening On Localhost Has Not Been Accessed Error](#server-listening-on-localhost-has-not-been-accessed-error) and [Issue #12](https://github.com/justinknguyen/BeatBind/issues/12)
 1. Make sure your Client ID and Secret is correct and matches what is displayed in the Spotify developer site.
 1. Check if you have the Spotify app installed, and make sure the Device ID selected is the correct one.
 1. Check if you're able to see the app within the system tray after pressing `Start & Close`.
@@ -115,6 +116,7 @@ Please go through the below steps before creating an Issue ticket.
 - [Why Isn't The App Starting on Windows Startup?](#why-isnt-the-app-starting-on-windows-startup)
 - [Why Is The App Crashing?](#why-is-the-app-crashing)
 - [My Hotkeys Stop Registering After Waking From Sleep](#my-hotkeys-stop-registering-after-waking-from-sleep)
+- [Server Listening On Localhost Has Not Been Accessed Error](#server-listening-on-localhost-has-not-been-accessed-error)
 
 ### Free Users?
 
@@ -141,7 +143,7 @@ There are two files stored within the `BeatBind` folder:
 
 ### Why Are My Settings Not Saving?
 
-You most likely extracted the BeatBind folder into a location where it requires Administrator privileges, such as the Program Files folder. Place the BeatBind folder into a different location, or try running the app in Admin mode.
+You most likely extracted the BeatBind folder into a location where it requires Administrator privileges, such as the `Program Files` folder. Place the BeatBind folder into a different location, or try running the app in admin mode.
 
 ### How Do I Update The App?
 
@@ -163,3 +165,6 @@ This happens if the location of the `.exe` file was changed. The registry key us
 ### My Hotkeys Stop Registering After Waking From Sleep
 
 There are rare cases where hotkeys stop registering on system wake up from sleep, and pressing `Start & Close` button again fixes the listener. For a more permanent fix, try disabling Windows Fast Startup. If the bug keeps occurring after disabling Fast Startup, please create an Issue ticket.
+
+### Server Listening On Localhost Has Not Been Accessed Error
+Please see the top answer solution from here https://superuser.com/questions/565409/how-to-stop-an-automatic-redirect-from-http-to-https-in-chrome
