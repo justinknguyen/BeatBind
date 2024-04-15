@@ -16,7 +16,7 @@ This background Python Windows application utilizes the [global_hotkeys](https:/
     </a>
 </p>
 
-This app does not control your Spotify locally. It sends an API request over the internet to control your Spotify, so expect a slight delay. The delay experienced can vary depending on your environment.
+This app does not control your Spotify locally. It sends an API request over the internet to control your Spotify, so expect a slight delay. The delay experienced can vary depending on your internet speed.
 
 Please see [FAQ](#faq) for more information or if you encounter any issues. If your issue isn't listed, please create an Issue ticket.
 
