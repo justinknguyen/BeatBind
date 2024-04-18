@@ -49,6 +49,7 @@ class Backend(object):
             "mute": None,
             "seek_forward": None,
             "seek_backward": None,
+            "shuffle": None,
         }
 
         # Rewind instead of going to previous song settings
@@ -220,6 +221,33 @@ class Backend(object):
             except Exception as e:
                 print(f"Error: {e}")
 
+    def Shuffle(self):
+        if self.token:
+            self.CheckTokenExpiry()
+
+            is_shuffled = self.GetShuffleState()
+            if is_shuffled is None:
+                return
+
+            headers = {"Authorization": "Bearer " + self.token}
+            if is_shuffled:
+                # Unshuffle the music
+                url = f"https://api.spotify.com/v1/me/player/shuffle?device_id={self.device_id}"
+            else:
+                # Shuffle the music
+                url = f"https://api.spotify.com/v1/me/player/shuffle?device_id={self.device_id}"
+            try:
+                response = requests.put(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                if is_shuffled:
+                    print("Unshuffling music")
+                else:
+                    print("Shuffling music")
+            except Exception as e:
+                print(f"Error: {e}")
+
+
+
     def GetCurrentPlaybackPosition(self):
         if self.token:
             self.CheckTokenExpiry()
@@ -262,6 +290,20 @@ class Backend(object):
                 response.raise_for_status()
                 playback_data = response.json()
                 return playback_data["is_playing"]
+            except Exception as e:
+                print(f"Error fetching playback state: {e}")
+                self.HandleConnectionError()
+                return None
+
+    def GetShuffleState(self):
+        if self.token:
+            headers = {"Authorization": "Bearer " + self.token}
+            url = "https://api.spotify.com/v1/me/player"
+            try:
+                response = requests.get(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                playback_data = response.json()
+                return playback_data["shuffle_state"]
             except Exception as e:
                 print(f"Error fetching playback state: {e}")
                 self.HandleConnectionError()
@@ -375,6 +417,9 @@ class Backend(object):
         def seek_backward():
             self.SeekBackward()
 
+        def shuffle():
+            self.Shuffle()
+
         # Create the bindings list, removing any empty hotkeys
         bindings = []
         for hotkey_name, hotkey_func in [
@@ -386,6 +431,7 @@ class Backend(object):
             ("mute", mute),
             ("seek_forward", seek_forward),
             ("seek_backward", seek_backward),
+            ("shuffle", shuffle),
         ]:
             hotkey = self.hotkeys[hotkey_name].split("+")
             if all(hotkey):

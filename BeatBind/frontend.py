@@ -173,6 +173,12 @@ class Frontend(object):
                 alt_seek_backward_var,
                 shift_seek_backward_var,
             )
+            self.app.hotkeys["shuffle"] = update_hotkey_entry(
+                shuffle_entry,
+                ctrl_shuffle_var,
+                alt_shuffle_var,
+                shift_shuffle_var,
+            )
 
         def create_modifiers(frame, ctrl_var, alt_var, shift_var):
             ctrl_checkbox = ttk.Checkbutton(frame, text="Ctrl", variable=ctrl_var)
@@ -306,6 +312,7 @@ class Frontend(object):
         mute_label = ttk.Label(frame, text="Mute:")
         seek_forward_label = ttk.Label(frame, text="Seek Forward:")
         seek_backward_label = ttk.Label(frame, text="Seek Backward:")
+        shuffle_label = ttk.Label(frame, text="Shuffle:")
 
         source_frame = ttk.Frame(frame)
         source_link = ttk.Label(
@@ -576,6 +583,30 @@ class Frontend(object):
         )
         seek_backward_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
+        ctrl_shuffle_var = tk.BooleanVar()
+        alt_shuffle_var = tk.BooleanVar()
+        shift_shuffle_var = tk.BooleanVar()
+        shuffle_modifiers = ttk.Frame(frame)
+        shuffle_entry = ttk.Entry(
+            shuffle_modifiers, width=width, justify="center"
+        )
+        shuffle_entry.bind(
+            "<FocusIn>", lambda event: listen_for_key_events(shuffle_entry)
+        )
+        (
+            ctrl_shuffle_checkbox,
+            alt_shuffle_checkbox,
+            shift_shuffle_checkbox,
+        ) = create_modifiers(
+            shuffle_modifiers,
+            ctrl_shuffle_var,
+            alt_shuffle_var,
+            shift_shuffle_var,
+        )
+        ctrl_shuffle_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
+        alt_shuffle_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
+        shift_shuffle_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
+        shuffle_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
         # --------------------------------------------------------------------------------------- #
         """
         Auto-fill entries
@@ -607,6 +638,7 @@ class Frontend(object):
             mute_entry,
             seek_forward_entry,
             seek_backward_entry,
+            shuffle_entry,
         ]
         hotkey_keys = [
             "play/pause",
@@ -617,6 +649,7 @@ class Frontend(object):
             "mute",
             "seek_forward",
             "seek_backward",
+            "shuffle"
         ]
         hotkey_defaults = [
             "control+alt+shift+p",
@@ -627,6 +660,7 @@ class Frontend(object):
             "control+alt+shift+space",
             "control+alt+shift+f",
             "control+alt+shift+b",
+            "control+alt+shift+s"
         ]
 
         ctrl_vars = [
@@ -638,6 +672,7 @@ class Frontend(object):
             ctrl_mute_var,
             ctrl_seek_forward_var,
             ctrl_seek_backward_var,
+            ctrl_shuffle_var,
         ]
         alt_vars = [
             alt_play_pause_var,
@@ -648,6 +683,7 @@ class Frontend(object):
             alt_mute_var,
             alt_seek_forward_var,
             alt_seek_backward_var,
+            alt_shuffle_var,
         ]
         shift_vars = [
             shift_play_pause_var,
@@ -658,6 +694,7 @@ class Frontend(object):
             shift_mute_var,
             shift_seek_forward_var,
             shift_seek_backward_var,
+            shift_shuffle_var
         ]
 
         if os.path.exists(self.app.config_path):
@@ -734,6 +771,7 @@ class Frontend(object):
         mute_entry.bind("<KeyRelease>", set_modified)
         seek_forward_entry.bind("<KeyRelease>", set_modified)
         seek_backward_entry.bind("<KeyRelease>", set_modified)
+        shuffle.bind("<KeyRelease>", set_modified())
         startup_checkbox.config(command=set_modified)
         minimize_checkbox.config(command=set_modified)
 
@@ -776,6 +814,8 @@ class Frontend(object):
         seek_forward_modifiers.grid(row=15, column=1, sticky="W")
         seek_backward_label.grid(row=16, column=0, sticky="E")
         seek_backward_modifiers.grid(row=16, column=1, sticky="W")
+        shuffle_label.grid(row=17, column=0, sticky="E")
+        shuffle_modifiers.grid(row=17, column=1, sticky="W")
 
         button_frame.grid(row=17, column=0, columnspan=2, pady=10)
         save_button.pack(side="left", padx=(0, 5))
