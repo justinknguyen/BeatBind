@@ -771,7 +771,7 @@ class Frontend(object):
         mute_entry.bind("<KeyRelease>", set_modified)
         seek_forward_entry.bind("<KeyRelease>", set_modified)
         seek_backward_entry.bind("<KeyRelease>", set_modified)
-        shuffle.bind("<KeyRelease>", set_modified())
+        shuffle_entry.bind("<KeyRelease>", set_modified())
         startup_checkbox.config(command=set_modified)
         minimize_checkbox.config(command=set_modified)
 
@@ -817,15 +817,15 @@ class Frontend(object):
         shuffle_label.grid(row=17, column=0, sticky="E")
         shuffle_modifiers.grid(row=17, column=1, sticky="W")
 
-        button_frame.grid(row=17, column=0, columnspan=2, pady=10)
+        button_frame.grid(row=18, column=0, columnspan=2, pady=10)
         save_button.pack(side="left", padx=(0, 5))
         start_button.pack(side="left", padx=(5, 0))
 
-        checkbox_frame.grid(row=18, column=0, columnspan=2, pady=10)
+        checkbox_frame.grid(row=19, column=0, columnspan=2, pady=10)
         startup_checkbox.pack(side="left", padx=(0, 5))
         minimize_checkbox.pack(side="left", padx=(5, 0))
 
-        source_frame.grid(row=19, column=0, columnspan=2, pady=10)
+        source_frame.grid(row=20, column=0, columnspan=2, pady=10)
         source_link.pack(side="left")
 
         # Center window and focus
