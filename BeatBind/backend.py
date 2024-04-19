@@ -232,10 +232,10 @@ class Backend(object):
             headers = {"Authorization": "Bearer " + self.token}
             if is_shuffled:
                 # Unshuffle the music
-                url = f"https://api.spotify.com/v1/me/player/shuffle?device_id={self.device_id}"
+                url = f"https://api.spotify.com/v1/me/player/shuffle?state=false"
             else:
                 # Shuffle the music
-                url = f"https://api.spotify.com/v1/me/player/shuffle?device_id={self.device_id}"
+                url = f"https://api.spotify.com/v1/me/player/shuffle?state=true"
             try:
                 response = requests.put(url, headers=headers, timeout=5)
                 response.raise_for_status()
