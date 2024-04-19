@@ -302,10 +302,10 @@ class Backend(object):
             try:
                 response = requests.get(url, headers=headers, timeout=5)
                 response.raise_for_status()
-                playback_data = response.json()
-                return playback_data["shuffle_state"]
+                shuffle_data = response.json()
+                return shuffle_data["shuffle_state"]
             except Exception as e:
-                print(f"Error fetching playback state: {e}")
+                print(f"Error fetching shuffle state: {e}")
                 self.HandleConnectionError()
                 return None
 
