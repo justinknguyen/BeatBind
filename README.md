@@ -97,7 +97,7 @@ You can open the settings again by right-clicking on the app's system tray icon.
 
 Please go through the below steps before creating an Issue ticket.
 
-1. Is your issue hotkey related? This app uses the global_hotkeys module by btsdev: https://github.com/btsdev/global_hotkeys. I recommend creating the issue ticket there so they can solve your issue.
+1. Is your issue hotkey related? This app uses the `global_hotkeys` module by btsdev: https://github.com/btsdev/global_hotkeys. I recommend creating the issue ticket there so they can solve your issue. Once it's solved, create an Issue ticket here and let me know to update the app.
 1. Exclude the BeatBind folder from your anti-virus software.
 1. If your settings are not saving, please see [Why Are My Settings Not Saving?](#why-are-my-settings-not-saving)
 1. If your app is not starting/opening, please see [Why Is The App Crashing?](#why-is-the-app-crashing)
