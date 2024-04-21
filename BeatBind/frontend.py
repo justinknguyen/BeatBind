@@ -278,7 +278,7 @@ class Frontend(object):
         """
         root = ThemedTk(theme="breeze")
         root.withdraw()
-        root.title("BeatBind (v1.5.1)")
+        root.title("BeatBind (v1.5.2)")
         root.iconbitmap(self.icon_path)
         root.focus_force()
 
@@ -352,7 +352,7 @@ class Frontend(object):
         )
         rewind_instead_prev_checkbox = ttk.Checkbutton(
             frame,
-            text="Previous Track: rewind to start after 3 seconds",
+            text="Previous Track: rewind to start",
             variable=self.app.rewind_instead_prev_var,
         )
 

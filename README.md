@@ -1,7 +1,7 @@
 # <img src="./BeatBind/icon.ico" width="4%" height="5%"> BeatBind - Spotify Global Hotkeys
 
 ![build](https://img.shields.io/badge/build-passing-brightgreen)
-[![version](https://img.shields.io/badge/version-1.5.1-blue)](https://github.com/justinknguyen/BeatBind/releases/tag/v1.5.1)
+[![version](https://img.shields.io/badge/version-1.5.2-blue)](https://github.com/justinknguyen/BeatBind/releases/tag/v1.5.2)
 ![python](https://img.shields.io/badge/python-3.10.9-yellow)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/justinknguyen/BeatBind/issues)
 
@@ -15,6 +15,8 @@ This background Python Windows application utilizes the [global_hotkeys](https:/
         <img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee">
     </a>
 </p>
+
+This app does not control your Spotify locally. It sends an API request over the internet to control your Spotify, so expect a slight delay. The delay experienced can vary depending on your internet speed.
 
 Please see [FAQ](#faq) for more information or if you encounter any issues. If your issue isn't listed, please create an Issue ticket.
 
@@ -95,6 +97,7 @@ You can open the settings again by right-clicking on the app's system tray icon.
 
 Please go through the below steps before creating an Issue ticket.
 
+1. Is your issue hotkey related? This app uses the `global_hotkeys` module by btsdev: https://github.com/btsdev/global_hotkeys. I recommend creating the Issue ticket there so they can solve your issue. Once it's solved, create an Issue ticket here and let me know to update the app.
 1. Exclude the BeatBind folder from your anti-virus software.
 1. If your settings are not saving, please see [Why Are My Settings Not Saving?](#why-are-my-settings-not-saving)
 1. If your app is not starting/opening, please see [Why Is The App Crashing?](#why-is-the-app-crashing)
