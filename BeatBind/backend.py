@@ -435,7 +435,10 @@ class Backend(object):
         ]:
             hotkey = self.hotkeys[hotkey_name].split("+")
             if all(hotkey):
-                bindings.append([hotkey, None, hotkey_func])
+                if hotkey_name == "volume_up" or hotkey_name == "volume_down":
+                    bindings.append([hotkey, hotkey_func, None])
+                else:
+                    bindings.append([hotkey, None, hotkey_func])
 
         # Register all of our keybindings
         register_hotkeys(bindings)

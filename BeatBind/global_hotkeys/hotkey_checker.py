@@ -224,14 +224,18 @@ class HotkeyChecker():
                     pressed = self._are_all_keys_not_pressed_in_chord(non_allowed_modifiers)
 
                 if pressed:
-                    this_is_the_last_chord = key_state_id == len(hotkey) - 1
-                    self.hotkey_actions[id][2][key_state_id] = 1
-                    if (key_state != 1) and (this_is_the_last_chord):
-                        if press_callback != None:
-                            if press_callback_params != None:
-                                press_callback(press_callback_params)
-                            else:
-                                press_callback()
+                    while pressed:
+                        this_is_the_last_chord = key_state_id == len(hotkey) - 1
+                        self.hotkey_actions[id][2][key_state_id] = 1
+                        if (key_state != 1) and (this_is_the_last_chord):
+                            if press_callback != None:
+                                if press_callback_params != None:
+                                    press_callback(press_callback_params)
+                                else:
+                                    press_callback()
+                        pressed = win32api.GetAsyncKeyState(chord[len(chord)-1]) < 0
+                        time.sleep(0.02)
+
                 else:
                     this_is_the_last_chord = key_state_id == len(hotkey) - 1
                     #self.hotkey_actions[id][2] = False
