@@ -19,7 +19,7 @@ def main():
                 count += 1
         return count
 
-    if count_running_instances() > 2:
+    if count_running_instances() > 1:
         print("BeatBind.exe is already running. Exiting...")
         sys.exit()
 
