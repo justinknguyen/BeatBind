@@ -11,7 +11,6 @@ import win32api
 from global_hotkeys import keycodes
 from PIL import Image
 from ttkthemes import ThemedTk
-from constants import *
 
 
 class Frontend(object):
@@ -42,7 +41,7 @@ class Frontend(object):
         return pystray.MenuItem("Settings", self.SettingsWindow)
 
     def SettingsWindow(self):
-        global KEY_OPTIONS, modifiedCredentials
+        global modifiedCredentials
         modifiedCredentials = False
 
         def set_modified(event=None):
@@ -53,15 +52,10 @@ class Frontend(object):
             modifiedCredentials = True
             save_button.config(state=tk.NORMAL)
 
-        def handle_keypress(virtual_keycode, entry):
-            decimal_to_keyname = {
-                int(hex_value): key for key, hex_value in keycodes.vk_key_names.items()
-            }
-            key_name = decimal_to_keyname.get(virtual_keycode)
-
+        def handle_keypress(key_name, entry):
             if key_name == "backspace" or key_name == "delete":
                 entry.delete(0, tk.END)
-            elif key_name in KEY_OPTIONS:
+            else:
                 entry.delete(0, tk.END)
                 entry.insert(0, key_name)
 
@@ -71,8 +65,10 @@ class Frontend(object):
                     if entry.focus_get() != entry:
                         break
                     for key_name, virtual_keycode in keycodes.vk_key_names.items():
+                        if virtual_keycode == "window":
+                            continue
                         if win32api.GetAsyncKeyState(virtual_keycode) & 0x8000:
-                            handle_keypress(virtual_keycode, entry)
+                            handle_keypress(key_name, entry)
                     entry.update_idletasks()
                     entry.update()
                 except:
@@ -597,7 +593,7 @@ class Frontend(object):
             "seek",
             "rewind_instead_prev",
         ]
-        keys_defaults = ["", "", "8888", "", 5, 5000, False]
+        keys_defaults = ["", "", 8888, "", 5, 5000, False]
         hotkey_entries = [
             play_pause_entry,
             prev_track_entry,

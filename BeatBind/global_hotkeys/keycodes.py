@@ -27,6 +27,7 @@ vk_key_names = {
     "enter": win32con.VK_RETURN,
     "left_window": 0x5B,
     "right_window": 0x5C,
+    "window": "window",
     "print_screen": 0x2C,
     "insert": 0x2D,
     "delete": 0x2E,
