@@ -117,4 +117,7 @@ KEY_OPTIONS = [
     "stop_media",
     "play/pause_media",
     "fn",
+    "æ",
+    "ø",
+    "å",
 ]
