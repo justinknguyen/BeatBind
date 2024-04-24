@@ -3,7 +3,7 @@ import json.decoder
 import os
 import tkinter as tk
 import webbrowser
-from tkinter import ttk
+from tkinter import ttk, filedialog, font
 
 import psutil
 import pystray
@@ -12,7 +12,8 @@ from global_hotkeys import keycodes
 from PIL import Image
 from ttkthemes import ThemedTk
 from constants import *
-
+import customtkinter as ctk
+from CTkSpinbox import *
 
 class Frontend(object):
     def __init__(self, app):
@@ -45,13 +46,16 @@ class Frontend(object):
         global KEY_OPTIONS, modifiedCredentials
         modifiedCredentials = False
 
+        # Below method done as button parameter
         def set_modified(event=None):
-            save_button.config(state=tk.NORMAL)
+            save_button = ctk.CTkButton(
+                button_frame, text="Save", command=save_action, state="normal"
+            )
 
         def set_modified_cred(event=None):
             global modifiedCredentials
             modifiedCredentials = True
-            save_button.config(state=tk.NORMAL)
+            save_button.configure(state=tk.NORMAL)
 
         def handle_keypress(virtual_keycode, entry):
             decimal_to_keyname = {
@@ -181,12 +185,12 @@ class Frontend(object):
             )
 
         def create_modifiers(frame, ctrl_var, alt_var, shift_var):
-            ctrl_checkbox = ttk.Checkbutton(frame, text="Ctrl", variable=ctrl_var)
-            alt_checkbox = ttk.Checkbutton(frame, text="Alt", variable=alt_var)
-            shift_checkbox = ttk.Checkbutton(frame, text="Shift", variable=shift_var)
-            ctrl_checkbox.config(command=set_modified)
-            alt_checkbox.config(command=set_modified)
-            shift_checkbox.config(command=set_modified)
+            ctrl_checkbox = ctk.CTkCheckBox(frame, text="Ctrl", variable=ctrl_var, width=20)
+            alt_checkbox = ctk.CTkCheckBox(frame, text="Alt", variable=alt_var, width=20)
+            shift_checkbox = ctk.CTkCheckBox(frame, text="Shift", variable=shift_var, width=20)
+            ctrl_checkbox.configure(command=set_modified)
+            alt_checkbox.configure(command=set_modified)
+            shift_checkbox.configure(command=set_modified)
             return ctrl_checkbox, alt_checkbox, shift_checkbox
 
         def update_devices():
@@ -248,7 +252,7 @@ class Frontend(object):
         def save_action():
             set_input_fields()
             if self.app.SaveConfig():
-                save_button.config(state=tk.DISABLED)
+                save_button.configure(state="disabled")
 
         def start_action():
             global modifiedCredentials
@@ -276,45 +280,54 @@ class Frontend(object):
         """
         Create elements
         """
-        root = ThemedTk(theme="breeze")
+        # Dark/Light mode
+        ctk.set_appearance_mode("system")
+        ctk.set_default_color_theme("blue")
+
+        root = ctk.CTk()
+        # root = ThemedTk(theme="breeze")
+        style = ttk.Style(root)
+        # style.configure("TFrame", foreground="", background="blue")
+        # style.configure("TFrame", background="red")
         root.withdraw()
         root.title("BeatBind (v1.5.2)")
         root.iconbitmap(self.icon_path)
         root.focus_force()
 
-        # Checkboxes
-        self.app.rewind_instead_prev_var = tk.BooleanVar()
-        self.app.startup_var = tk.BooleanVar()
-        self.app.minimize_var = tk.BooleanVar()
+        # Checkboxes -- CTK
+        self.app.rewind_instead_prev_var = ctk.BooleanVar()
+        self.app.startup_var = ctk.BooleanVar()
+        self.app.minimize_var = ctk.BooleanVar()
 
-        # Create a frame with padding
-        frame = ttk.Frame(root, padding=20)
-        frame.grid(column=0, row=0)
+        # Create a frame with padding -- CTK
+        frame = ctk.CTkFrame(root)
+        frame.grid(column=0, row=0, padx=20)
 
         # Separator
         separator = ttk.Separator(frame, orient="horizontal")
 
-        # Labels
-        client_id_label = ttk.Label(frame, text="Client ID:")
-        client_secret_label = ttk.Label(frame, text="Client Secret:")
-        port_label = ttk.Label(frame, text="Port:")
-        device_id_label = ttk.Label(frame, text="Device ID:")
+        # Labels -- CTK
+        client_id_label = ctk.CTkLabel(frame, text="Client ID:   ")
+        client_secret_label = ctk.CTkLabel(frame, text="Client Secret:   ")
+        port_label = ctk.CTkLabel(frame, text="Port:   ")
+        device_id_label = ctk.CTkLabel(frame, text="Device ID:   ")
 
-        options_frame = ttk.Frame(frame)
-        volume_label = ttk.Label(options_frame, text="Volume Inc/Dec:")
-        seek_label = ttk.Label(options_frame, text="Seek (ms):")
+        options_frame = ctk.CTkFrame(frame)
+        # Padding for custom spinbox
+        volume_label = ctk.CTkLabel(options_frame, text="Volume:   ")
+        seek_label = ctk.CTkLabel(options_frame, text="Seek:   ")
 
-        play_pause_label = ttk.Label(frame, text="Play/Pause:")
-        prev_track_label = ttk.Label(frame, text="Previous Track:")
-        next_track_label = ttk.Label(frame, text="Next Track:")
-        volume_up_label = ttk.Label(frame, text="Volume Up:")
-        volume_down_label = ttk.Label(frame, text="Volume Down:")
-        mute_label = ttk.Label(frame, text="Mute:")
-        seek_forward_label = ttk.Label(frame, text="Seek Forward:")
-        seek_backward_label = ttk.Label(frame, text="Seek Backward:")
-        shuffle_label = ttk.Label(frame, text="Shuffle:")
+        play_pause_label = ctk.CTkLabel(frame, text="Play/Pause:   ")
+        prev_track_label = ctk.CTkLabel(frame, text="Previous Track:   ")
+        next_track_label = ctk.CTkLabel(frame, text="Next Track:   ")
+        volume_up_label = ctk.CTkLabel(frame, text="Volume Up:   ")
+        volume_down_label = ctk.CTkLabel(frame, text="Volume Down:   ")
+        mute_label = ctk.CTkLabel(frame, text="Mute:   ")
+        seek_forward_label = ctk.CTkLabel(frame, text="Seek Forward:   ")
+        seek_backward_label = ctk.CTkLabel(frame, text="Seek Backward:   ")
+        shuffle_label = ctk.CTkLabel(frame, text="Shuffle:")
 
-        source_frame = ttk.Frame(frame)
+        source_frame = ctk.CTkFrame(frame)
         source_link = ttk.Label(
             source_frame,
             text="GitHub Source",
@@ -327,67 +340,73 @@ class Frontend(object):
             lambda event: link_callback("https://github.com/justinknguyen/BeatBind"),
         )
 
-        # Entries
-        client_id_entry = ttk.Entry(frame, width=42)
-        client_secret_entry = ttk.Entry(frame, width=42)
-        port_entry = ttk.Entry(frame, width=42)
-        device_id_entry = ttk.Combobox(frame, width=40)
+        # Entries -- CTK (Widths Change: 40 -> 245, ttk-Combo: 38->)
+        client_id_entry = ctk.CTkEntry(frame, width=240)
+        client_secret_entry = ctk.CTkEntry(frame, width=240)
+        port_entry = ctk.CTkEntry(frame, width=240)
+        device_id_entry = ttk.Combobox(frame)
+
+        # Custom spinbox library implementation (extension of CustomTkinter)
         vcmd = (root.register(validate_volume), "%P")
-        volume_entry = ttk.Spinbox(
+        volume_entry = CTkSpinbox(
             options_frame,
-            from_=0,
-            to=100,
-            width=5,
-            increment=1,
-            validate="all",
-            validatecommand=vcmd,
+            min_value=0,
+            max_value=100,
+            width=90,
+            height=27,
+            scroll_value=1,
+            command=vcmd,
         )
-        seek_entry = ttk.Spinbox(
+        seek_entry = CTkSpinbox(
             options_frame,
-            from_=0,
-            to=float("inf"),
-            width=10,
-            increment=1,
-            validate="all",
+            min_value=0,
+            max_value=10000,
+            width=90,
+            height=27,
+            scroll_value=1,
         )
-        rewind_instead_prev_checkbox = ttk.Checkbutton(
+        # Checkbox command addition
+        rewind_instead_prev_checkbox = ctk.CTkCheckBox(
             frame,
             text="Previous Track: rewind to start",
-            variable=self.app.rewind_instead_prev_var,
+            variable=self.app.rewind_instead_prev_var
         )
 
-        # Buttons
-        devices_button = ttk.Button(frame, text="Get Devices", command=device_action)
-        button_frame = ttk.Frame(frame)
-        save_button = ttk.Button(
-            button_frame, text="Save", command=save_action, state=tk.DISABLED
+        # Buttons -- CTK + Change state
+        devices_button = ctk.CTkButton(frame, text="Get Devices", command=device_action, state="normal", width=240)
+        button_frame = ctk.CTkFrame(frame)
+        save_button = ctk.CTkButton(
+            button_frame, text="Save", command=save_action, state="disabled"
         )
-        start_button = ttk.Button(
-            button_frame, text="Start & Close", command=start_action
+        start_button = ctk.CTkButton(
+            button_frame, text="Start & Close", command=start_action, state="normal"
         )
-        checkbox_frame = ttk.Frame(frame)
-        startup_checkbox = ttk.Checkbutton(
+        checkbox_frame = ctk.CTkFrame(frame)
+        startup_checkbox = ctk.CTkCheckBox(
             checkbox_frame,
             text="Start on Windows startup",
             variable=self.app.startup_var,
         )
-        minimize_checkbox = ttk.Checkbutton(
-            checkbox_frame, text="Start minimized", variable=self.app.minimize_var
+        minimize_checkbox = ctk.CTkCheckBox(
+            checkbox_frame,
+            text="Start minimized",
+            variable=self.app.minimize_var,
         )
 
         # --------------------------------------------------------------------------------------- #
         """
         Hotkey area
         """
-        width = 12
+        width = 90
         padding_x = 2
         padding_y = 2
 
-        ctrl_play_pause_var = tk.BooleanVar()
-        alt_play_pause_var = tk.BooleanVar()
-        shift_play_pause_var = tk.BooleanVar()
-        play_pause_modifiers = ttk.Frame(frame)
-        play_pause_entry = ttk.Entry(
+        # Control management - CTk Overhaul - Entries; width: 12->90
+        ctrl_play_pause_var = ctk.BooleanVar()
+        alt_play_pause_var = ctk.BooleanVar()
+        shift_play_pause_var = ctk.BooleanVar()
+        play_pause_modifiers = ctk.CTkFrame(frame)
+        play_pause_entry = ctk.CTkEntry(
             play_pause_modifiers, width=width, justify="center"
         )
         play_pause_entry.bind(
@@ -408,11 +427,11 @@ class Frontend(object):
         shift_play_pause_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
         play_pause_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
-        ctrl_prev_track_var = tk.BooleanVar()
-        alt_prev_track_var = tk.BooleanVar()
-        shift_prev_track_var = tk.BooleanVar()
-        prev_track_modifiers = ttk.Frame(frame)
-        prev_track_entry = ttk.Entry(
+        ctrl_prev_track_var = ctk.BooleanVar()
+        alt_prev_track_var = ctk.BooleanVar()
+        shift_prev_track_var = ctk.BooleanVar()
+        prev_track_modifiers = ctk.CTkFrame(frame)
+        prev_track_entry = ctk.CTkEntry(
             prev_track_modifiers, width=width, justify="center"
         )
         prev_track_entry.bind(
@@ -433,11 +452,11 @@ class Frontend(object):
         shift_prev_track_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
         prev_track_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
-        ctrl_next_track_var = tk.BooleanVar()
-        alt_next_track_var = tk.BooleanVar()
-        shift_next_track_var = tk.BooleanVar()
-        next_track_modifiers = ttk.Frame(frame)
-        next_track_entry = ttk.Entry(
+        ctrl_next_track_var = ctk.BooleanVar()
+        alt_next_track_var = ctk.BooleanVar()
+        shift_next_track_var = ctk.BooleanVar()
+        next_track_modifiers = ctk.CTkFrame(frame)
+        next_track_entry = ctk.CTkEntry(
             next_track_modifiers, width=width, justify="center"
         )
         next_track_entry.bind(
@@ -458,11 +477,11 @@ class Frontend(object):
         shift_next_track_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
         next_track_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
-        ctrl_volume_up_var = tk.BooleanVar()
-        alt_volume_up_var = tk.BooleanVar()
-        shift_volume_up_var = tk.BooleanVar()
-        volume_up_modifiers = ttk.Frame(frame)
-        volume_up_entry = ttk.Entry(volume_up_modifiers, width=width, justify="center")
+        ctrl_volume_up_var = ctk.BooleanVar()
+        alt_volume_up_var = ctk.BooleanVar()
+        shift_volume_up_var = ctk.BooleanVar()
+        volume_up_modifiers = ctk.CTkFrame(frame)
+        volume_up_entry = ctk.CTkEntry(volume_up_modifiers, width=width, justify="center")
         volume_up_entry.bind(
             "<FocusIn>", lambda event: listen_for_key_events(volume_up_entry)
         )
@@ -481,11 +500,11 @@ class Frontend(object):
         shift_volume_up_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
         volume_up_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
-        ctrl_volume_down_var = tk.BooleanVar()
-        alt_volume_down_var = tk.BooleanVar()
-        shift_volume_down_var = tk.BooleanVar()
-        volume_down_modifiers = ttk.Frame(frame)
-        volume_down_entry = ttk.Entry(
+        ctrl_volume_down_var = ctk.BooleanVar()
+        alt_volume_down_var = ctk.BooleanVar()
+        shift_volume_down_var = ctk.BooleanVar()
+        volume_down_modifiers = ctk.CTkFrame(frame)
+        volume_down_entry = ctk.CTkEntry(
             volume_down_modifiers, width=width, justify="center"
         )
         volume_down_entry.bind(
@@ -506,11 +525,11 @@ class Frontend(object):
         shift_volume_down_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
         volume_down_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
-        ctrl_mute_var = tk.BooleanVar()
-        alt_mute_var = tk.BooleanVar()
-        shift_mute_var = tk.BooleanVar()
-        mute_modifiers = ttk.Frame(frame)
-        mute_entry = ttk.Entry(mute_modifiers, width=width, justify="center")
+        ctrl_mute_var = ctk.BooleanVar()
+        alt_mute_var = ctk.BooleanVar()
+        shift_mute_var = ctk.BooleanVar()
+        mute_modifiers = ctk.CTkFrame(frame)
+        mute_entry = ctk.CTkEntry(mute_modifiers, width=width, justify="center")
         mute_entry.bind("<FocusIn>", lambda event: listen_for_key_events(mute_entry))
         (
             ctrl_mute_checkbox,
@@ -527,11 +546,11 @@ class Frontend(object):
         shift_mute_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
         mute_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
-        ctrl_seek_forward_var = tk.BooleanVar()
-        alt_seek_forward_var = tk.BooleanVar()
-        shift_seek_forward_var = tk.BooleanVar()
-        seek_forward_modifiers = ttk.Frame(frame)
-        seek_forward_entry = ttk.Entry(
+        ctrl_seek_forward_var = ctk.BooleanVar()
+        alt_seek_forward_var = ctk.BooleanVar()
+        shift_seek_forward_var = ctk.BooleanVar()
+        seek_forward_modifiers = ctk.CTkFrame(frame)
+        seek_forward_entry = ctk.CTkEntry(
             seek_forward_modifiers, width=width, justify="center"
         )
         seek_forward_entry.bind(
@@ -554,11 +573,11 @@ class Frontend(object):
         )
         seek_forward_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
-        ctrl_seek_backward_var = tk.BooleanVar()
-        alt_seek_backward_var = tk.BooleanVar()
-        shift_seek_backward_var = tk.BooleanVar()
-        seek_backward_modifiers = ttk.Frame(frame)
-        seek_backward_entry = ttk.Entry(
+        ctrl_seek_backward_var = ctk.BooleanVar()
+        alt_seek_backward_var = ctk.BooleanVar()
+        shift_seek_backward_var = ctk.BooleanVar()
+        seek_backward_modifiers = ctk.CTkFrame(frame)
+        seek_backward_entry = ctk.CTkEntry(
             seek_backward_modifiers, width=width, justify="center"
         )
         seek_backward_entry.bind(
@@ -583,11 +602,11 @@ class Frontend(object):
         )
         seek_backward_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
-        ctrl_shuffle_var = tk.BooleanVar()
-        alt_shuffle_var = tk.BooleanVar()
-        shift_shuffle_var = tk.BooleanVar()
-        shuffle_modifiers = ttk.Frame(frame)
-        shuffle_entry = ttk.Entry(
+        ctrl_shuffle_var = ctk.BooleanVar()
+        alt_shuffle_var = ctk.BooleanVar()
+        shift_shuffle_var = ctk.BooleanVar()
+        shuffle_modifiers = ctk.CTkFrame(frame)
+        shuffle_entry = ctk.CTkEntry(
             shuffle_modifiers, width=width, justify="center"
         )
         shuffle_entry.bind(
@@ -728,6 +747,9 @@ class Frontend(object):
                 self.app.minimize_var.set(config.get("minimize", False))
         else:
             for entry, key, default_value in zip(entries, keys, keys_defaults):
+                # CTK Spinbox entry accommodation
+                if entry == seek_entry or entry == volume_entry or entry == device_id_entry:
+                    continue
                 autofill_entry(entry, default_value)
 
             self.app.rewind_instead_prev_var.set(False)
@@ -752,6 +774,7 @@ class Frontend(object):
         """
         Enable "Save" button if any entry is modified
         """
+        # Checkbox commands placed inside initialization parameters
         client_id_entry.bind("<KeyRelease>", set_modified_cred)
         client_secret_entry.bind("<KeyRelease>", set_modified_cred)
         port_entry.bind("<KeyRelease>", set_modified_cred)
@@ -762,7 +785,7 @@ class Frontend(object):
         seek_entry.bind("<KeyRelease>", set_modified)
         seek_entry.bind("<<Increment>>", set_modified)
         seek_entry.bind("<<Decrement>>", set_modified)
-        rewind_instead_prev_checkbox.config(command=set_modified)
+        rewind_instead_prev_checkbox.configure(command=set_modified)
         play_pause_entry.bind("<KeyRelease>", set_modified)
         prev_track_entry.bind("<KeyRelease>", set_modified)
         next_track_entry.bind("<KeyRelease>", set_modified)
@@ -772,8 +795,8 @@ class Frontend(object):
         seek_forward_entry.bind("<KeyRelease>", set_modified)
         seek_backward_entry.bind("<KeyRelease>", set_modified)
         shuffle_entry.bind("<KeyRelease>", set_modified())
-        startup_checkbox.config(command=set_modified)
-        minimize_checkbox.config(command=set_modified)
+        startup_checkbox.configure(command=set_modified)
+        minimize_checkbox.configure(command=set_modified)
 
         # --------------------------------------------------------------------------------------- #
         """
