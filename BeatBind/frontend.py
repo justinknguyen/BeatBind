@@ -237,7 +237,9 @@ class Frontend(object):
         def center_window(window):
             window.update_idletasks()
             width = window.winfo_reqwidth()
+            width = 413 # window opened much larger than UI? may be issue on other machines
             height = window.winfo_reqheight()
+            height = 653
             x = (window.winfo_screenwidth() // 2) - (width // 2)
             y = (window.winfo_screenheight() // 2) - (height // 2)
             window.geometry(f"{width}x{height}+{x}+{y}")
