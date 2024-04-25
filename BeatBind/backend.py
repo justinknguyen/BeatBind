@@ -246,8 +246,6 @@ class Backend(object):
             except Exception as e:
                 print(f"Error: {e}")
 
-
-
     def GetCurrentPlaybackPosition(self):
         if self.token:
             self.CheckTokenExpiry()

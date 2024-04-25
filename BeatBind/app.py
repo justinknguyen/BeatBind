@@ -52,6 +52,7 @@ def main():
                 ("mute", "control+alt+shift+space"),
                 ("seek_forward", "control+alt+shift+f"),
                 ("seek_backward", "control+alt+shift+b"),
+                ("shuffle", "control+alt+shift+s"),
             ]:
                 backend.hotkeys[key] = hotkeys.get(key, default_value)
 

@@ -3,14 +3,13 @@ import json.decoder
 import os
 import tkinter as tk
 import webbrowser
-from tkinter import ttk, filedialog, font
+from tkinter import ttk
 
 import psutil
 import pystray
 import win32api
 from global_hotkeys import keycodes
 from PIL import Image
-from ttkthemes import ThemedTk
 import customtkinter as ctk
 from CTkSpinbox import *
 
@@ -46,11 +45,8 @@ class Frontend(object):
         global modifiedCredentials
         modifiedCredentials = False
 
-        # Below method done as button parameter
         def set_modified(event=None):
-            save_button = ctk.CTkButton(
-                button_frame, text="Save", command=save_action, state="normal"
-            )
+            save_button.configure(state=tk.NORMAL)
 
         def set_modified_cred(event=None):
             global modifiedCredentials
@@ -248,7 +244,7 @@ class Frontend(object):
             x = (window.winfo_screenwidth() // 2) - (width // 2)
             y = (window.winfo_screenheight() // 2) - (height // 2)
             window.geometry(f"{width}x{height}+{x}+{y}")
-            window.after(1, lambda: window.focus_force())
+            window.after(100, lambda: window.focus_force())
 
         def device_action():
             set_input_fields()
@@ -259,7 +255,7 @@ class Frontend(object):
         def save_action():
             set_input_fields()
             if self.app.SaveConfig():
-                save_button.configure(state="disabled")
+                save_button.configure(state=tk.DISABLED)
 
         def start_action():
             global modifiedCredentials
@@ -292,10 +288,6 @@ class Frontend(object):
         ctk.set_default_color_theme("blue")
 
         root = ctk.CTk()
-        # root = ThemedTk(theme="breeze")
-        style = ttk.Style(root)
-        # style.configure("TFrame", foreground="", background="blue")
-        # style.configure("TFrame", background="red")
         root.withdraw()
         root.title("BeatBind (v1.5.3)")
         root.iconbitmap(self.icon_path)
@@ -381,14 +373,14 @@ class Frontend(object):
 
         # Buttons -- CTK + Change state
         devices_button = ctk.CTkButton(
-            frame, text="Get Devices", command=device_action, state="normal", width=240
+            frame, text="Get Devices", command=device_action, state=tk.NORMAL, width=240
         )
         button_frame = ctk.CTkFrame(frame)
         save_button = ctk.CTkButton(
-            button_frame, text="Save", command=save_action, state="disabled"
+            button_frame, text="Save", command=save_action, state=tk.DISABLED
         )
         start_button = ctk.CTkButton(
-            button_frame, text="Start & Close", command=start_action, state="normal"
+            button_frame, text="Start & Close", command=start_action, state=tk.NORMAL
         )
         checkbox_frame = ctk.CTkFrame(frame)
         startup_checkbox = ctk.CTkCheckBox(
