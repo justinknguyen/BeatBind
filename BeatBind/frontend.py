@@ -11,9 +11,9 @@ import win32api
 from global_hotkeys import keycodes
 from PIL import Image
 from ttkthemes import ThemedTk
-from constants import *
 import customtkinter as ctk
 from CTkSpinbox import *
+
 
 class Frontend(object):
     def __init__(self, app):
@@ -43,7 +43,7 @@ class Frontend(object):
         return pystray.MenuItem("Settings", self.SettingsWindow)
 
     def SettingsWindow(self):
-        global KEY_OPTIONS, modifiedCredentials
+        global modifiedCredentials
         modifiedCredentials = False
 
         # Below method done as button parameter
@@ -57,15 +57,10 @@ class Frontend(object):
             modifiedCredentials = True
             save_button.configure(state=tk.NORMAL)
 
-        def handle_keypress(virtual_keycode, entry):
-            decimal_to_keyname = {
-                int(hex_value): key for key, hex_value in keycodes.vk_key_names.items()
-            }
-            key_name = decimal_to_keyname.get(virtual_keycode)
-
+        def handle_keypress(key_name, entry):
             if key_name == "backspace" or key_name == "delete":
                 entry.delete(0, tk.END)
-            elif key_name in KEY_OPTIONS:
+            else:
                 entry.delete(0, tk.END)
                 entry.insert(0, key_name)
 
@@ -75,8 +70,10 @@ class Frontend(object):
                     if entry.focus_get() != entry:
                         break
                     for key_name, virtual_keycode in keycodes.vk_key_names.items():
+                        if virtual_keycode == "window":
+                            continue
                         if win32api.GetAsyncKeyState(virtual_keycode) & 0x8000:
-                            handle_keypress(virtual_keycode, entry)
+                            handle_keypress(key_name, entry)
                     entry.update_idletasks()
                     entry.update()
                 except:
@@ -185,9 +182,15 @@ class Frontend(object):
             )
 
         def create_modifiers(frame, ctrl_var, alt_var, shift_var):
-            ctrl_checkbox = ctk.CTkCheckBox(frame, text="Ctrl", variable=ctrl_var, width=20)
-            alt_checkbox = ctk.CTkCheckBox(frame, text="Alt", variable=alt_var, width=20)
-            shift_checkbox = ctk.CTkCheckBox(frame, text="Shift", variable=shift_var, width=20)
+            ctrl_checkbox = ctk.CTkCheckBox(
+                frame, text="Ctrl", variable=ctrl_var, width=20
+            )
+            alt_checkbox = ctk.CTkCheckBox(
+                frame, text="Alt", variable=alt_var, width=20
+            )
+            shift_checkbox = ctk.CTkCheckBox(
+                frame, text="Shift", variable=shift_var, width=20
+            )
             ctrl_checkbox.configure(command=set_modified)
             alt_checkbox.configure(command=set_modified)
             shift_checkbox.configure(command=set_modified)
@@ -237,7 +240,9 @@ class Frontend(object):
         def center_window(window):
             window.update_idletasks()
             width = window.winfo_reqwidth()
-            width = 413 # window opened much larger than UI? may be issue on other machines
+            width = (
+                413  # window opened much larger than UI? may be issue on other machines
+            )
             height = window.winfo_reqheight()
             height = 653
             x = (window.winfo_screenwidth() // 2) - (width // 2)
@@ -292,7 +297,7 @@ class Frontend(object):
         # style.configure("TFrame", foreground="", background="blue")
         # style.configure("TFrame", background="red")
         root.withdraw()
-        root.title("BeatBind (v1.5.2)")
+        root.title("BeatBind (v1.5.3)")
         root.iconbitmap(self.icon_path)
         root.focus_force()
 
@@ -371,11 +376,13 @@ class Frontend(object):
         rewind_instead_prev_checkbox = ctk.CTkCheckBox(
             frame,
             text="Previous Track: rewind to start",
-            variable=self.app.rewind_instead_prev_var
+            variable=self.app.rewind_instead_prev_var,
         )
 
         # Buttons -- CTK + Change state
-        devices_button = ctk.CTkButton(frame, text="Get Devices", command=device_action, state="normal", width=240)
+        devices_button = ctk.CTkButton(
+            frame, text="Get Devices", command=device_action, state="normal", width=240
+        )
         button_frame = ctk.CTkFrame(frame)
         save_button = ctk.CTkButton(
             button_frame, text="Save", command=save_action, state="disabled"
@@ -483,7 +490,9 @@ class Frontend(object):
         alt_volume_up_var = ctk.BooleanVar()
         shift_volume_up_var = ctk.BooleanVar()
         volume_up_modifiers = ctk.CTkFrame(frame)
-        volume_up_entry = ctk.CTkEntry(volume_up_modifiers, width=width, justify="center")
+        volume_up_entry = ctk.CTkEntry(
+            volume_up_modifiers, width=width, justify="center"
+        )
         volume_up_entry.bind(
             "<FocusIn>", lambda event: listen_for_key_events(volume_up_entry)
         )
@@ -608,9 +617,7 @@ class Frontend(object):
         alt_shuffle_var = ctk.BooleanVar()
         shift_shuffle_var = ctk.BooleanVar()
         shuffle_modifiers = ctk.CTkFrame(frame)
-        shuffle_entry = ctk.CTkEntry(
-            shuffle_modifiers, width=width, justify="center"
-        )
+        shuffle_entry = ctk.CTkEntry(shuffle_modifiers, width=width, justify="center")
         shuffle_entry.bind(
             "<FocusIn>", lambda event: listen_for_key_events(shuffle_entry)
         )
@@ -649,7 +656,7 @@ class Frontend(object):
             "seek",
             "rewind_instead_prev",
         ]
-        keys_defaults = ["", "", "8888", "", 5, 5000, False]
+        keys_defaults = ["", "", 8888, "", 5, 5000, False]
         hotkey_entries = [
             play_pause_entry,
             prev_track_entry,
@@ -670,7 +677,7 @@ class Frontend(object):
             "mute",
             "seek_forward",
             "seek_backward",
-            "shuffle"
+            "shuffle",
         ]
         hotkey_defaults = [
             "control+alt+shift+p",
@@ -681,7 +688,7 @@ class Frontend(object):
             "control+alt+shift+space",
             "control+alt+shift+f",
             "control+alt+shift+b",
-            "control+alt+shift+s"
+            "control+alt+shift+s",
         ]
 
         ctrl_vars = [
@@ -715,7 +722,7 @@ class Frontend(object):
             shift_mute_var,
             shift_seek_forward_var,
             shift_seek_backward_var,
-            shift_shuffle_var
+            shift_shuffle_var,
         ]
 
         if os.path.exists(self.app.config_path):
@@ -750,7 +757,11 @@ class Frontend(object):
         else:
             for entry, key, default_value in zip(entries, keys, keys_defaults):
                 # CTK Spinbox entry accommodation
-                if entry == seek_entry or entry == volume_entry or entry == device_id_entry:
+                if (
+                    entry == seek_entry
+                    or entry == volume_entry
+                    or entry == device_id_entry
+                ):
                     continue
                 autofill_entry(entry, default_value)
 
