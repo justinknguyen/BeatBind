@@ -289,7 +289,7 @@ class Frontend(object):
 
         root = ctk.CTk()
         root.withdraw()
-        root.title("BeatBind (v1.5.3)")
+        root.title("BeatBind (v1.6.0)")
         root.iconbitmap(self.icon_path)
         root.focus_force()
 
