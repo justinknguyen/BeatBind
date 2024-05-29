@@ -158,6 +158,11 @@ You most likely extracted the BeatBind folder into a location where it requires 
 
 This happens if the location of the `.exe` file was changed. The registry key used to start the app on Windows startup needs to be updated to the new `.exe` path. Starting the app again will update the path in the registry key and should resolve the issue.
 
+You can check if the registry key was added in the following path:
+```
+Computer\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
+```
+
 ### Why Is The App Crashing?
 
 1. If you had "Start minimized" checked, you can find the app's icon hidden within your system tray and then right-click on it to find the settings menu.
