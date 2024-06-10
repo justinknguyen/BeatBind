@@ -799,13 +799,13 @@ class Frontend(object):
         Grid layout
         """
         client_id_label.grid(row=1, column=0, sticky="E")
-        client_id_entry.grid(row=1, column=1)
+        client_id_entry.grid(row=1, column=1, sticky="EW")
         client_secret_label.grid(row=2, column=0, sticky="E")
-        client_secret_entry.grid(row=2, column=1)
+        client_secret_entry.grid(row=2, column=1, sticky="EW")
         port_label.grid(row=3, column=0, sticky="E")
-        port_entry.grid(row=3, column=1)
+        port_entry.grid(row=3, column=1, sticky="EW")
         device_id_label.grid(row=4, column=0, sticky="E")
-        device_id_entry.grid(row=4, column=1)
+        device_id_entry.grid(row=4, column=1, sticky="EW")
         devices_button.grid(row=5, column=1, sticky="EW")
 
         options_frame.grid(row=6, column=0, columnspan=4, pady=10)
