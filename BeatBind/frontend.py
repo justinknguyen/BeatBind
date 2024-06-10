@@ -84,7 +84,7 @@ class Frontend(object):
                 entry.insert(0, value)
 
         def parse_hotkey_string(hotkey_str):
-            modifiers = {"ctrl": False, "alt": False, "shift": False}
+            modifiers = {"ctrl": False, "alt": False, "shift": False, "win": False}
             key = ""
             if "control" in hotkey_str:
                 modifiers["ctrl"] = True
@@ -95,12 +95,15 @@ class Frontend(object):
             if "shift" in hotkey_str:
                 modifiers["shift"] = True
                 hotkey_str = hotkey_str.replace("shift", "")
+            if "window" in hotkey_str:
+                modifiers["win"] = True
+                hotkey_str = hotkey_str.replace("window", "")
             if "+" in hotkey_str:
                 hotkey_str = hotkey_str.replace("+", "")
             key = hotkey_str.strip()
             return modifiers, key
 
-        def update_hotkey_entry(entry, ctrl_var, alt_var, shift_var):
+        def update_hotkey_entry(entry, ctrl_var, alt_var, shift_var, win_var):
             modifiers = []
             if ctrl_var.get():
                 modifiers.append("control")
@@ -108,6 +111,8 @@ class Frontend(object):
                 modifiers.append("alt")
             if shift_var.get():
                 modifiers.append("shift")
+            if win_var.get():
+                modifiers.append("window")
             key = entry.get().strip().lower()
             hotkey = "+".join(modifiers + [key])
             return hotkey
@@ -126,58 +131,68 @@ class Frontend(object):
                 ctrl_play_pause_var,
                 alt_play_pause_var,
                 shift_play_pause_var,
+                win_play_pause_var,
             )
             self.app.hotkeys["prev_track"] = update_hotkey_entry(
                 prev_track_entry,
                 ctrl_prev_track_var,
                 alt_prev_track_var,
                 shift_prev_track_var,
+                win_prev_track_var,
             )
             self.app.hotkeys["next_track"] = update_hotkey_entry(
                 next_track_entry,
                 ctrl_next_track_var,
                 alt_next_track_var,
                 shift_next_track_var,
+                win_next_track_var,
             )
             self.app.hotkeys["volume_up"] = update_hotkey_entry(
                 volume_up_entry,
                 ctrl_volume_up_var,
                 alt_volume_up_var,
                 shift_volume_up_var,
+                win_volume_up_var,
             )
             self.app.hotkeys["volume_down"] = update_hotkey_entry(
                 volume_down_entry,
                 ctrl_volume_down_var,
                 alt_volume_down_var,
                 shift_volume_down_var,
+                win_volume_down_var,
             )
             self.app.hotkeys["mute"] = update_hotkey_entry(
                 mute_entry,
                 ctrl_mute_var,
                 alt_mute_var,
                 shift_mute_var,
+                win_mute_var,
             )
             self.app.hotkeys["seek_forward"] = update_hotkey_entry(
                 seek_forward_entry,
                 ctrl_seek_forward_var,
                 alt_seek_forward_var,
                 shift_seek_forward_var,
+                win_seek_forward_var,
             )
             self.app.hotkeys["seek_backward"] = update_hotkey_entry(
                 seek_backward_entry,
                 ctrl_seek_backward_var,
                 alt_seek_backward_var,
                 shift_seek_backward_var,
+                win_seek_backward_var,
             )
 
-        def create_modifiers(frame, ctrl_var, alt_var, shift_var):
+        def create_modifiers(frame, ctrl_var, alt_var, shift_var, win_var):
             ctrl_checkbox = ttk.Checkbutton(frame, text="Ctrl", variable=ctrl_var)
             alt_checkbox = ttk.Checkbutton(frame, text="Alt", variable=alt_var)
             shift_checkbox = ttk.Checkbutton(frame, text="Shift", variable=shift_var)
+            win_checkbox = ttk.Checkbutton(frame, text="Win", variable=win_var)
             ctrl_checkbox.config(command=set_modified)
             alt_checkbox.config(command=set_modified)
             shift_checkbox.config(command=set_modified)
-            return ctrl_checkbox, alt_checkbox, shift_checkbox
+            win_checkbox.config(command=set_modified)
+            return ctrl_checkbox, alt_checkbox, shift_checkbox, win_checkbox
 
         def update_devices():
             devices_data = self.app.GetDevices()
@@ -268,7 +283,7 @@ class Frontend(object):
         """
         root = ThemedTk(theme="breeze")
         root.withdraw()
-        root.title("BeatBind (v1.5.3)")
+        root.title("BeatBind (v1.6.0)")
         root.iconbitmap(self.icon_path)
         root.focus_force()
 
@@ -375,6 +390,7 @@ class Frontend(object):
         ctrl_play_pause_var = tk.BooleanVar()
         alt_play_pause_var = tk.BooleanVar()
         shift_play_pause_var = tk.BooleanVar()
+        win_play_pause_var = tk.BooleanVar()
         play_pause_modifiers = ttk.Frame(frame)
         play_pause_entry = ttk.Entry(
             play_pause_modifiers, width=width, justify="center"
@@ -386,20 +402,24 @@ class Frontend(object):
             ctrl_play_pause_checkbox,
             alt_play_pause_checkbox,
             shift_play_pause_checkbox,
+            win_play_pause_checkbox,
         ) = create_modifiers(
             play_pause_modifiers,
             ctrl_play_pause_var,
             alt_play_pause_var,
             shift_play_pause_var,
+            win_play_pause_var,
         )
         ctrl_play_pause_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
         alt_play_pause_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
         shift_play_pause_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
+        win_play_pause_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
         play_pause_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
         ctrl_prev_track_var = tk.BooleanVar()
         alt_prev_track_var = tk.BooleanVar()
         shift_prev_track_var = tk.BooleanVar()
+        win_prev_track_var = tk.BooleanVar()
         prev_track_modifiers = ttk.Frame(frame)
         prev_track_entry = ttk.Entry(
             prev_track_modifiers, width=width, justify="center"
@@ -411,20 +431,24 @@ class Frontend(object):
             ctrl_prev_track_checkbox,
             alt_prev_track_checkbox,
             shift_prev_track_checkbox,
+            win_prev_track_checkbox,
         ) = create_modifiers(
             prev_track_modifiers,
             ctrl_prev_track_var,
             alt_prev_track_var,
             shift_prev_track_var,
+            win_prev_track_var,
         )
         ctrl_prev_track_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
         alt_prev_track_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
         shift_prev_track_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
+        win_prev_track_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
         prev_track_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
         ctrl_next_track_var = tk.BooleanVar()
         alt_next_track_var = tk.BooleanVar()
         shift_next_track_var = tk.BooleanVar()
+        win_next_track_var = tk.BooleanVar()
         next_track_modifiers = ttk.Frame(frame)
         next_track_entry = ttk.Entry(
             next_track_modifiers, width=width, justify="center"
@@ -436,20 +460,24 @@ class Frontend(object):
             ctrl_next_track_checkbox,
             alt_next_track_checkbox,
             shift_next_track_checkbox,
+            win_next_track_checkbox,
         ) = create_modifiers(
             next_track_modifiers,
             ctrl_next_track_var,
             alt_next_track_var,
             shift_next_track_var,
+            win_next_track_var,
         )
         ctrl_next_track_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
         alt_next_track_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
         shift_next_track_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
+        win_next_track_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
         next_track_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
         ctrl_volume_up_var = tk.BooleanVar()
         alt_volume_up_var = tk.BooleanVar()
         shift_volume_up_var = tk.BooleanVar()
+        win_volume_up_var = tk.BooleanVar()
         volume_up_modifiers = ttk.Frame(frame)
         volume_up_entry = ttk.Entry(volume_up_modifiers, width=width, justify="center")
         volume_up_entry.bind(
@@ -459,20 +487,24 @@ class Frontend(object):
             ctrl_volume_up_checkbox,
             alt_volume_up_checkbox,
             shift_volume_up_checkbox,
+            win_volume_up_checkbox,
         ) = create_modifiers(
             volume_up_modifiers,
             ctrl_volume_up_var,
             alt_volume_up_var,
             shift_volume_up_var,
+            win_volume_up_var,
         )
         ctrl_volume_up_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
         alt_volume_up_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
         shift_volume_up_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
+        win_volume_up_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
         volume_up_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
         ctrl_volume_down_var = tk.BooleanVar()
         alt_volume_down_var = tk.BooleanVar()
         shift_volume_down_var = tk.BooleanVar()
+        win_volume_down_var = tk.BooleanVar()
         volume_down_modifiers = ttk.Frame(frame)
         volume_down_entry = ttk.Entry(
             volume_down_modifiers, width=width, justify="center"
@@ -484,20 +516,24 @@ class Frontend(object):
             ctrl_volume_down_checkbox,
             alt_volume_down_checkbox,
             shift_volume_down_checkbox,
+            win_volume_down_checkbox,
         ) = create_modifiers(
             volume_down_modifiers,
             ctrl_volume_down_var,
             alt_volume_down_var,
             shift_volume_down_var,
+            win_volume_down_var,
         )
         ctrl_volume_down_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
         alt_volume_down_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
         shift_volume_down_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
+        win_volume_down_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
         volume_down_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
         ctrl_mute_var = tk.BooleanVar()
         alt_mute_var = tk.BooleanVar()
         shift_mute_var = tk.BooleanVar()
+        win_mute_var = tk.BooleanVar()
         mute_modifiers = ttk.Frame(frame)
         mute_entry = ttk.Entry(mute_modifiers, width=width, justify="center")
         mute_entry.bind("<FocusIn>", lambda event: listen_for_key_events(mute_entry))
@@ -505,20 +541,24 @@ class Frontend(object):
             ctrl_mute_checkbox,
             alt_mute_checkbox,
             shift_mute_checkbox,
+            win_mute_checkbox,
         ) = create_modifiers(
             mute_modifiers,
             ctrl_mute_var,
             alt_mute_var,
             shift_mute_var,
+            win_mute_var,
         )
         ctrl_mute_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
         alt_mute_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
         shift_mute_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
+        win_mute_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
         mute_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
         ctrl_seek_forward_var = tk.BooleanVar()
         alt_seek_forward_var = tk.BooleanVar()
         shift_seek_forward_var = tk.BooleanVar()
+        win_seek_forward_var = tk.BooleanVar()
         seek_forward_modifiers = ttk.Frame(frame)
         seek_forward_entry = ttk.Entry(
             seek_forward_modifiers, width=width, justify="center"
@@ -530,22 +570,26 @@ class Frontend(object):
             ctrl_seek_forward_checkbox,
             alt_seek_forward_checkbox,
             shift_seek_forward_checkbox,
+            win_seek_forward_checkbox,
         ) = create_modifiers(
             seek_forward_modifiers,
             ctrl_seek_forward_var,
             alt_seek_forward_var,
             shift_seek_forward_var,
+            win_seek_forward_var,
         )
         ctrl_seek_forward_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
         alt_seek_forward_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
         shift_seek_forward_checkbox.grid(
             row=0, column=2, padx=padding_x, pady=padding_y
         )
+        win_seek_forward_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
         seek_forward_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
         ctrl_seek_backward_var = tk.BooleanVar()
         alt_seek_backward_var = tk.BooleanVar()
         shift_seek_backward_var = tk.BooleanVar()
+        win_seek_backward_var = tk.BooleanVar()
         seek_backward_modifiers = ttk.Frame(frame)
         seek_backward_entry = ttk.Entry(
             seek_backward_modifiers, width=width, justify="center"
@@ -557,11 +601,13 @@ class Frontend(object):
             ctrl_seek_backward_checkbox,
             alt_seek_backward_checkbox,
             shift_seek_backward_checkbox,
+            win_seek_backward_checkbox,
         ) = create_modifiers(
             seek_backward_modifiers,
             ctrl_seek_backward_var,
             alt_seek_backward_var,
             shift_seek_backward_var,
+            win_seek_backward_var,
         )
         ctrl_seek_backward_checkbox.grid(
             row=0, column=0, padx=padding_x, pady=padding_y
@@ -570,6 +616,7 @@ class Frontend(object):
         shift_seek_backward_checkbox.grid(
             row=0, column=2, padx=padding_x, pady=padding_y
         )
+        win_seek_backward_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
         seek_backward_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
 
         # --------------------------------------------------------------------------------------- #
@@ -655,6 +702,16 @@ class Frontend(object):
             shift_seek_forward_var,
             shift_seek_backward_var,
         ]
+        win_vars = [
+            win_play_pause_var,
+            win_prev_track_var,
+            win_next_track_var,
+            win_volume_up_var,
+            win_volume_down_var,
+            win_mute_var,
+            win_seek_forward_var,
+            win_seek_backward_var,
+        ]
 
         if os.path.exists(self.app.config_path):
             with open(self.app.config_path, "r") as f:
@@ -668,13 +725,14 @@ class Frontend(object):
                     config.get("rewind_instead_prev", False)
                 )
 
-                for entry, key, default_value, ctrl_var, alt_var, shift_var in zip(
+                for entry, key, default_value, ctrl_var, alt_var, shift_var, win_var in zip(
                     hotkey_entries,
                     hotkey_keys,
                     hotkey_defaults,
                     ctrl_vars,
                     alt_vars,
                     shift_vars,
+                    win_vars,
                 ):
                     modifiers = autofill_entry(
                         entry, hotkeys.get(key, default_value), hotkey=True
@@ -682,6 +740,7 @@ class Frontend(object):
                     ctrl_var.set(modifiers["ctrl"])
                     alt_var.set(modifiers["alt"])
                     shift_var.set(modifiers["shift"])
+                    win_var.set(modifiers["win"])
 
                 self.app.startup_var.set(config.get("startup", False))
                 self.app.minimize_var.set(config.get("minimize", False))
@@ -691,18 +750,20 @@ class Frontend(object):
 
             self.app.rewind_instead_prev_var.set(False)
 
-            for entry, key, default_value, ctrl_var, alt_var, shift_var in zip(
+            for entry, key, default_value, ctrl_var, alt_var, shift_var, win_var in zip(
                 hotkey_entries,
                 hotkey_keys,
                 hotkey_defaults,
                 ctrl_vars,
                 alt_vars,
                 shift_vars,
+                win_vars,
             ):
                 modifiers = autofill_entry(entry, default_value, hotkey=True)
                 ctrl_var.set(modifiers["ctrl"])
                 alt_var.set(modifiers["alt"])
                 shift_var.set(modifiers["shift"])
+                win_var.set(modifiers["win"])
 
             self.app.startup_var.set(False)
             self.app.minimize_var.set(False)
