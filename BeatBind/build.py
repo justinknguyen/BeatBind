@@ -2,14 +2,14 @@ import ttkthemes
 import os
 
 # place the path in the last build command option if using Nuitka
-path = print(os.path.dirname(ttkthemes.__file__)) 
+path = print(os.path.dirname(ttkthemes.__file__))
 
-'''
+"""
 Nuitka Build Command:
-(replace '--onefile' with '--standalone' to create an .exe that depends on other files)
+(replace '--standalone' with '--onefile' to create an .exe that does not depends on other files)
 
 python -m nuitka ^
---onefile ^
+--standalone ^
 --mingw64 ^
 --disable-console ^
 --include-package=tkinter ^
@@ -26,4 +26,4 @@ app.py
 PyInstaller Build Command:
 
 pyinstaller --onefile --noconsole --add-data "icon.ico;." --icon=icon.ico -n "BeatBind" app.py
-'''
+"""
