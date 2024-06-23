@@ -245,14 +245,13 @@ class Frontend(object):
         root.iconbitmap(self.icon_path)
         root.focus_force()
 
-        # Checkboxes
-        self.app.rewind_instead_prev_var = tk.BooleanVar()
-        self.app.startup_var = tk.BooleanVar()
-        self.app.minimize_var = tk.BooleanVar()
-
-        # Create a frame with padding
+        # Frames
         frame = ttk.Frame(root, padding=20)
         frame.grid(column=0, row=0)
+        options_frame = ttk.Frame(frame)
+        source_frame = ttk.Frame(frame)
+        button_frame = ttk.Frame(frame)
+        checkbox_frame = ttk.Frame(frame)
 
         # Separator
         separator = ttk.Separator(frame, orient="horizontal")
@@ -263,7 +262,6 @@ class Frontend(object):
         port_label = ttk.Label(frame, text="Port:")
         device_id_label = ttk.Label(frame, text="Device ID:")
 
-        options_frame = ttk.Frame(frame)
         volume_label = ttk.Label(options_frame, text="Volume Inc/Dec:")
         seek_label = ttk.Label(options_frame, text="Seek (ms):")
 
@@ -278,7 +276,6 @@ class Frontend(object):
         seek_forward_label = ttk.Label(frame, text="Seek Forward:")
         seek_backward_label = ttk.Label(frame, text="Seek Backward:")
 
-        source_frame = ttk.Frame(frame)
         source_link = ttk.Label(
             source_frame,
             text="GitHub Source",
@@ -296,7 +293,6 @@ class Frontend(object):
         client_secret_entry = ttk.Entry(frame, width=42)
         port_entry = ttk.Entry(frame, width=42)
         device_id_entry = ttk.Combobox(frame, width=40)
-        vcmd = (root.register(validate_volume), "%P")
         volume_entry = ttk.Spinbox(
             options_frame,
             from_=0,
@@ -304,7 +300,7 @@ class Frontend(object):
             width=5,
             increment=1,
             validate="all",
-            validatecommand=vcmd,
+            validatecommand=(root.register(validate_volume), "%P"),
         )
         seek_entry = ttk.Spinbox(
             options_frame,
@@ -314,22 +310,20 @@ class Frontend(object):
             increment=1,
             validate="all",
         )
-        rewind_instead_prev_checkbox = ttk.Checkbutton(
-            frame,
-            text="Previous Track: rewind to start",
-            variable=self.app.rewind_instead_prev_var,
-        )
 
         # Buttons
         devices_button = ttk.Button(frame, text="Get Devices", command=device_action)
-        button_frame = ttk.Frame(frame)
         save_button = ttk.Button(
             button_frame, text="Save", command=save_action, state=tk.DISABLED
         )
         start_button = ttk.Button(
             button_frame, text="Start & Close", command=start_action
         )
-        checkbox_frame = ttk.Frame(frame)
+
+        # Checkboxes
+        self.app.startup_var = tk.BooleanVar()
+        self.app.minimize_var = tk.BooleanVar()
+        self.app.rewind_instead_prev_var = tk.BooleanVar()
         startup_checkbox = ttk.Checkbutton(
             checkbox_frame,
             text="Start on Windows startup",
@@ -337,6 +331,11 @@ class Frontend(object):
         )
         minimize_checkbox = ttk.Checkbutton(
             checkbox_frame, text="Start minimized", variable=self.app.minimize_var
+        )
+        rewind_instead_prev_checkbox = ttk.Checkbutton(
+            frame,
+            text="Previous Track: rewind to start",
+            variable=self.app.rewind_instead_prev_var,
         )
 
         # --------------------------------------------------------------------------------------- #
@@ -571,14 +570,12 @@ class Frontend(object):
                 client_secret_entry,
                 port_entry,
                 device_id_entry,
-                volume_entry,
-                seek_entry,
             ]
 
             for entry in entries:
-                entry.bind("<KeyRelease>", set_modified)
+                entry.bind("<KeyRelease>", set_modified_cred)
 
-            for key, (frame, entry, var_dict) in hotkey_entries.items():
+            for modifier_frame, entry, var_dict in hotkey_entries.values():
                 entry.bind("<KeyRelease>", set_modified)
 
             volume_entry.bind("<<Increment>>", set_modified)
@@ -616,38 +613,27 @@ class Frontend(object):
 
         play_pause_label.grid(row=9, column=0, sticky="E")
         hotkey_entries["play/pause"][0].grid(row=9, column=1, sticky="W")
-
         play_label.grid(row=10, column=0, sticky="E")
         hotkey_entries["play"][0].grid(row=10, column=1, sticky="W")
-
         pause_label.grid(row=11, column=0, sticky="E")
         hotkey_entries["pause"][0].grid(row=11, column=1, sticky="W")
-
         prev_track_label.grid(row=12, column=0, sticky="E")
         hotkey_entries["prev_track"][0].grid(row=12, column=1, sticky="W")
-
         next_track_label.grid(row=13, column=0, sticky="E")
         hotkey_entries["next_track"][0].grid(row=13, column=1, sticky="W")
-
         volume_up_label.grid(row=14, column=0, sticky="E")
         hotkey_entries["volume_up"][0].grid(row=14, column=1, sticky="W")
-
         volume_down_label.grid(row=15, column=0, sticky="E")
         hotkey_entries["volume_down"][0].grid(row=15, column=1, sticky="W")
-
         mute_label.grid(row=16, column=0, sticky="E")
         hotkey_entries["mute"][0].grid(row=16, column=1, sticky="W")
-
         seek_forward_label.grid(row=17, column=0, sticky="E")
         hotkey_entries["seek_forward"][0].grid(row=17, column=1, sticky="W")
-
         seek_backward_label.grid(row=18, column=0, sticky="E")
         hotkey_entries["seek_backward"][0].grid(row=18, column=1, sticky="W")
-
         button_frame.grid(row=19, column=0, columnspan=2, pady=10)
         save_button.pack(side="left", padx=(0, 5))
         start_button.pack(side="left", padx=(5, 0))
-
         checkbox_frame.grid(row=20, column=0, columnspan=2, pady=10)
         startup_checkbox.pack(side="left", padx=(0, 5))
         minimize_checkbox.pack(side="left", padx=(5, 0))

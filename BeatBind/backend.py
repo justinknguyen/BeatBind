@@ -42,6 +42,8 @@ class Backend(object):
         # Global hotkeys
         self.hotkeys = {
             "play/pause": None,
+            "play": None,
+            "pause": None,
             "prev_track": None,
             "next_track": None,
             "volume_up": None,
