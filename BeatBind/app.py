@@ -26,7 +26,7 @@ def main():
 
     # Check if there is a config file
     if os.path.exists(backend.config_path):
-        with open(backend.config_path, "r") as f:
+        with open(backend.config_path, "r", encoding="utf-8") as f:
             config = json.load(f)
             hotkeys = config["hotkeys"]
 

@@ -17,6 +17,7 @@ class Frontend(object):
     def __init__(self, app):
         self.app = app
         self.icon_path = app.icon_path
+        self.modified_credentials = False
 
         image = Image.open(self.icon_path)
         self.menu = pystray.Icon(
@@ -41,15 +42,12 @@ class Frontend(object):
         return pystray.MenuItem("Settings", self.SettingsWindow)
 
     def SettingsWindow(self):
-        global modifiedCredentials
-        modifiedCredentials = False
 
         def set_modified(event=None):
             save_button.config(state=tk.NORMAL)
 
         def set_modified_cred(event=None):
-            global modifiedCredentials
-            modifiedCredentials = True
+            self.modified_credentials = True
             save_button.config(state=tk.NORMAL)
 
         def handle_keypress(key_name, entry):
@@ -128,7 +126,7 @@ class Frontend(object):
             self.app.seek_position = int(seek_entry.get())
             self.app.rewind_instead_prev = self.app.rewind_instead_prev_var.get()
 
-            for key, (frame, entry, var_dict) in hotkey_entries.items():
+            for key, (modifier_frame, entry, var_dict) in hotkey_entries.items():
                 if key == "play/pause":
                     self.app.hotkeys[key] = update_hotkey_entry(
                         entry,
@@ -168,7 +166,7 @@ class Frontend(object):
                 }
                 device_id_entry["values"] = list(devices.keys())
 
-            def on_device_changed(event):
+            def on_device_changed(event=None):
                 set_modified_cred()
                 device_name = device_id_entry.get()
                 device_id = devices.get(device_name)
@@ -200,7 +198,7 @@ class Frontend(object):
             x = (window.winfo_screenwidth() // 2) - (width // 2)
             y = (window.winfo_screenheight() // 2) - (height // 2)
             window.geometry(f"{width}x{height}+{x}+{y}")
-            window.after(1, lambda: window.focus_force())
+            window.after(100, window.focus_force())
 
         def device_action():
             set_input_fields()
@@ -214,7 +212,6 @@ class Frontend(object):
                 save_button.config(state=tk.DISABLED)
 
         def start_action():
-            global modifiedCredentials
             set_input_fields()
 
             if (
@@ -225,7 +222,7 @@ class Frontend(object):
                 self.app.CreateToken()
                 return
 
-            if modifiedCredentials and not self.app.CreateToken():
+            if self.modified_credentials and not self.app.CreateToken():
                 return
             else:
                 root.destroy()
@@ -241,7 +238,7 @@ class Frontend(object):
         """
         root = ThemedTk(theme="breeze")
         root.withdraw()
-        root.title("BeatBind (v1.6.0)")
+        root.title("BeatBind (v1.7.0)")
         root.iconbitmap(self.icon_path)
         root.focus_force()
 
@@ -251,10 +248,10 @@ class Frontend(object):
         options_frame = ttk.Frame(frame)
         source_frame = ttk.Frame(frame)
         button_frame = ttk.Frame(frame)
-        checkbox_frame = ttk.Frame(frame)
 
-        # Separator
-        separator = ttk.Separator(frame, orient="horizontal")
+        #
+        vertical_separator = ttk.Separator(frame, orient="vertical")
+        horizontal_separator = ttk.Separator(frame, orient="horizontal")
 
         # Labels
         client_id_label = ttk.Label(frame, text="Client ID:")
@@ -262,7 +259,7 @@ class Frontend(object):
         port_label = ttk.Label(frame, text="Port:")
         device_id_label = ttk.Label(frame, text="Device ID:")
 
-        volume_label = ttk.Label(options_frame, text="Volume Inc/Dec:")
+        volume_label = ttk.Label(options_frame, text="Volume (steps):")
         seek_label = ttk.Label(options_frame, text="Seek (ms):")
 
         play_pause_label = ttk.Label(frame, text="Play/Pause:")
@@ -325,12 +322,12 @@ class Frontend(object):
         self.app.minimize_var = tk.BooleanVar()
         self.app.rewind_instead_prev_var = tk.BooleanVar()
         startup_checkbox = ttk.Checkbutton(
-            checkbox_frame,
+            frame,
             text="Start on Windows startup",
             variable=self.app.startup_var,
         )
         minimize_checkbox = ttk.Checkbutton(
-            checkbox_frame, text="Start minimized", variable=self.app.minimize_var
+            frame, text="Start minimized", variable=self.app.minimize_var
         )
         rewind_instead_prev_checkbox = ttk.Checkbutton(
             frame,
@@ -476,7 +473,7 @@ class Frontend(object):
             win_vars = hotkey_vars["win"]
 
             if os.path.exists(config_path):
-                with open(config_path, "r") as f:
+                with open(config_path, "r", encoding="utf-8") as f:
                     config = json.load(f)
                     hotkeys = config.get("hotkeys", {})
 
@@ -602,43 +599,45 @@ class Frontend(object):
         device_id_entry.grid(row=4, column=1, sticky="EW")
         devices_button.grid(row=5, column=1, sticky="EW")
 
-        options_frame.grid(row=6, column=0, columnspan=4, pady=10)
+        vertical_separator.grid(row=1, column=2, rowspan=5, sticky="NS")
+
+        startup_checkbox.grid(row=1, column=3, sticky="W")
+        minimize_checkbox.grid(row=2, column=3, sticky="W")
+        rewind_instead_prev_checkbox.grid(row=3, column=3, sticky="W")
+        options_frame.grid(row=4, column=3, columnspan=4, sticky="W")
         volume_label.grid(row=0, column=0, sticky="E")
         volume_entry.grid(row=0, column=1, sticky="W", padx=(0, 5))
         seek_label.grid(row=0, column=2, sticky="E", padx=(5, 0))
         seek_entry.grid(row=0, column=3, sticky="W")
-        rewind_instead_prev_checkbox.grid(row=7, column=1, sticky="W")
 
-        separator.grid(row=8, column=0, columnspan=3, sticky="EW", pady=10)
+        horizontal_separator.grid(row=6, columnspan=4, sticky="EW", pady=10)
 
-        play_pause_label.grid(row=9, column=0, sticky="E")
-        hotkey_entries["play/pause"][0].grid(row=9, column=1, sticky="W")
-        play_label.grid(row=10, column=0, sticky="E")
-        hotkey_entries["play"][0].grid(row=10, column=1, sticky="W")
-        pause_label.grid(row=11, column=0, sticky="E")
-        hotkey_entries["pause"][0].grid(row=11, column=1, sticky="W")
-        prev_track_label.grid(row=12, column=0, sticky="E")
-        hotkey_entries["prev_track"][0].grid(row=12, column=1, sticky="W")
-        next_track_label.grid(row=13, column=0, sticky="E")
-        hotkey_entries["next_track"][0].grid(row=13, column=1, sticky="W")
-        volume_up_label.grid(row=14, column=0, sticky="E")
-        hotkey_entries["volume_up"][0].grid(row=14, column=1, sticky="W")
-        volume_down_label.grid(row=15, column=0, sticky="E")
-        hotkey_entries["volume_down"][0].grid(row=15, column=1, sticky="W")
-        mute_label.grid(row=16, column=0, sticky="E")
-        hotkey_entries["mute"][0].grid(row=16, column=1, sticky="W")
-        seek_forward_label.grid(row=17, column=0, sticky="E")
-        hotkey_entries["seek_forward"][0].grid(row=17, column=1, sticky="W")
-        seek_backward_label.grid(row=18, column=0, sticky="E")
-        hotkey_entries["seek_backward"][0].grid(row=18, column=1, sticky="W")
-        button_frame.grid(row=19, column=0, columnspan=2, pady=10)
+        play_pause_label.grid(row=7, column=0, sticky="E")
+        hotkey_entries["play/pause"][0].grid(row=7, column=1, sticky="W", padx=(0, 20))
+        play_label.grid(row=8, column=0, sticky="E")
+        hotkey_entries["play"][0].grid(row=8, column=1, sticky="W", padx=(0, 20))
+        pause_label.grid(row=9, column=0, sticky="E")
+        hotkey_entries["pause"][0].grid(row=9, column=1, sticky="W", padx=(0, 20))
+        prev_track_label.grid(row=10, column=0, sticky="E")
+        hotkey_entries["prev_track"][0].grid(row=10, column=1, sticky="W", padx=(0, 20))
+        next_track_label.grid(row=11, column=0, sticky="E")
+        hotkey_entries["next_track"][0].grid(row=11, column=1, sticky="W", padx=(0, 20))
+
+        volume_up_label.grid(row=7, column=2, sticky="E")
+        hotkey_entries["volume_up"][0].grid(row=7, column=3, sticky="W")
+        volume_down_label.grid(row=8, column=2, sticky="E")
+        hotkey_entries["volume_down"][0].grid(row=8, column=3, sticky="W")
+        mute_label.grid(row=9, column=2, sticky="E")
+        hotkey_entries["mute"][0].grid(row=9, column=3, sticky="W")
+        seek_backward_label.grid(row=10, column=2, sticky="E")
+        hotkey_entries["seek_backward"][0].grid(row=10, column=3, sticky="W")
+        seek_forward_label.grid(row=11, column=2, sticky="E")
+        hotkey_entries["seek_forward"][0].grid(row=11, column=3, sticky="W")
+
+        button_frame.grid(row=12, column=0, columnspan=4, pady=10)
         save_button.pack(side="left", padx=(0, 5))
         start_button.pack(side="left", padx=(5, 0))
-        checkbox_frame.grid(row=20, column=0, columnspan=2, pady=10)
-        startup_checkbox.pack(side="left", padx=(0, 5))
-        minimize_checkbox.pack(side="left", padx=(5, 0))
-
-        source_frame.grid(row=21, column=0, columnspan=2, pady=10)
+        source_frame.grid(row=13, column=0, columnspan=4, pady=10)
         source_link.pack(side="left")
 
         # Center window and focus

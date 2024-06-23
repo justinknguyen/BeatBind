@@ -454,7 +454,7 @@ class Backend(object):
         }
         try:
             # Save the config to the file with indentation for readability
-            with open(self.config_path, "w") as f:
+            with open(self.config_path, "w", encoding="utf-8") as f:
                 json.dump(config, f, indent=4)
             print("Config saved")
             return True
@@ -476,7 +476,7 @@ class Backend(object):
     def StartupTokenRefresh(self):
         cache_file = os.path.join(self.app_folder, ".cache")
         if os.path.exists(self.config_path):
-            with open(self.config_path, "r") as f:
+            with open(self.config_path, "r", encoding="utf-8") as f:
                 config = json.load(f)
                 try:
                     self.auth_manager = SpotifyOAuth(
@@ -486,8 +486,8 @@ class Backend(object):
                         redirect_uri=f"http://localhost:{self.port}/callback",
                         cache_path=cache_file,
                     )
-                except:
-                    print("Invalid config.")
+                except Exception as e:
+                    print(f"Invalid config:  {e}")
                     return
 
             self.RefreshToken()
@@ -505,12 +505,12 @@ class Backend(object):
     def CheckTokenExpiry(self):
         cache_file = os.path.join(self.app_folder, ".cache")
         if os.path.exists(cache_file):
-            with open(cache_file, "r") as f:
+            with open(cache_file, "r", encoding="utf-8") as f:
                 cache_data = json.load(f)
             expires_at = cache_data["expires_at"]
             if datetime.now().timestamp() >= expires_at:
                 print("Cached token has expired")
-                with open(self.config_path, "r") as f:
+                with open(self.config_path, "r", encoding="utf-8") as f:
                     config = json.load(f)
                     self.auth_manager = SpotifyOAuth(
                         scope="user-modify-playback-state,user-read-playback-state",
