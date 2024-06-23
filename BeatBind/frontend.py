@@ -182,12 +182,12 @@ class Frontend(object):
                 return True
             return False
 
-        def validate_volume(P):
-            if P == "":
+        def validate_volume(new_value):
+            if new_value == "":
                 return True
             try:
-                value = int(P)
-                if 0 <= value <= 100 and P == str(value):
+                value = int(new_value)
+                if 0 <= value <= 100 and new_value == str(value):
                     return True
             except ValueError:
                 return False
