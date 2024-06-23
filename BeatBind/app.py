@@ -12,14 +12,11 @@ from frontend import *
 
 def main():
     # If the user trys to open another instance, do not open
-    def count_running_instances():
-        count = 0
-        for process in psutil.process_iter(["name"]):
-            if process.info["name"] == "BeatBind.exe":
-                count += 1
-        return count
-
-    if count_running_instances() > 1:
+    count = 0
+    for process in psutil.process_iter(["name"]):
+        if process.info["name"] == "BeatBind.exe":
+            count += 1
+    if count > 1:
         print("BeatBind.exe is already running. Exiting...")
         sys.exit()
 
@@ -45,6 +42,8 @@ def main():
                 setattr(backend, key, config.get(key, default_value))
             for key, default_value in [
                 ("play/pause", "control+alt+shift+p"),
+                ("play", "control+alt+shift+z"),
+                ("pause", "control+alt+shift+x"),
                 ("prev_track", "control+alt+shift+left"),
                 ("next_track", "control+alt+shift+right"),
                 ("volume_up", "control+alt+shift+up"),

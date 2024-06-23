@@ -71,7 +71,8 @@ class Frontend(object):
                             handle_keypress(key_name, entry)
                     entry.update_idletasks()
                     entry.update()
-                except:
+                except Exception as e:
+                    print(f"Error: {e}")
                     break
 
         def autofill_entry(entry, value, hotkey=False):
@@ -126,62 +127,24 @@ class Frontend(object):
             self.app.volume = int(volume_entry.get())
             self.app.seek_position = int(seek_entry.get())
             self.app.rewind_instead_prev = self.app.rewind_instead_prev_var.get()
-            self.app.hotkeys["play/pause"] = update_hotkey_entry(
-                play_pause_entry,
-                ctrl_play_pause_var,
-                alt_play_pause_var,
-                shift_play_pause_var,
-                win_play_pause_var,
-            )
-            self.app.hotkeys["prev_track"] = update_hotkey_entry(
-                prev_track_entry,
-                ctrl_prev_track_var,
-                alt_prev_track_var,
-                shift_prev_track_var,
-                win_prev_track_var,
-            )
-            self.app.hotkeys["next_track"] = update_hotkey_entry(
-                next_track_entry,
-                ctrl_next_track_var,
-                alt_next_track_var,
-                shift_next_track_var,
-                win_next_track_var,
-            )
-            self.app.hotkeys["volume_up"] = update_hotkey_entry(
-                volume_up_entry,
-                ctrl_volume_up_var,
-                alt_volume_up_var,
-                shift_volume_up_var,
-                win_volume_up_var,
-            )
-            self.app.hotkeys["volume_down"] = update_hotkey_entry(
-                volume_down_entry,
-                ctrl_volume_down_var,
-                alt_volume_down_var,
-                shift_volume_down_var,
-                win_volume_down_var,
-            )
-            self.app.hotkeys["mute"] = update_hotkey_entry(
-                mute_entry,
-                ctrl_mute_var,
-                alt_mute_var,
-                shift_mute_var,
-                win_mute_var,
-            )
-            self.app.hotkeys["seek_forward"] = update_hotkey_entry(
-                seek_forward_entry,
-                ctrl_seek_forward_var,
-                alt_seek_forward_var,
-                shift_seek_forward_var,
-                win_seek_forward_var,
-            )
-            self.app.hotkeys["seek_backward"] = update_hotkey_entry(
-                seek_backward_entry,
-                ctrl_seek_backward_var,
-                alt_seek_backward_var,
-                shift_seek_backward_var,
-                win_seek_backward_var,
-            )
+
+            for key, (frame, entry, var_dict) in hotkey_entries.items():
+                if key == "play/pause":
+                    self.app.hotkeys[key] = update_hotkey_entry(
+                        entry,
+                        hotkey_vars["ctrl"][hotkey_keys.index(key)],
+                        hotkey_vars["alt"][hotkey_keys.index(key)],
+                        hotkey_vars["shift"][hotkey_keys.index(key)],
+                        hotkey_vars["win"][hotkey_keys.index(key)],
+                    )
+                else:
+                    self.app.hotkeys[key] = update_hotkey_entry(
+                        entry,
+                        hotkey_vars["ctrl"][hotkey_keys.index(key)],
+                        hotkey_vars["alt"][hotkey_keys.index(key)],
+                        hotkey_vars["shift"][hotkey_keys.index(key)],
+                        hotkey_vars["win"][hotkey_keys.index(key)],
+                    )
 
         def create_modifiers(frame, ctrl_var, alt_var, shift_var, win_var):
             ctrl_checkbox = ttk.Checkbutton(frame, text="Ctrl", variable=ctrl_var)
@@ -217,19 +180,14 @@ class Frontend(object):
             device_id_entry.bind("<<ComboboxSelected>>", on_device_changed)
 
         def validate_volume(P):
-            # Check if the input is empty (allowing deletion)
             if P == "":
                 return True
             try:
-                # Convert the string to an integer
                 value = int(P)
-                # Check if the value is within 0-100 and the string is a valid representation (no leading zeros)
                 if 0 <= value <= 100 and P == str(value):
                     return True
             except ValueError:
-                # Conversion to integer failed, meaning it's not a valid integer
                 return False
-            # If none of the above conditions are met, return False
             return False
 
         def link_callback(url):
@@ -310,6 +268,8 @@ class Frontend(object):
         seek_label = ttk.Label(options_frame, text="Seek (ms):")
 
         play_pause_label = ttk.Label(frame, text="Play/Pause:")
+        play_label = ttk.Label(frame, text="Play:")
+        pause_label = ttk.Label(frame, text="Pause:")
         prev_track_label = ttk.Label(frame, text="Previous Track:")
         next_track_label = ttk.Label(frame, text="Next Track:")
         volume_up_label = ttk.Label(frame, text="Volume Up:")
@@ -380,420 +340,176 @@ class Frontend(object):
         )
 
         # --------------------------------------------------------------------------------------- #
-        """
-        Hotkey area
-        """
-        width = 12
-        padding_x = 2
-        padding_y = 2
+        
+        def create_hotkey_area(frame, listen_for_key_events, create_modifiers, width=12, padding_x=2, padding_y=2):
+            """
+            Hotkey area
+            """
+            var_names = ["ctrl", "alt", "shift", "win"]
+            var_dict = {name: tk.BooleanVar() for name in var_names}
+            
+            modifiers_frame = ttk.Frame(frame)
+            entry = ttk.Entry(modifiers_frame, width=width, justify="center")
+            entry.bind("<FocusIn>", lambda event: listen_for_key_events(entry))
+            
+            checkboxes = create_modifiers(
+                modifiers_frame,
+                var_dict["ctrl"],
+                var_dict["alt"],
+                var_dict["shift"],
+                var_dict["win"],
+            )
+            
+            for i, checkbox in enumerate(checkboxes):
+                checkbox.grid(row=0, column=i, padx=padding_x, pady=padding_y)
+            
+            entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
+            
+            return modifiers_frame, entry, var_dict
 
-        ctrl_play_pause_var = tk.BooleanVar()
-        alt_play_pause_var = tk.BooleanVar()
-        shift_play_pause_var = tk.BooleanVar()
-        win_play_pause_var = tk.BooleanVar()
-        play_pause_modifiers = ttk.Frame(frame)
-        play_pause_entry = ttk.Entry(
-            play_pause_modifiers, width=width, justify="center"
-        )
-        play_pause_entry.bind(
-            "<FocusIn>", lambda event: listen_for_key_events(play_pause_entry)
-        )
-        (
-            ctrl_play_pause_checkbox,
-            alt_play_pause_checkbox,
-            shift_play_pause_checkbox,
-            win_play_pause_checkbox,
-        ) = create_modifiers(
-            play_pause_modifiers,
-            ctrl_play_pause_var,
-            alt_play_pause_var,
-            shift_play_pause_var,
-            win_play_pause_var,
-        )
-        ctrl_play_pause_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
-        alt_play_pause_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
-        shift_play_pause_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
-        win_play_pause_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
-        play_pause_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
+        def initialize_entries():
+            """
+            Initialize entries
+            """
+            entries = [
+                client_id_entry,
+                client_secret_entry,
+                port_entry,
+                device_id_entry,
+                volume_entry,
+                seek_entry,
+            ]
+            keys = [
+                "client_id",
+                "client_secret",
+                "port",
+                "device_id",
+                "volume",
+                "seek",
+                "rewind_instead_prev",
+            ]
+            keys_defaults = ["", "", 8888, "", 5, 5000, False]
+            
+            hotkey_entries = {}
+            hotkey_vars = {"ctrl": [], "alt": [], "shift": [], "win": []}
 
-        ctrl_prev_track_var = tk.BooleanVar()
-        alt_prev_track_var = tk.BooleanVar()
-        shift_prev_track_var = tk.BooleanVar()
-        win_prev_track_var = tk.BooleanVar()
-        prev_track_modifiers = ttk.Frame(frame)
-        prev_track_entry = ttk.Entry(
-            prev_track_modifiers, width=width, justify="center"
-        )
-        prev_track_entry.bind(
-            "<FocusIn>", lambda event: listen_for_key_events(prev_track_entry)
-        )
-        (
-            ctrl_prev_track_checkbox,
-            alt_prev_track_checkbox,
-            shift_prev_track_checkbox,
-            win_prev_track_checkbox,
-        ) = create_modifiers(
-            prev_track_modifiers,
-            ctrl_prev_track_var,
-            alt_prev_track_var,
-            shift_prev_track_var,
-            win_prev_track_var,
-        )
-        ctrl_prev_track_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
-        alt_prev_track_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
-        shift_prev_track_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
-        win_prev_track_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
-        prev_track_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
+            hotkey_keys = [
+                "play/pause",
+                "play",
+                "pause",
+                "prev_track",
+                "next_track",
+                "volume_up",
+                "volume_down",
+                "mute",
+                "seek_forward",
+                "seek_backward",
+            ]
+            hotkey_defaults = [
+                "control+alt+shift+p",
+                "control+alt+shift+z",
+                "control+alt+shift+x",
+                "control+alt+shift+left",
+                "control+alt+shift+right",
+                "control+alt+shift+up",
+                "control+alt+shift+down",
+                "control+alt+shift+space",
+                "control+alt+shift+f",
+                "control+alt+shift+b",
+            ]
 
-        ctrl_next_track_var = tk.BooleanVar()
-        alt_next_track_var = tk.BooleanVar()
-        shift_next_track_var = tk.BooleanVar()
-        win_next_track_var = tk.BooleanVar()
-        next_track_modifiers = ttk.Frame(frame)
-        next_track_entry = ttk.Entry(
-            next_track_modifiers, width=width, justify="center"
-        )
-        next_track_entry.bind(
-            "<FocusIn>", lambda event: listen_for_key_events(next_track_entry)
-        )
-        (
-            ctrl_next_track_checkbox,
-            alt_next_track_checkbox,
-            shift_next_track_checkbox,
-            win_next_track_checkbox,
-        ) = create_modifiers(
-            next_track_modifiers,
-            ctrl_next_track_var,
-            alt_next_track_var,
-            shift_next_track_var,
-            win_next_track_var,
-        )
-        ctrl_next_track_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
-        alt_next_track_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
-        shift_next_track_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
-        win_next_track_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
-        next_track_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
+            for key in hotkey_keys:
+                modifier_frame, entry, var_dict = create_hotkey_area(frame, listen_for_key_events, create_modifiers)
+                hotkey_entries[key] = (modifier_frame, entry, var_dict)
+                for modifier in ["ctrl", "alt", "shift", "win"]:
+                    hotkey_vars[modifier].append(var_dict[modifier])
+                modifier_frame.grid(row=hotkey_keys.index(key) + 9, column=1, sticky="W")
 
-        ctrl_volume_up_var = tk.BooleanVar()
-        alt_volume_up_var = tk.BooleanVar()
-        shift_volume_up_var = tk.BooleanVar()
-        win_volume_up_var = tk.BooleanVar()
-        volume_up_modifiers = ttk.Frame(frame)
-        volume_up_entry = ttk.Entry(volume_up_modifiers, width=width, justify="center")
-        volume_up_entry.bind(
-            "<FocusIn>", lambda event: listen_for_key_events(volume_up_entry)
-        )
-        (
-            ctrl_volume_up_checkbox,
-            alt_volume_up_checkbox,
-            shift_volume_up_checkbox,
-            win_volume_up_checkbox,
-        ) = create_modifiers(
-            volume_up_modifiers,
-            ctrl_volume_up_var,
-            alt_volume_up_var,
-            shift_volume_up_var,
-            win_volume_up_var,
-        )
-        ctrl_volume_up_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
-        alt_volume_up_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
-        shift_volume_up_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
-        win_volume_up_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
-        volume_up_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
-
-        ctrl_volume_down_var = tk.BooleanVar()
-        alt_volume_down_var = tk.BooleanVar()
-        shift_volume_down_var = tk.BooleanVar()
-        win_volume_down_var = tk.BooleanVar()
-        volume_down_modifiers = ttk.Frame(frame)
-        volume_down_entry = ttk.Entry(
-            volume_down_modifiers, width=width, justify="center"
-        )
-        volume_down_entry.bind(
-            "<FocusIn>", lambda event: listen_for_key_events(volume_down_entry)
-        )
-        (
-            ctrl_volume_down_checkbox,
-            alt_volume_down_checkbox,
-            shift_volume_down_checkbox,
-            win_volume_down_checkbox,
-        ) = create_modifiers(
-            volume_down_modifiers,
-            ctrl_volume_down_var,
-            alt_volume_down_var,
-            shift_volume_down_var,
-            win_volume_down_var,
-        )
-        ctrl_volume_down_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
-        alt_volume_down_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
-        shift_volume_down_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
-        win_volume_down_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
-        volume_down_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
-
-        ctrl_mute_var = tk.BooleanVar()
-        alt_mute_var = tk.BooleanVar()
-        shift_mute_var = tk.BooleanVar()
-        win_mute_var = tk.BooleanVar()
-        mute_modifiers = ttk.Frame(frame)
-        mute_entry = ttk.Entry(mute_modifiers, width=width, justify="center")
-        mute_entry.bind("<FocusIn>", lambda event: listen_for_key_events(mute_entry))
-        (
-            ctrl_mute_checkbox,
-            alt_mute_checkbox,
-            shift_mute_checkbox,
-            win_mute_checkbox,
-        ) = create_modifiers(
-            mute_modifiers,
-            ctrl_mute_var,
-            alt_mute_var,
-            shift_mute_var,
-            win_mute_var,
-        )
-        ctrl_mute_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
-        alt_mute_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
-        shift_mute_checkbox.grid(row=0, column=2, padx=padding_x, pady=padding_y)
-        win_mute_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
-        mute_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
-
-        ctrl_seek_forward_var = tk.BooleanVar()
-        alt_seek_forward_var = tk.BooleanVar()
-        shift_seek_forward_var = tk.BooleanVar()
-        win_seek_forward_var = tk.BooleanVar()
-        seek_forward_modifiers = ttk.Frame(frame)
-        seek_forward_entry = ttk.Entry(
-            seek_forward_modifiers, width=width, justify="center"
-        )
-        seek_forward_entry.bind(
-            "<FocusIn>", lambda event: listen_for_key_events(seek_forward_entry)
-        )
-        (
-            ctrl_seek_forward_checkbox,
-            alt_seek_forward_checkbox,
-            shift_seek_forward_checkbox,
-            win_seek_forward_checkbox,
-        ) = create_modifiers(
-            seek_forward_modifiers,
-            ctrl_seek_forward_var,
-            alt_seek_forward_var,
-            shift_seek_forward_var,
-            win_seek_forward_var,
-        )
-        ctrl_seek_forward_checkbox.grid(row=0, column=0, padx=padding_x, pady=padding_y)
-        alt_seek_forward_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
-        shift_seek_forward_checkbox.grid(
-            row=0, column=2, padx=padding_x, pady=padding_y
-        )
-        win_seek_forward_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
-        seek_forward_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
-
-        ctrl_seek_backward_var = tk.BooleanVar()
-        alt_seek_backward_var = tk.BooleanVar()
-        shift_seek_backward_var = tk.BooleanVar()
-        win_seek_backward_var = tk.BooleanVar()
-        seek_backward_modifiers = ttk.Frame(frame)
-        seek_backward_entry = ttk.Entry(
-            seek_backward_modifiers, width=width, justify="center"
-        )
-        seek_backward_entry.bind(
-            "<FocusIn>", lambda event: listen_for_key_events(seek_backward_entry)
-        )
-        (
-            ctrl_seek_backward_checkbox,
-            alt_seek_backward_checkbox,
-            shift_seek_backward_checkbox,
-            win_seek_backward_checkbox,
-        ) = create_modifiers(
-            seek_backward_modifiers,
-            ctrl_seek_backward_var,
-            alt_seek_backward_var,
-            shift_seek_backward_var,
-            win_seek_backward_var,
-        )
-        ctrl_seek_backward_checkbox.grid(
-            row=0, column=0, padx=padding_x, pady=padding_y
-        )
-        alt_seek_backward_checkbox.grid(row=0, column=1, padx=padding_x, pady=padding_y)
-        shift_seek_backward_checkbox.grid(
-            row=0, column=2, padx=padding_x, pady=padding_y
-        )
-        win_seek_backward_checkbox.grid(row=0, column=3, padx=padding_x, pady=padding_y)
-        seek_backward_entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
-
+            return entries, keys, keys_defaults, hotkey_entries, hotkey_keys, hotkey_defaults, hotkey_vars
+        
+        entries, keys, keys_defaults, hotkey_entries, hotkey_keys, hotkey_defaults, hotkey_vars = initialize_entries()
+        
         # --------------------------------------------------------------------------------------- #
-        """
-        Auto-fill entries
-        """
-        entries = [
-            client_id_entry,
-            client_secret_entry,
-            port_entry,
-            device_id_entry,
-            volume_entry,
-            seek_entry,
-        ]
-        keys = [
-            "client_id",
-            "client_secret",
-            "port",
-            "device_id",
-            "volume",
-            "seek",
-            "rewind_instead_prev",
-        ]
-        keys_defaults = ["", "", 8888, "", 5, 5000, False]
-        hotkey_entries = [
-            play_pause_entry,
-            prev_track_entry,
-            next_track_entry,
-            volume_up_entry,
-            volume_down_entry,
-            mute_entry,
-            seek_forward_entry,
-            seek_backward_entry,
-        ]
-        hotkey_keys = [
-            "play/pause",
-            "prev_track",
-            "next_track",
-            "volume_up",
-            "volume_down",
-            "mute",
-            "seek_forward",
-            "seek_backward",
-        ]
-        hotkey_defaults = [
-            "control+alt+shift+p",
-            "control+alt+shift+left",
-            "control+alt+shift+right",
-            "control+alt+shift+up",
-            "control+alt+shift+down",
-            "control+alt+shift+space",
-            "control+alt+shift+f",
-            "control+alt+shift+b",
-        ]
+        
+        def load_configuration(config_path, entries, keys, keys_defaults, hotkey_entries, hotkey_keys, hotkey_defaults, hotkey_vars):
+            """
+            Auto-fill entries
+            """
+            ctrl_vars = hotkey_vars["ctrl"]
+            alt_vars = hotkey_vars["alt"]
+            shift_vars = hotkey_vars["shift"]
+            win_vars = hotkey_vars["win"]
 
-        ctrl_vars = [
-            ctrl_play_pause_var,
-            ctrl_prev_track_var,
-            ctrl_next_track_var,
-            ctrl_volume_up_var,
-            ctrl_volume_down_var,
-            ctrl_mute_var,
-            ctrl_seek_forward_var,
-            ctrl_seek_backward_var,
-        ]
-        alt_vars = [
-            alt_play_pause_var,
-            alt_prev_track_var,
-            alt_next_track_var,
-            alt_volume_up_var,
-            alt_volume_down_var,
-            alt_mute_var,
-            alt_seek_forward_var,
-            alt_seek_backward_var,
-        ]
-        shift_vars = [
-            shift_play_pause_var,
-            shift_prev_track_var,
-            shift_next_track_var,
-            shift_volume_up_var,
-            shift_volume_down_var,
-            shift_mute_var,
-            shift_seek_forward_var,
-            shift_seek_backward_var,
-        ]
-        win_vars = [
-            win_play_pause_var,
-            win_prev_track_var,
-            win_next_track_var,
-            win_volume_up_var,
-            win_volume_down_var,
-            win_mute_var,
-            win_seek_forward_var,
-            win_seek_backward_var,
-        ]
+            if os.path.exists(config_path):
+                with open(config_path, "r") as f:
+                    config = json.load(f)
+                    hotkeys = config.get("hotkeys", {})
 
-        if os.path.exists(self.app.config_path):
-            with open(self.app.config_path, "r") as f:
-                config = json.load(f)
-                hotkeys = config["hotkeys"]
+                    for entry, key, default_value in zip(entries, keys, keys_defaults):
+                        autofill_entry(entry, config.get(key, default_value))
 
+                    self.app.rewind_instead_prev_var.set(config.get("rewind_instead_prev", False))
+
+                    for (modifier_frame, entry, var_dict), key, default_value, ctrl_var, alt_var, shift_var, win_var in zip(
+                        hotkey_entries.values(), hotkey_keys, hotkey_defaults, ctrl_vars, alt_vars, shift_vars, win_vars):
+                        
+                        modifiers = autofill_entry(entry[key], hotkeys.get(key, default_value), hotkey=True)
+                        ctrl_var.set(modifiers["ctrl"])
+                        alt_var.set(modifiers["alt"])
+                        shift_var.set(modifiers["shift"])
+                        win_var.set(modifiers["win"])
+
+                    self.app.startup_var.set(config.get("startup", False))
+                    self.app.minimize_var.set(config.get("minimize", False))
+            else:
                 for entry, key, default_value in zip(entries, keys, keys_defaults):
-                    autofill_entry(entry, config.get(key, default_value))
+                    autofill_entry(entry, default_value)
 
-                self.app.rewind_instead_prev_var.set(
-                    config.get("rewind_instead_prev", False)
-                )
+                self.app.rewind_instead_prev_var.set(False)
 
-                for entry, key, default_value, ctrl_var, alt_var, shift_var, win_var in zip(
-                    hotkey_entries,
-                    hotkey_keys,
-                    hotkey_defaults,
-                    ctrl_vars,
-                    alt_vars,
-                    shift_vars,
-                    win_vars,
-                ):
-                    modifiers = autofill_entry(
-                        entry, hotkeys.get(key, default_value), hotkey=True
-                    )
+                for (modifier_frame, entry, var_dict), key, default_value, ctrl_var, alt_var, shift_var, win_var in zip(
+                    hotkey_entries.values(), hotkey_keys, hotkey_defaults, ctrl_vars, alt_vars, shift_vars, win_vars):
+                    modifiers = autofill_entry(entry, default_value, hotkey=True)
                     ctrl_var.set(modifiers["ctrl"])
                     alt_var.set(modifiers["alt"])
                     shift_var.set(modifiers["shift"])
                     win_var.set(modifiers["win"])
 
-                self.app.startup_var.set(config.get("startup", False))
-                self.app.minimize_var.set(config.get("minimize", False))
-        else:
-            for entry, key, default_value in zip(entries, keys, keys_defaults):
-                autofill_entry(entry, default_value)
-
-            self.app.rewind_instead_prev_var.set(False)
-
-            for entry, key, default_value, ctrl_var, alt_var, shift_var, win_var in zip(
-                hotkey_entries,
-                hotkey_keys,
-                hotkey_defaults,
-                ctrl_vars,
-                alt_vars,
-                shift_vars,
-                win_vars,
-            ):
-                modifiers = autofill_entry(entry, default_value, hotkey=True)
-                ctrl_var.set(modifiers["ctrl"])
-                alt_var.set(modifiers["alt"])
-                shift_var.set(modifiers["shift"])
-                win_var.set(modifiers["win"])
-
-            self.app.startup_var.set(False)
-            self.app.minimize_var.set(False)
+                self.app.startup_var.set(False)
+                self.app.minimize_var.set(False)
+                
+        load_configuration(self.app.config_path, entries, keys, keys_defaults, hotkey_entries, hotkey_keys, hotkey_defaults, hotkey_vars)
 
         # --------------------------------------------------------------------------------------- #
-        """
-        Enable "Save" button if any entry is modified
-        """
-        client_id_entry.bind("<KeyRelease>", set_modified_cred)
-        client_secret_entry.bind("<KeyRelease>", set_modified_cred)
-        port_entry.bind("<KeyRelease>", set_modified_cred)
-        device_id_entry.bind("<KeyRelease>", set_modified_cred)
-        volume_entry.bind("<KeyRelease>", set_modified)
-        volume_entry.bind("<<Increment>>", set_modified)
-        volume_entry.bind("<<Decrement>>", set_modified)
-        seek_entry.bind("<KeyRelease>", set_modified)
-        seek_entry.bind("<<Increment>>", set_modified)
-        seek_entry.bind("<<Decrement>>", set_modified)
-        rewind_instead_prev_checkbox.config(command=set_modified)
-        play_pause_entry.bind("<KeyRelease>", set_modified)
-        prev_track_entry.bind("<KeyRelease>", set_modified)
-        next_track_entry.bind("<KeyRelease>", set_modified)
-        volume_up_entry.bind("<KeyRelease>", set_modified)
-        volume_down_entry.bind("<KeyRelease>", set_modified)
-        mute_entry.bind("<KeyRelease>", set_modified)
-        seek_forward_entry.bind("<KeyRelease>", set_modified)
-        seek_backward_entry.bind("<KeyRelease>", set_modified)
-        startup_checkbox.config(command=set_modified)
-        minimize_checkbox.config(command=set_modified)
+        def bind_entries_to_set_modified(set_modified, set_modified_cred, hotkey_entries):
+            """
+            Bind the entries and checkboxes to enable the "Save" button when modified.
+            """
+            entries = [
+                client_id_entry,
+                client_secret_entry,
+                port_entry,
+                device_id_entry,
+                volume_entry,
+                seek_entry,
+            ]
 
+            for entry in entries:
+                entry.bind("<KeyRelease>", set_modified)
+
+            for key, (frame, entry, var_dict) in hotkey_entries.items():
+                entry.bind("<KeyRelease>", set_modified)
+
+            volume_entry.bind("<<Increment>>", set_modified)
+            volume_entry.bind("<<Decrement>>", set_modified)
+            seek_entry.bind("<<Increment>>", set_modified)
+            seek_entry.bind("<<Decrement>>", set_modified)
+
+            rewind_instead_prev_checkbox.config(command=set_modified)
+            startup_checkbox.config(command=set_modified)
+            minimize_checkbox.config(command=set_modified)
+            
+        bind_entries_to_set_modified(set_modified, set_modified_cred, hotkey_entries)
         # --------------------------------------------------------------------------------------- #
         """
         Grid layout
@@ -818,31 +534,44 @@ class Frontend(object):
         separator.grid(row=8, column=0, columnspan=3, sticky="EW", pady=10)
 
         play_pause_label.grid(row=9, column=0, sticky="E")
-        play_pause_modifiers.grid(row=9, column=1, sticky="W")
-        prev_track_label.grid(row=10, column=0, sticky="E")
-        prev_track_modifiers.grid(row=10, column=1, sticky="W")
-        next_track_label.grid(row=11, column=0, sticky="E")
-        next_track_modifiers.grid(row=11, column=1, sticky="W")
-        volume_up_label.grid(row=12, column=0, sticky="E")
-        volume_up_modifiers.grid(row=12, column=1, sticky="W")
-        volume_down_label.grid(row=13, column=0, sticky="E")
-        volume_down_modifiers.grid(row=13, column=1, sticky="W")
-        mute_label.grid(row=14, column=0, sticky="E")
-        mute_modifiers.grid(row=14, column=1, sticky="W")
-        seek_forward_label.grid(row=15, column=0, sticky="E")
-        seek_forward_modifiers.grid(row=15, column=1, sticky="W")
-        seek_backward_label.grid(row=16, column=0, sticky="E")
-        seek_backward_modifiers.grid(row=16, column=1, sticky="W")
+        hotkey_entries["play/pause"][0].grid(row=9, column=1, sticky="W")
+        
+        play_label.grid(row=10, column=0, sticky="E")
+        hotkey_entries["play"][0].grid(row=10, column=1, sticky="W")
+        
+        pause_label.grid(row=11, column=0, sticky="E")
+        hotkey_entries["pause"][0].grid(row=11, column=1, sticky="W")
+        
+        prev_track_label.grid(row=12, column=0, sticky="E")
+        hotkey_entries["prev_track"][0].grid(row=12, column=1, sticky="W")
+        
+        next_track_label.grid(row=13, column=0, sticky="E")
+        hotkey_entries["next_track"][0].grid(row=13, column=1, sticky="W")
+        
+        volume_up_label.grid(row=14, column=0, sticky="E")
+        hotkey_entries["volume_up"][0].grid(row=14, column=1, sticky="W")
+        
+        volume_down_label.grid(row=15, column=0, sticky="E")
+        hotkey_entries["volume_down"][0].grid(row=15, column=1, sticky="W")
+        
+        mute_label.grid(row=16, column=0, sticky="E")
+        hotkey_entries["mute"][0].grid(row=16, column=1, sticky="W")
+        
+        seek_forward_label.grid(row=17, column=0, sticky="E")
+        hotkey_entries["seek_forward"][0].grid(row=17, column=1, sticky="W")
+        
+        seek_backward_label.grid(row=18, column=0, sticky="E")
+        hotkey_entries["seek_backward"][0].grid(row=18, column=1, sticky="W")
 
-        button_frame.grid(row=17, column=0, columnspan=2, pady=10)
+        button_frame.grid(row=19, column=0, columnspan=2, pady=10)
         save_button.pack(side="left", padx=(0, 5))
         start_button.pack(side="left", padx=(5, 0))
 
-        checkbox_frame.grid(row=18, column=0, columnspan=2, pady=10)
+        checkbox_frame.grid(row=20, column=0, columnspan=2, pady=10)
         startup_checkbox.pack(side="left", padx=(0, 5))
         minimize_checkbox.pack(side="left", padx=(5, 0))
 
-        source_frame.grid(row=19, column=0, columnspan=2, pady=10)
+        source_frame.grid(row=21, column=0, columnspan=2, pady=10)
         source_link.pack(side="left")
 
         # Center window and focus

@@ -116,6 +116,32 @@ class Backend(object):
                     print("Playing music")
             except Exception as e:
                 print(f"Error: {e}")
+                
+    def Play(self):
+        if self.token:
+            self.CheckTokenExpiry()
+
+            headers = {"Authorization": "Bearer " + self.token}
+            url = f"https://api.spotify.com/v1/me/player/play?device_id={self.device_id}"
+            try:
+                response = requests.put(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                print("Playing music")
+            except Exception as e:
+                print(f"Error: {e}")
+                
+    def Pause(self):
+        if self.token:
+            self.CheckTokenExpiry()
+
+            headers = {"Authorization": "Bearer " + self.token}
+            url = f"https://api.spotify.com/v1/me/player/pause?device_id={self.device_id}"
+            try:
+                response = requests.put(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                print("Paused music")
+            except Exception as e:
+                print(f"Error: {e}")
 
     def PrevNext(self, command):
         if self.token:
@@ -353,6 +379,12 @@ class Backend(object):
         # Our keybinding event handlers.
         def play_pause():
             self.PlayPause()
+        
+        def play():
+            self.Play()
+            
+        def pause():
+            self.Pause()
 
         def previous_track():
             self.PrevNext("previous")
@@ -379,6 +411,8 @@ class Backend(object):
         bindings = []
         for hotkey_name, hotkey_func in [
             ("play/pause", play_pause),
+            ("play", play),
+            ("pause", pause),
             ("prev_track", previous_track),
             ("next_track", next_track),
             ("volume_up", volume_up),
