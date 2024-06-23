@@ -206,10 +206,10 @@ class Frontend(object):
             window.after(100, window.focus_force())
 
         def device_action():
-            set_input_fields()
             if not self.app.TokenExists():
                 self.app.CreateToken()
-                update_devices()
+            set_input_fields()
+            update_devices()
 
         def save_action():
             set_input_fields()
@@ -517,7 +517,7 @@ class Frontend(object):
                     ):
 
                         modifiers = autofill_entry(
-                            entry[key], hotkeys.get(key, default_value), hotkey=True
+                            entry, hotkeys.get(key, default_value), hotkey=True
                         )
                         ctrl_var.set(modifiers["ctrl"])
                         alt_var.set(modifiers["alt"])
