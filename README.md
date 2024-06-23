@@ -12,7 +12,7 @@ This background Python Windows application utilizes the [global_hotkeys](https:/
 You'll create your own Spotify API to control your Spotify application. YOU are the one in control. 
 
 <p align="center">
-    <img src="./images/view.png" width="70%" height="70%"> <br> <br>
+    <img src="./images/view.png" width="90%" height="90%"> <br> <br>
     <a href="https://paypal.me/OrbitUT?country.x=CA&locale.x=en_US">
         <img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee">
     </a>
