@@ -245,6 +245,7 @@ class Frontend(object):
         root.withdraw()
         root.title("BeatBind (v1.7.0)")
         root.iconbitmap(self.icon_path)
+        root.resizable(False, False)
         root.focus_force()
 
         # Frames
