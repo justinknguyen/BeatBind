@@ -177,6 +177,11 @@ class Frontend(object):
 
             device_id_entry.bind("<<ComboboxSelected>>", on_device_changed)
 
+        def validate_number(new_value):
+            if new_value.isdigit() or new_value == "":
+                return True
+            return False
+
         def validate_volume(P):
             if P == "":
                 return True
@@ -249,7 +254,7 @@ class Frontend(object):
         source_frame = ttk.Frame(frame)
         button_frame = ttk.Frame(frame)
 
-        #
+        # Separators
         vertical_separator = ttk.Separator(frame, orient="vertical")
         horizontal_separator = ttk.Separator(frame, orient="horizontal")
 
@@ -288,7 +293,15 @@ class Frontend(object):
         # Entries
         client_id_entry = ttk.Entry(frame, width=42)
         client_secret_entry = ttk.Entry(frame, width=42)
-        port_entry = ttk.Entry(frame, width=42)
+        port_entry = ttk.Spinbox(
+            frame,
+            from_=0,
+            to=float("inf"),
+            width=42,
+            increment=1,
+            validate="all",
+            validatecommand=(root.register(validate_number), "%P"),
+        )
         device_id_entry = ttk.Combobox(frame, width=40)
         volume_entry = ttk.Spinbox(
             options_frame,
@@ -306,6 +319,7 @@ class Frontend(object):
             width=10,
             increment=1,
             validate="all",
+            validatecommand=(root.register(validate_number), "%P"),
         )
 
         # Buttons
@@ -562,7 +576,9 @@ class Frontend(object):
             """
             Bind the entries and checkboxes to enable the "Save" button when modified.
             """
-            entries = [
+            entries = [volume_entry, seek_entry]
+
+            cred_entries = [
                 client_id_entry,
                 client_secret_entry,
                 port_entry,
@@ -570,11 +586,16 @@ class Frontend(object):
             ]
 
             for entry in entries:
+                entry.bind("<KeyRelease>", set_modified)
+
+            for entry in cred_entries:
                 entry.bind("<KeyRelease>", set_modified_cred)
 
             for modifier_frame, entry, var_dict in hotkey_entries.values():
                 entry.bind("<KeyRelease>", set_modified)
 
+            port_entry.bind("<<Increment>>", set_modified_cred)
+            port_entry.bind("<<Decrement>>", set_modified_cred)
             volume_entry.bind("<<Increment>>", set_modified)
             volume_entry.bind("<<Decrement>>", set_modified)
             seek_entry.bind("<<Increment>>", set_modified)
