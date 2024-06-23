@@ -340,18 +340,25 @@ class Frontend(object):
         )
 
         # --------------------------------------------------------------------------------------- #
-        
-        def create_hotkey_area(frame, listen_for_key_events, create_modifiers, width=12, padding_x=2, padding_y=2):
+
+        def create_hotkey_area(
+            frame,
+            listen_for_key_events,
+            create_modifiers,
+            width=12,
+            padding_x=2,
+            padding_y=2,
+        ):
             """
             Hotkey area
             """
             var_names = ["ctrl", "alt", "shift", "win"]
             var_dict = {name: tk.BooleanVar() for name in var_names}
-            
+
             modifiers_frame = ttk.Frame(frame)
             entry = ttk.Entry(modifiers_frame, width=width, justify="center")
             entry.bind("<FocusIn>", lambda event: listen_for_key_events(entry))
-            
+
             checkboxes = create_modifiers(
                 modifiers_frame,
                 var_dict["ctrl"],
@@ -359,12 +366,12 @@ class Frontend(object):
                 var_dict["shift"],
                 var_dict["win"],
             )
-            
+
             for i, checkbox in enumerate(checkboxes):
                 checkbox.grid(row=0, column=i, padx=padding_x, pady=padding_y)
-            
+
             entry.grid(row=0, column=4, padx=(10, 0), pady=padding_y)
-            
+
             return modifiers_frame, entry, var_dict
 
         def initialize_entries():
@@ -389,7 +396,7 @@ class Frontend(object):
                 "rewind_instead_prev",
             ]
             keys_defaults = ["", "", 8888, "", 5, 5000, False]
-            
+
             hotkey_entries = {}
             hotkey_vars = {"ctrl": [], "alt": [], "shift": [], "win": []}
 
@@ -419,19 +426,48 @@ class Frontend(object):
             ]
 
             for key in hotkey_keys:
-                modifier_frame, entry, var_dict = create_hotkey_area(frame, listen_for_key_events, create_modifiers)
+                modifier_frame, entry, var_dict = create_hotkey_area(
+                    frame, listen_for_key_events, create_modifiers
+                )
                 hotkey_entries[key] = (modifier_frame, entry, var_dict)
                 for modifier in ["ctrl", "alt", "shift", "win"]:
                     hotkey_vars[modifier].append(var_dict[modifier])
-                modifier_frame.grid(row=hotkey_keys.index(key) + 9, column=1, sticky="W")
+                modifier_frame.grid(
+                    row=hotkey_keys.index(key) + 9, column=1, sticky="W"
+                )
 
-            return entries, keys, keys_defaults, hotkey_entries, hotkey_keys, hotkey_defaults, hotkey_vars
-        
-        entries, keys, keys_defaults, hotkey_entries, hotkey_keys, hotkey_defaults, hotkey_vars = initialize_entries()
-        
+            return (
+                entries,
+                keys,
+                keys_defaults,
+                hotkey_entries,
+                hotkey_keys,
+                hotkey_defaults,
+                hotkey_vars,
+            )
+
+        (
+            entries,
+            keys,
+            keys_defaults,
+            hotkey_entries,
+            hotkey_keys,
+            hotkey_defaults,
+            hotkey_vars,
+        ) = initialize_entries()
+
         # --------------------------------------------------------------------------------------- #
-        
-        def load_configuration(config_path, entries, keys, keys_defaults, hotkey_entries, hotkey_keys, hotkey_defaults, hotkey_vars):
+
+        def load_configuration(
+            config_path,
+            entries,
+            keys,
+            keys_defaults,
+            hotkey_entries,
+            hotkey_keys,
+            hotkey_defaults,
+            hotkey_vars,
+        ):
             """
             Auto-fill entries
             """
@@ -448,12 +484,31 @@ class Frontend(object):
                     for entry, key, default_value in zip(entries, keys, keys_defaults):
                         autofill_entry(entry, config.get(key, default_value))
 
-                    self.app.rewind_instead_prev_var.set(config.get("rewind_instead_prev", False))
+                    self.app.rewind_instead_prev_var.set(
+                        config.get("rewind_instead_prev", False)
+                    )
 
-                    for (modifier_frame, entry, var_dict), key, default_value, ctrl_var, alt_var, shift_var, win_var in zip(
-                        hotkey_entries.values(), hotkey_keys, hotkey_defaults, ctrl_vars, alt_vars, shift_vars, win_vars):
-                        
-                        modifiers = autofill_entry(entry[key], hotkeys.get(key, default_value), hotkey=True)
+                    for (
+                        (modifier_frame, entry, var_dict),
+                        key,
+                        default_value,
+                        ctrl_var,
+                        alt_var,
+                        shift_var,
+                        win_var,
+                    ) in zip(
+                        hotkey_entries.values(),
+                        hotkey_keys,
+                        hotkey_defaults,
+                        ctrl_vars,
+                        alt_vars,
+                        shift_vars,
+                        win_vars,
+                    ):
+
+                        modifiers = autofill_entry(
+                            entry[key], hotkeys.get(key, default_value), hotkey=True
+                        )
                         ctrl_var.set(modifiers["ctrl"])
                         alt_var.set(modifiers["alt"])
                         shift_var.set(modifiers["shift"])
@@ -467,8 +522,23 @@ class Frontend(object):
 
                 self.app.rewind_instead_prev_var.set(False)
 
-                for (modifier_frame, entry, var_dict), key, default_value, ctrl_var, alt_var, shift_var, win_var in zip(
-                    hotkey_entries.values(), hotkey_keys, hotkey_defaults, ctrl_vars, alt_vars, shift_vars, win_vars):
+                for (
+                    (modifier_frame, entry, var_dict),
+                    key,
+                    default_value,
+                    ctrl_var,
+                    alt_var,
+                    shift_var,
+                    win_var,
+                ) in zip(
+                    hotkey_entries.values(),
+                    hotkey_keys,
+                    hotkey_defaults,
+                    ctrl_vars,
+                    alt_vars,
+                    shift_vars,
+                    win_vars,
+                ):
                     modifiers = autofill_entry(entry, default_value, hotkey=True)
                     ctrl_var.set(modifiers["ctrl"])
                     alt_var.set(modifiers["alt"])
@@ -477,11 +547,22 @@ class Frontend(object):
 
                 self.app.startup_var.set(False)
                 self.app.minimize_var.set(False)
-                
-        load_configuration(self.app.config_path, entries, keys, keys_defaults, hotkey_entries, hotkey_keys, hotkey_defaults, hotkey_vars)
+
+        load_configuration(
+            self.app.config_path,
+            entries,
+            keys,
+            keys_defaults,
+            hotkey_entries,
+            hotkey_keys,
+            hotkey_defaults,
+            hotkey_vars,
+        )
 
         # --------------------------------------------------------------------------------------- #
-        def bind_entries_to_set_modified(set_modified, set_modified_cred, hotkey_entries):
+        def bind_entries_to_set_modified(
+            set_modified, set_modified_cred, hotkey_entries
+        ):
             """
             Bind the entries and checkboxes to enable the "Save" button when modified.
             """
@@ -508,7 +589,7 @@ class Frontend(object):
             rewind_instead_prev_checkbox.config(command=set_modified)
             startup_checkbox.config(command=set_modified)
             minimize_checkbox.config(command=set_modified)
-            
+
         bind_entries_to_set_modified(set_modified, set_modified_cred, hotkey_entries)
         # --------------------------------------------------------------------------------------- #
         """
@@ -535,31 +616,31 @@ class Frontend(object):
 
         play_pause_label.grid(row=9, column=0, sticky="E")
         hotkey_entries["play/pause"][0].grid(row=9, column=1, sticky="W")
-        
+
         play_label.grid(row=10, column=0, sticky="E")
         hotkey_entries["play"][0].grid(row=10, column=1, sticky="W")
-        
+
         pause_label.grid(row=11, column=0, sticky="E")
         hotkey_entries["pause"][0].grid(row=11, column=1, sticky="W")
-        
+
         prev_track_label.grid(row=12, column=0, sticky="E")
         hotkey_entries["prev_track"][0].grid(row=12, column=1, sticky="W")
-        
+
         next_track_label.grid(row=13, column=0, sticky="E")
         hotkey_entries["next_track"][0].grid(row=13, column=1, sticky="W")
-        
+
         volume_up_label.grid(row=14, column=0, sticky="E")
         hotkey_entries["volume_up"][0].grid(row=14, column=1, sticky="W")
-        
+
         volume_down_label.grid(row=15, column=0, sticky="E")
         hotkey_entries["volume_down"][0].grid(row=15, column=1, sticky="W")
-        
+
         mute_label.grid(row=16, column=0, sticky="E")
         hotkey_entries["mute"][0].grid(row=16, column=1, sticky="W")
-        
+
         seek_forward_label.grid(row=17, column=0, sticky="E")
         hotkey_entries["seek_forward"][0].grid(row=17, column=1, sticky="W")
-        
+
         seek_backward_label.grid(row=18, column=0, sticky="E")
         hotkey_entries["seek_backward"][0].grid(row=18, column=1, sticky="W")
 
