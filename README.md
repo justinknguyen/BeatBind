@@ -27,6 +27,7 @@ Please see [FAQ](#faq) for more information or if you encounter any issues. If y
 - [Download](#download)
 - [Requirements](#requirements)
 - [Instructions](#instructions)
+- [Updating](#updating)
 - [Troubleshooting](#troubleshooting)
 - [FAQ](#faq)
 
@@ -95,6 +96,12 @@ Once you're done, click on `Save` within the app to save your settings. Click on
 
 You can open the settings again by right-clicking on the app's system tray icon.
 
+## Updating
+
+1. Copy and save your `beatbind-config.json` file somewhere
+1. Replace your `BeatBind` folder with the updated version
+1. Paste inside the folder your saved `beatbind-config.json` file
+
 ## Troubleshooting
 
 Please go through the below steps before creating an Issue ticket.
@@ -117,7 +124,6 @@ Please go through the below steps before creating an Issue ticket.
 - [Where Is My Information Saved?](#where-is-my-information-saved)
 - [What Information Is Saved?](#what-information-is-saved)
 - [Why Are My Settings Not Saving?](#why-are-my-settings-not-saving)
-- [How Do I Update The App?](#how-do-i-update-the-app)
 - [Why Isn't The App Starting on Windows Startup?](#why-isnt-the-app-starting-on-windows-startup)
 - [Why Is The App Crashing?](#why-is-the-app-crashing)
 - [My Hotkeys Stop Registering After Waking From Sleep](#my-hotkeys-stop-registering-after-waking-from-sleep)
@@ -150,12 +156,6 @@ There are two files stored within the `BeatBind` folder:
 
 You most likely extracted the BeatBind folder into a location where it requires Administrator privileges, such as the `Program Files` folder. Place the BeatBind folder into a different location, or try running the app in admin mode.
 
-### How Do I Update The App?
-
-1. Copy and save your `beatbind-config.json` and `.cache` files somewhere
-1. Replace your `BeatBind` folder with the updated version
-1. Paste inside the folder your saved `beatbind-config.json` and `.cache` files
-
 ### Why Isn't The App Starting on Windows Startup?
 
 This happens if the location of the `.exe` file was changed. The registry key used to start the app on Windows startup needs to be updated to the new `.exe` path. Starting the app again will update the path in the registry key and should resolve the issue.
@@ -179,4 +179,5 @@ Computer\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
 There are rare cases where hotkeys stop registering on system wake up from sleep, and pressing `Start & Close` button again fixes the listener. For a more permanent fix, try disabling Windows Fast Startup. If the bug keeps occurring after disabling Fast Startup, please create an Issue ticket.
 
 ### Server Listening On Localhost Has Not Been Accessed Error
+
 Please see the top answer solution from here https://superuser.com/questions/565409/how-to-stop-an-automatic-redirect-from-http-to-https-in-chrome
