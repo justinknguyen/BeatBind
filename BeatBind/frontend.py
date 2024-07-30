@@ -197,9 +197,8 @@ class Frontend(object):
             window.after(100, window.focus_force())
 
         def device_action():
-            if not self.app.TokenExists():
-                self.app.CreateToken()
             set_input_fields()
+            self.app.CreateToken()
             update_devices()
 
         def defaults_action():

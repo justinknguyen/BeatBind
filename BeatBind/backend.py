@@ -560,6 +560,7 @@ class Backend(object):
             return False
 
         cache_file = os.path.join(self.app_folder, ".cache")
+
         # Delete cache file if it exists
         if os.path.exists(cache_file):
             os.remove(cache_file)
