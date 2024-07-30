@@ -127,22 +127,13 @@ class Frontend(object):
             self.app.rewind_instead_prev = self.app.rewind_instead_prev_var.get()
 
             for key, (modifier_frame, entry, var_dict) in hotkey_entries.items():
-                if key == "play/pause":
-                    self.app.hotkeys[key] = update_hotkey_entry(
-                        entry,
-                        hotkey_vars["ctrl"][hotkey_keys.index(key)],
-                        hotkey_vars["alt"][hotkey_keys.index(key)],
-                        hotkey_vars["shift"][hotkey_keys.index(key)],
-                        hotkey_vars["win"][hotkey_keys.index(key)],
-                    )
-                else:
-                    self.app.hotkeys[key] = update_hotkey_entry(
-                        entry,
-                        hotkey_vars["ctrl"][hotkey_keys.index(key)],
-                        hotkey_vars["alt"][hotkey_keys.index(key)],
-                        hotkey_vars["shift"][hotkey_keys.index(key)],
-                        hotkey_vars["win"][hotkey_keys.index(key)],
-                    )
+                self.app.hotkeys[key] = update_hotkey_entry(
+                    entry,
+                    hotkey_vars["ctrl"][hotkey_keys.index(key)],
+                    hotkey_vars["alt"][hotkey_keys.index(key)],
+                    hotkey_vars["shift"][hotkey_keys.index(key)],
+                    hotkey_vars["win"][hotkey_keys.index(key)],
+                )
 
         def create_modifiers(frame, ctrl_var, alt_var, shift_var, win_var):
             ctrl_checkbox = ttk.Checkbutton(frame, text="Ctrl", variable=ctrl_var)
@@ -211,6 +202,18 @@ class Frontend(object):
             set_input_fields()
             update_devices()
 
+        def defaults_action():
+            load_configuration(
+                "",
+                entries,
+                keys,
+                keys_defaults,
+                hotkey_entries,
+                hotkey_keys,
+                hotkey_defaults,
+                hotkey_vars,
+            )
+
         def save_action():
             set_input_fields()
             if self.app.SaveConfig():
@@ -238,9 +241,7 @@ class Frontend(object):
                     self.app.StartHotkeyListener()
 
         # --------------------------------------------------------------------------------------- #
-        """
-        Create elements
-        """
+
         root = ThemedTk(theme="breeze")
         root.withdraw()
         root.title("BeatBind (v1.7.0)")
@@ -325,6 +326,9 @@ class Frontend(object):
 
         # Buttons
         devices_button = ttk.Button(frame, text="Get Devices", command=device_action)
+        defaults_button = ttk.Button(
+            frame, text="Set Hotkey Defaults", command=defaults_action
+        )
         save_button = ttk.Button(
             button_frame, text="Save", command=save_action, state=tk.DISABLED
         )
@@ -571,6 +575,7 @@ class Frontend(object):
         )
 
         # --------------------------------------------------------------------------------------- #
+
         def bind_entries_to_set_modified(
             set_modified, set_modified_cred, hotkey_entries
         ):
@@ -607,10 +612,9 @@ class Frontend(object):
             minimize_checkbox.config(command=set_modified)
 
         bind_entries_to_set_modified(set_modified, set_modified_cred, hotkey_entries)
+
         # --------------------------------------------------------------------------------------- #
-        """
-        Grid layout
-        """
+
         client_id_label.grid(row=1, column=0, sticky="E")
         client_id_entry.grid(row=1, column=1, sticky="EW")
         client_secret_label.grid(row=2, column=0, sticky="E")
@@ -631,6 +635,7 @@ class Frontend(object):
         volume_entry.grid(row=0, column=1, sticky="W", padx=(0, 5))
         seek_label.grid(row=0, column=2, sticky="E", padx=(5, 0))
         seek_entry.grid(row=0, column=3, sticky="W")
+        defaults_button.grid(row=5, column=3, columnspan=1, sticky="W", pady=5)
 
         horizontal_separator.grid(row=6, columnspan=4, sticky="EW", pady=10)
 
