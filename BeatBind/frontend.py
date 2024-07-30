@@ -213,6 +213,31 @@ class Frontend(object):
                 hotkey_defaults,
                 hotkey_vars,
             )
+            set_modified()
+
+        def clear_action():
+            load_configuration(
+                "",
+                entries,
+                keys,
+                ["", "", 8888, "", 5, 5000, False],
+                hotkey_entries,
+                hotkey_keys,
+                [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                ],
+                hotkey_vars,
+            )
+            set_modified()
 
         def save_action():
             set_input_fields()
@@ -244,7 +269,7 @@ class Frontend(object):
 
         root = ThemedTk(theme="breeze")
         root.withdraw()
-        root.title("BeatBind (v1.7.0)")
+        root.title("BeatBind (v1.8.0)")
         root.iconbitmap(self.icon_path)
         root.resizable(False, False)
         root.focus_force()
@@ -255,6 +280,7 @@ class Frontend(object):
         options_frame = ttk.Frame(frame)
         source_frame = ttk.Frame(frame)
         button_frame = ttk.Frame(frame)
+        defaults_clear_frame = ttk.Frame(frame)
 
         # Separators
         vertical_separator = ttk.Separator(frame, orient="vertical")
@@ -327,7 +353,10 @@ class Frontend(object):
         # Buttons
         devices_button = ttk.Button(frame, text="Get Devices", command=device_action)
         defaults_button = ttk.Button(
-            frame, text="Set Hotkey Defaults", command=defaults_action
+            defaults_clear_frame, text="Set Hotkey Defaults", command=defaults_action
+        )
+        clear_button = ttk.Button(
+            defaults_clear_frame, text="Clear All", command=clear_action
         )
         save_button = ttk.Button(
             button_frame, text="Save", command=save_action, state=tk.DISABLED
@@ -635,7 +664,9 @@ class Frontend(object):
         volume_entry.grid(row=0, column=1, sticky="W", padx=(0, 5))
         seek_label.grid(row=0, column=2, sticky="E", padx=(5, 0))
         seek_entry.grid(row=0, column=3, sticky="W")
-        defaults_button.grid(row=5, column=3, columnspan=1, sticky="W", pady=5)
+        defaults_clear_frame.grid(row=5, column=3, columnspan=4, sticky="EW")
+        defaults_button.grid(row=0, column=2, sticky="W", padx=(30, 0), pady=5)
+        clear_button.grid(row=0, column=3, sticky="E", padx=(20, 0), pady=5)
 
         horizontal_separator.grid(row=6, columnspan=4, sticky="EW", pady=10)
 
