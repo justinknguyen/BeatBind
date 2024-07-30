@@ -475,7 +475,7 @@ class Backend(object):
 
     def StartupTokenRefresh(self):
         cache_file = os.path.join(self.app_folder, ".cache")
-        if os.path.exists(self.config_path):
+        if os.path.exists(self.config_path) and os.path.exists(cache_file):
             with open(self.config_path, "r", encoding="utf-8") as f:
                 config = json.load(f)
                 try:

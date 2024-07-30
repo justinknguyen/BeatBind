@@ -204,7 +204,7 @@ class Frontend(object):
 
         def defaults_action():
             load_configuration(
-                "",
+                self.app.config_path,
                 entries,
                 keys,
                 keys_defaults,
@@ -212,15 +212,16 @@ class Frontend(object):
                 hotkey_keys,
                 hotkey_defaults,
                 hotkey_vars,
+                True,
             )
             set_modified()
 
         def clear_action():
             load_configuration(
-                "",
+                self.app.config_path,
                 entries,
                 keys,
-                ["", "", 8888, "", 5, 5000, False],
+                keys_defaults,
                 hotkey_entries,
                 hotkey_keys,
                 [
@@ -236,6 +237,7 @@ class Frontend(object):
                     "",
                 ],
                 hotkey_vars,
+                True,
             )
             set_modified()
 
@@ -294,6 +296,7 @@ class Frontend(object):
 
         volume_label = ttk.Label(options_frame, text="Volume (steps):")
         seek_label = ttk.Label(options_frame, text="Seek (ms):")
+        defaults_clear_label = ttk.Label(defaults_clear_frame, text="Hotkeys:")
 
         play_pause_label = ttk.Label(frame, text="Play/Pause:")
         play_label = ttk.Label(frame, text="Play:")
@@ -353,10 +356,10 @@ class Frontend(object):
         # Buttons
         devices_button = ttk.Button(frame, text="Get Devices", command=device_action)
         defaults_button = ttk.Button(
-            defaults_clear_frame, text="Set Hotkey Defaults", command=defaults_action
+            defaults_clear_frame, text="Defaults", command=defaults_action
         )
         clear_button = ttk.Button(
-            defaults_clear_frame, text="Clear All", command=clear_action
+            defaults_clear_frame, text="Clear", command=clear_action
         )
         save_button = ttk.Button(
             button_frame, text="Save", command=save_action, state=tk.DISABLED
@@ -511,6 +514,7 @@ class Frontend(object):
             hotkey_keys,
             hotkey_defaults,
             hotkey_vars,
+            defaults_clear=False,
         ):
             """
             Auto-fill entries
@@ -551,7 +555,13 @@ class Frontend(object):
                     ):
 
                         modifiers = autofill_entry(
-                            entry, hotkeys.get(key, default_value), hotkey=True
+                            entry,
+                            (
+                                default_value
+                                if defaults_clear
+                                else hotkeys.get(key, default_value)
+                            ),
+                            hotkey=True,
                         )
                         ctrl_var.set(modifiers["ctrl"])
                         alt_var.set(modifiers["alt"])
@@ -665,8 +675,9 @@ class Frontend(object):
         seek_label.grid(row=0, column=2, sticky="E", padx=(5, 0))
         seek_entry.grid(row=0, column=3, sticky="W")
         defaults_clear_frame.grid(row=5, column=3, columnspan=4, sticky="EW")
-        defaults_button.grid(row=0, column=2, sticky="W", padx=(30, 0), pady=5)
-        clear_button.grid(row=0, column=3, sticky="E", padx=(20, 0), pady=5)
+        defaults_clear_label.grid(row=0, column=0, sticky="W", padx=(0, 5))
+        defaults_button.grid(row=0, column=1, sticky="W", padx=(0, 5), pady=5)
+        clear_button.grid(row=0, column=2, sticky="E", padx=(5, 0), pady=5)
 
         horizontal_separator.grid(row=6, columnspan=4, sticky="EW", pady=10)
 
