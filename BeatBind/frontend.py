@@ -270,7 +270,7 @@ class Frontend(object):
 
         root = ThemedTk(theme="breeze")
         root.withdraw()
-        root.title("BeatBind (v1.8.0)")
+        root.title("BeatBind (v1.8.1)")
         root.iconbitmap(self.icon_path)
         root.resizable(False, False)
         root.focus_force()

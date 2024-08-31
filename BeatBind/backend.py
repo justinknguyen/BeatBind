@@ -2,11 +2,13 @@ import json
 import json.decoder
 import os
 import sys
+import logging
 import threading
 import time
 import tkinter.messagebox as messagebox
 import winreg as reg
 from datetime import datetime
+from logging.handlers import TimedRotatingFileHandler
 
 import requests
 import win32api
@@ -89,17 +91,32 @@ class Backend(object):
             0, class_atom, None, 0, 0, 0, 0, 0, None, None, app_class.hInstance, None
         )
 
+        # Set up logging
+        log_file = os.path.join(self.app_folder, "beatbind.log")
+        handler = TimedRotatingFileHandler(
+            log_file, when="midnight", interval=1, backupCount=3
+        )
+        handler.suffix = "%Y-%m-%d"  # Date format for log files
+        handler.setFormatter(
+            logging.Formatter(
+                "%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+            )
+        )
+        logging.basicConfig(level=logging.INFO, handlers=[handler])
+
     # --------------------------------------------------------------------------------------- #
     """
     API Calls
     """
 
     def PlayPause(self):
+        logging.info("Attempting to Play/Pause...")
         if self.token:
             self.CheckTokenExpiry()
 
             is_playing = self.GetPlaybackState()
             if is_playing is None:
+                logging.info("No playback info")
                 return
 
             headers = {"Authorization": "Bearer " + self.token}
@@ -113,13 +130,14 @@ class Backend(object):
                 response = requests.put(url, headers=headers, timeout=5)
                 response.raise_for_status()
                 if is_playing:
-                    print("Paused music")
+                    logging.info("Paused music")
                 else:
-                    print("Playing music")
+                    logging.info("Playing music")
             except Exception as e:
-                print(f"Error: {e}")
+                logging.info(f"Error: {e}")
 
     def Play(self):
+        logging.info("Attempting to Play...")
         if self.token:
             self.CheckTokenExpiry()
 
@@ -130,11 +148,12 @@ class Backend(object):
             try:
                 response = requests.put(url, headers=headers, timeout=5)
                 response.raise_for_status()
-                print("Playing music")
+                logging.info("Playing music")
             except Exception as e:
-                print(f"Error: {e}")
+                logging.info(f"Error: {e}")
 
     def Pause(self):
+        logging.info("Attempting to Pause...")
         if self.token:
             self.CheckTokenExpiry()
 
@@ -145,11 +164,12 @@ class Backend(object):
             try:
                 response = requests.put(url, headers=headers, timeout=5)
                 response.raise_for_status()
-                print("Paused music")
+                logging.info("Paused music")
             except Exception as e:
-                print(f"Error: {e}")
+                logging.info(f"Error: {e}")
 
     def PrevNext(self, command):
+        logging.info("Attempting to Previous/Next...")
         if self.token:
             self.CheckTokenExpiry()
 
@@ -174,13 +194,14 @@ class Backend(object):
                     response = requests.post(url, headers=headers, timeout=5)
                 response.raise_for_status()
                 if command == "previous":
-                    print("Previous track")
+                    logging.info("Previous track")
                 else:
-                    print("Next track")
+                    logging.info("Next track")
             except Exception as e:
-                print(f"Error: {e}")
+                logging.info(f"Error: {e}")
 
     def AdjustVolume(self, amount):
+        logging.info("Attempting to Adjust Volume...")
         if self.token:
             self.CheckTokenExpiry()
 
@@ -198,31 +219,36 @@ class Backend(object):
                 response = requests.put(url, headers=headers, timeout=5)
                 response.raise_for_status()
                 if amount > 0:
-                    print("Volume up")
+                    logging.info("Volume up")
                 else:
-                    print("Volume down")
+                    logging.info("Volume down")
             except Exception as e:
-                print(f"Error: {e}")
+                logging.info(f"Error: {e}")
 
     def Mute(self):
+        logging.info("Attempting to Mute/Unmute...")
         if self.token:
             self.CheckTokenExpiry()
 
             headers = {"Authorization": "Bearer " + self.token}
-            if self.GetCurrentVolume() != 0:
-                self.muted_volume = self.GetCurrentVolume()
+            current_volume = self.GetCurrentVolume()
+            if current_volume != 0:
+                self.muted_volume = current_volume
                 url = f"https://api.spotify.com/v1/me/player/volume?volume_percent=0&device_id={self.device_id}"
-                print("Muting")
             else:
                 url = f"https://api.spotify.com/v1/me/player/volume?volume_percent={self.muted_volume}&device_id={self.device_id}"
-                print("Unmuting")
             try:
                 response = requests.put(url, headers=headers, timeout=5)
                 response.raise_for_status()
+                if current_volume != 0:
+                    logging.info("Muted")
+                else:
+                    logging.info("Unmuted")
             except Exception as e:
-                print(f"Error: {e}")
+                logging.info(f"Error: {e}")
 
     def SeekForward(self):
+        logging.info("Attempting to Seek Forward...")
         if self.token:
             self.CheckTokenExpiry()
 
@@ -232,11 +258,12 @@ class Backend(object):
             try:
                 response = requests.put(url, headers=headers, timeout=5)
                 response.raise_for_status()
-                print("Seeking forward")
+                logging.info("Seeking forward")
             except Exception as e:
-                print(f"Error: {e}")
+                logging.info(f"Error: {e}")
 
     def SeekBackward(self):
+        logging.info("Attempting to Seek Backward...")
         if self.token:
             self.CheckTokenExpiry()
 
@@ -248,11 +275,12 @@ class Backend(object):
             try:
                 response = requests.put(url, headers=headers, timeout=5)
                 response.raise_for_status()
-                print("Seeking backward")
+                logging.info("Seeking backward")
             except Exception as e:
-                print(f"Error: {e}")
+                logging.info(f"Error: {e}")
 
     def GetCurrentPlaybackPosition(self):
+        logging.info("Attempting to get current playback position...")
         if self.token:
             self.CheckTokenExpiry()
 
@@ -265,13 +293,14 @@ class Backend(object):
                 if data:
                     return data["progress_ms"]
                 else:
-                    print("Unable to obtain playback information")
+                    logging.info("Unable to obtain playback information")
                     return 0
             except Exception as e:
-                print(f"Error fetching current playback position: {e}")
+                logging.info(f"Error fetching current playback position: {e}")
                 return 0
 
     def GetCurrentVolume(self):
+        logging.info("Attempting to get current volume...")
         if self.token:
             headers = {"Authorization": "Bearer " + self.token}
             url = "https://api.spotify.com/v1/me/player"
@@ -280,37 +309,43 @@ class Backend(object):
                 response.raise_for_status()
                 data = response.json()
                 volume = data["device"]["volume_percent"]
+                logging.info(f"Current Volume: {volume}")
                 return volume
             except Exception as e:
-                print(f"Error: {e}")
+                logging.info(f"Error: {e}")
                 return self.last_volume
 
     def GetPlaybackState(self):
+        logging.info("Attempting to get playback state...")
         if self.token:
             headers = {"Authorization": "Bearer " + self.token}
             url = "https://api.spotify.com/v1/me/player"
             try:
                 response = requests.get(url, headers=headers, timeout=5)
                 response.raise_for_status()
-                playback_data = response.json()
-                return playback_data["is_playing"]
+                playback_data = response.json()["is_playing"]
+                logging.info(f"is_playing: {playback_data}")
+                return playback_data
             except Exception as e:
-                print(f"Error fetching playback state: {e}")
+                logging.info(f"Error fetching playback state: {e}")
                 self.HandleConnectionError()
                 return None
 
     def GetDevices(self):
+        logging.info("Attempting to get devices...")
         if self.token:
             headers = {"Authorization": "Bearer " + self.token}
             url = "https://api.spotify.com/v1/me/player/devices"
             try:
                 response = requests.get(url, headers=headers, timeout=5)
                 response.raise_for_status()
+                logging.info(f"Devices successfully fetched")
                 return response.json()
             except Exception as e:
-                print(f"Error fetching devices: {e}")
+                logging.info(f"Error fetching devices: {e}")
 
     def HandleConnectionError(self):
+        logging.info("Reconnecting...")
         # Connection error occurs when device is no longer active, so play music on specific device id
         headers = {"Authorization": "Bearer " + self.token}
         url = f"https://api.spotify.com/v1/me/player/play?device_id={self.device_id}"
@@ -321,12 +356,12 @@ class Backend(object):
                 url = f"https://api.spotify.com/v1/me/player/pause?device_id={self.device_id}"
                 response = requests.put(url, headers=headers, timeout=5)
                 response.raise_for_status()
-                print("Paused music")
+                logging.info("Paused music")
                 return
             response.raise_for_status()
-            print("Playing music")
+            logging.info("Playing music")
         except Exception as e:
-            print(f"Error: {e}")
+            logging.info(f"Error: {e}")
 
     # --------------------------------------------------------------------------------------- #
     """
@@ -341,7 +376,7 @@ class Backend(object):
             if (
                 wParam == win32con.PBT_APMRESUMEAUTOMATIC
             ):  # System is waking up from sleep
-                print("System woke up from sleep")
+                logging.info("System woke up from sleep")
                 self.RefreshToken()
         return win32gui.DefWindowProc(hWnd, message, wParam, lParam)
 
@@ -356,7 +391,7 @@ class Backend(object):
             if registry_value != exe_path:
                 reg.SetValueEx(key, app_name, 0, reg.REG_SZ, exe_path)
         except FileNotFoundError:
-            print("Could not find the startup registry key")
+            logging.info("Could not find the startup registry key")
 
         reg.CloseKey(key)
 
@@ -380,7 +415,7 @@ class Backend(object):
         clear_hotkeys()
 
     def StartHotkeyListener(self):
-        print("Listening to hotkeys...")
+        logging.info("Listening to hotkeys...")
 
         # Our keybinding event handlers.
         def play_pause():
@@ -438,7 +473,7 @@ class Backend(object):
         start_checking_hotkeys()
 
     def SaveConfig(self):
-        print("Saving config")
+        logging.info("Saving config")
         # Add the hotkeys to the config dictionary
         config = {
             "startup": self.startup_var.get(),
@@ -456,12 +491,12 @@ class Backend(object):
             # Save the config to the file with indentation for readability
             with open(self.config_path, "w", encoding="utf-8") as f:
                 json.dump(config, f, indent=4)
-            print("Config saved")
+            logging.info("Config saved")
             return True
         except IOError as e:
-            print(f"Error saving config: {e}")
+            logging.info(f"Error saving config: {e}")
         except Exception as e:
-            print(f"Unexpected error while saving config: {e}")
+            logging.info(f"Unexpected error while saving config: {e}")
         return False
 
     # --------------------------------------------------------------------------------------- #
@@ -487,19 +522,19 @@ class Backend(object):
                         cache_path=cache_file,
                     )
                 except Exception as e:
-                    print(f"Invalid config:  {e}")
+                    logging.info(f"Invalid config:  {e}")
                     return
 
             self.RefreshToken()
             # Start the loop to refresh the token before it expires, if not already running
             if not self.refresh_thread_running:
-                print("Created refresh thread")
+                logging.info("Created refresh thread")
                 refresh_thread = threading.Thread(target=self.RefreshTokenThread)
                 refresh_thread.daemon = True
                 refresh_thread.start()
                 self.refresh_thread_running = True
         else:
-            print("Could not find config file. Creating token...")
+            logging.info("Could not find config file. Creating token...")
             self.CreateToken()
 
     def CheckTokenExpiry(self):
@@ -509,7 +544,7 @@ class Backend(object):
                 cache_data = json.load(f)
             expires_at = cache_data["expires_at"]
             if datetime.now().timestamp() >= expires_at:
-                print("Cached token has expired")
+                logging.info("Cached token has expired")
                 with open(self.config_path, "r", encoding="utf-8") as f:
                     config = json.load(f)
                     self.auth_manager = SpotifyOAuth(
@@ -521,11 +556,11 @@ class Backend(object):
                     )
                 self.RefreshToken()
         else:
-            print("Could not find .cache file. Creating token...")
+            logging.info("Could not find .cache file. Creating token...")
             self.CreateToken()
 
     def RefreshToken(self):
-        print("Refreshing token")
+        logging.info("Refreshing token")
         self.token_data = self.auth_manager.refresh_access_token(
             self.auth_manager.get_cached_token()["refresh_token"]
         )
@@ -540,7 +575,7 @@ class Backend(object):
             self.RefreshToken()
 
     def CreateToken(self):
-        print("Creating token")
+        logging.info("Creating token")
 
         # Check if Client ID or Secret are correct
         try:
@@ -587,7 +622,7 @@ class Backend(object):
 
         # Start the loop to refresh the token before it expires, if not already running
         if not self.refresh_thread_running:
-            print("Created refresh thread")
+            logging.info("Created refresh thread")
             refresh_thread = threading.Thread(target=self.RefreshTokenThread)
             refresh_thread.daemon = True
             refresh_thread.start()
