@@ -96,9 +96,9 @@ Then click on `Start & Close` to close the window and start listening for your h
 
 ## Updating
 
-1. Copy and save your `BeatBind/lib/beatbind-config.json` file somewhere
+1. Copy and save your `BeatBind/beatbind-config.json` file somewhere
 1. Replace your `BeatBind` folder with the updated version
-1. Paste inside the `BeatBind/lib` folder your saved `beatbind-config.json` file
+1. Paste inside the `BeatBind` folder your saved `beatbind-config.json` file
 
 ## Troubleshooting
 
@@ -140,7 +140,7 @@ Unfortunately, the endpoints used in Spotify's Web API only works for Spotify pr
 
 ### Where Is My Information Saved?
 
-Your information is stored locally in `beatbind-config.json` within the `BeatBind/lib` folder. It stores all of your configuration settings.
+Your information is stored locally in `beatbind-config.json` within the `BeatBind` folder. It stores all of your configuration settings.
 
 ### Why Are My Settings Not Saving?
 
@@ -160,7 +160,7 @@ Computer\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
 ### Why Is The App Crashing?
 
 - If you had "Start minimized" checked, you can find the app's icon hidden within your system tray and then right-click on it to find the settings menu.
-- Within your `BeatBind/lib` folder, delete the following files and try to open it again:
+- Within your `BeatBind` folder, delete the following files and try to open it again:
     - `beatbind-config.json`
     - `.cache`
 
