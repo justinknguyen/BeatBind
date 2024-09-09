@@ -14,6 +14,7 @@ python -m nuitka ^
 --enable-plugin=tk-inter ^
 --include-data-file="icon.ico=./" ^
 --windows-icon-from-ico=icon.ico ^
+--output-dir="BeatBind" ^
 --output-file=BeatBind.exe ^
 --include-data-dir="{path}=ttkthemes" ^
 app.py
