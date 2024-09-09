@@ -144,7 +144,7 @@ Your information is stored locally in `beatbind-config.json` within the `BeatBin
 
 ### Why Are My Settings Not Saving?
 
-You most likely extracted the BeatBind folder into a location where it requires Administrator privileges, such as the `Program Files` folder. Place the BeatBind folder into a different location, or try running the app in admin mode.
+You most likely extracted the `BeatBind` folder into a location where it requires Administrator privileges, such as the `Program Files` folder. Place the `BeatBind` folder into a different location, or try running the app in admin mode.
 
 ### Why Isn't The App Starting on Windows Startup?
 
