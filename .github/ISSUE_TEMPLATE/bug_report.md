@@ -17,15 +17,15 @@ Steps to reproduce the behavior:
 3. Scroll down to '....'
 4. See error
 
-**Expected behavior**
+**Expected behavior:**
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
+**Screenshots:**
 If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. Windows 10]
- - Version [e.g. v0.1.1]
+**Environment:**
+ - OS (e.g., Windows 11):
+ - BeatBind Version (e.g., v1.8.2):
 
-**Additional context**
-Add any other context about the problem here.
+**Log File:**
+Please attach your log file from `BeatBind/beatbind.log` here.
