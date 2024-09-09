@@ -5,9 +5,9 @@
 ![python](https://img.shields.io/badge/python-3.10.9-yellow)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/justinknguyen/BeatBind/issues)
 
-Are you tired of constantly switching back and forth between your game and Spotify just to adjust the volume? With this app, you can finally control Spotify and adjust it's volume separately, all without the hassle of alt+tabbing.
+Are you tired of constantly switching back and forth between your game and Spotify just to adjust the volume? With this app, you can control Spotify and adjust it's volume separately, all without the hassle of alt+tabbing.
 
-This background Python Windows application utilizes the [global_hotkeys](https://github.com/btsdev/global_hotkeys) module to listen for basic hotkeys, allowing users to easily control Spotify without the window focused. The app leverages the power of [Spotify's Web API](https://developer.spotify.com/documentation/web-api) through the use of [Spotipy](https://github.com/spotipy-dev/spotipy), providing seamless integration between the app and the music streaming platform.
+This background Python Windows application utilizes the [global_hotkeys](https://github.com/btsdev/global_hotkeys) module to listen for hotkeys, allowing users to easily control Spotify without the window focused. The app leverages the power of [Spotify's Web API](https://developer.spotify.com/documentation/web-api) through the use of [Spotipy](https://github.com/spotipy-dev/spotipy), providing seamless integration between the app and the music streaming platform.
 
 You'll create your own Spotify API to control your Spotify application. YOU are the one in control. 
 
@@ -18,9 +18,9 @@ You'll create your own Spotify API to control your Spotify application. YOU are 
     </a>
 </p>
 
-This app does not control your Spotify locally. It sends an API request over the internet to control your Spotify, so expect a slight delay. The delay experienced can vary depending on your internet speed.
+This app does not control your Spotify locally. It sends an API request to Spotify over the internet to control your listening experience, so expect a slight delay. The delay experienced can vary depending on your internet speed.
 
-Please see [FAQ](#faq) for more information or if you encounter any issues. If your issue isn't listed, please create an Issue ticket.
+Please see [FAQ](#faq) for more information and [Troubleshooting](#troubleshooting) if you encounter any issues. If your issue isn't listed, please create an Issue ticket.
 
 ## Table of Contents
 
