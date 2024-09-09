@@ -8,7 +8,7 @@ Nuitka Build Command:
 python -m nuitka ^
 --standalone ^
 --mingw64 ^
---disable-console ^
+--windows-console-mode=disable ^
 --include-package=tkinter ^
 --include-package=ttkthemes ^
 --enable-plugin=tk-inter ^
