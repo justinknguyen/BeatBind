@@ -17,10 +17,8 @@ def main():
         if process.info["name"] == "BeatBind.exe":
             count += 1
     if count > 1:
-        print("BeatBind.exe is already running. Exiting...")
         sys.exit()
 
-    print("Starting the application...")
     try:
         backend = Backend()
         frontend = Frontend(backend)
@@ -31,6 +29,7 @@ def main():
                 config = json.load(f)
                 hotkeys = config["hotkeys"]
 
+                # Load the config settings into the backend
                 for key, default_value in [
                     ("client_id", ""),
                     ("client_secret", ""),
@@ -41,6 +40,7 @@ def main():
                     ("rewind_instead_prev", False),
                 ]:
                     setattr(backend, key, config.get(key, default_value))
+
                 for key, default_value in [
                     ("play/pause", "control+alt+shift+p"),
                     ("play", "control+alt+shift+z"),
@@ -55,13 +55,17 @@ def main():
                 ]:
                     backend.hotkeys[key] = hotkeys.get(key, default_value)
 
-            # If minimize is True, do not open the Settings window
+            # Refresh token after successfully loading config
             backend.StartupTokenRefresh()
+
+            # Check minimize flag and start frontend accordingly
             if config.get("minimize", False) and not frontend.menu.visible:
                 frontend.run()
             else:
                 frontend.SettingsWindow()
         else:
+            # If config file does not exist, open the settings window
+            logging.warning("Config file not found, opening Settings window")
             frontend.SettingsWindow()
 
         # Start message pump to process Windows messages
@@ -71,8 +75,16 @@ def main():
         message_pump_thread = threading.Thread(target=start_message_pump)
         message_pump_thread.daemon = True
         message_pump_thread.start()
+        logging.info("Beatbind initialized")
+    except json.JSONDecodeError as e:
+        logging.error(f"Error decoding JSON in config file: {e}")
+        backend.ErrorMessage(f"Error decoding JSON in config file: {e}")
+        logging.info("Exiting app")
+        sys.exit()
     except Exception as e:
-        print("Error occurred, now exiting.", e)
+        logging.info(f"Error initializing app: {e}")
+        backend.ErrorMessage(e)
+        logging.info("Exiting app")
         sys.exit()
 
 

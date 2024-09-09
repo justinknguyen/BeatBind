@@ -1,6 +1,7 @@
 import json
 import json.decoder
 import os
+import logging
 import tkinter as tk
 import webbrowser
 from tkinter import ttk
@@ -15,17 +16,21 @@ from ttkthemes import ThemedTk
 
 class Frontend(object):
     def __init__(self, app):
-        self.app = app
-        self.icon_path = app.icon_path
-        self.modified_credentials = False
+        try:
+            self.app = app
+            self.icon_path = app.icon_path
+            self.modified_credentials = False
 
-        image = Image.open(self.icon_path)
-        self.menu = pystray.Icon(
-            "name",
-            image,
-            "BeatBind",
-            menu=pystray.Menu(self.SettingsAction(), self.QuitAction()),
-        )
+            image = Image.open(self.icon_path)
+            self.menu = pystray.Icon(
+                "name",
+                image,
+                "BeatBind",
+                menu=pystray.Menu(self.SettingsAction(), self.QuitAction()),
+            )
+            logging.info("Frontend initialized")
+        except Exception as e:
+            logging.error(f"Error initializing frontend: {e}")
 
     def QuitAction(self):
         return pystray.MenuItem("Quit", self.Quit)
@@ -70,7 +75,9 @@ class Frontend(object):
                     entry.update_idletasks()
                     entry.update()
                 except Exception as e:
-                    print(f"Error: {e}")
+                    logging.error(
+                        f"Error occurred when listening for hotkey input events: {e}"
+                    )
                     break
 
         def autofill_entry(entry, value, hotkey=False):
