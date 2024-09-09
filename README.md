@@ -150,7 +150,7 @@ You most likely extracted the BeatBind folder into a location where it requires 
 
 This happens if the location of the `.exe` file was changed. The registry key used to start the app on Windows startup needs to be updated to the new `.exe` path. Starting the app again will update the path in the registry key and should resolve the issue.
 
-If it still does not resolve the issue, try moving the BeatBind folder into a another location, such as your desktop.
+If it still does not resolve the issue, try moving the `BeatBind` folder into a another location, such as your desktop.
 
 You can check if the registry key was added correctly in the following path of Registry Editor:
 ```
