@@ -35,23 +35,20 @@ Please see [FAQ](#faq) for more information and [Troubleshooting](#troubleshooti
 
 Download the latest version from the [Releases](https://github.com/justinknguyen/BeatBind/releases) page.
 
-The `.exe` file is within the root of the BeatBind folder with the other files and folders. Search or sort by file type to find the `.exe` file.
-
-You can build the `.exe` yourself with the provided build command in the [build.py](https://github.com/justinknguyen/BeatBind/blob/main/BeatBind/build.py) file.
+You can build the `.exe` yourself with the provided nuitka build command in the [build.py](https://github.com/justinknguyen/BeatBind/blob/main/BeatBind/build.py) file.
 
 ## Requirements
 
 - Internet connection
 - Windows 10/11
 - Spotify App on your device of choice
-- Spotify Premium
-  - Unfortunately, the endpoints used in Spotify's Web API only works for premium users, so it's not possible for this app to work for free users. There are other apps online that work locally instead, allowing it to work for free and premium users.
+- *Spotify Premium*
 
 ## Instructions
 
-After downloading the `.zip` folder, extract the contents somewhere on your computer.
+After downloading the `.zip` folder, extract the `BeatBind` folder somewhere on your computer.
 
-\*If you extracted it to your `Program Files` folder, you'll need to run the app in admin mode to be able to write and save your settings and token. I recommend placing it somewhere else.
+*If you extracted it to your `Program Files` folder, you'll need to run the app in admin mode to be able to write and save your settings and token. I recommend placing it somewhere else.*
 
 The app requires the user to input three fields:
 
@@ -92,15 +89,16 @@ The app requires the user to input three fields:
         </p>
    
 
-Once you're done, click on `Save` within the app to save your settings. Click on `Start & Close` to close the window and start listening for your hotkeys!
+Once you're done, click on `Save` within the app to save your settings.  <br>
+Then click on `Start & Close` to close the window and start listening for your hotkeys!
 
-You can open the settings again by right-clicking on the app's system tray icon.
+(You can open the settings again by right-clicking on the app's system tray icon.)
 
 ## Updating
 
-1. Copy and save your `beatbind-config.json` file somewhere
+1. Copy and save your `BeatBind/lib/beatbind-config.json` file somewhere
 1. Replace your `BeatBind` folder with the updated version
-1. Paste inside the folder your saved `beatbind-config.json` file
+1. Paste inside the `BeatBind/lib` folder your saved `beatbind-config.json` file
 
 ## Troubleshooting
 
@@ -119,17 +117,16 @@ Please go through the below steps before creating an Issue ticket.
 
 ## FAQ
 
-- [Free Users?](#free-users)
+- [Spotify Free Users?](#spotify-free-users)
 - [How Do I Disable Certain Hotkeys?](#how-do-i-disable-certain-hotkeys)
 - [Where Is My Information Saved?](#where-is-my-information-saved)
-- [What Information Is Saved?](#what-information-is-saved)
 - [Why Are My Settings Not Saving?](#why-are-my-settings-not-saving)
 - [Why Isn't The App Starting on Windows Startup?](#why-isnt-the-app-starting-on-windows-startup)
 - [Why Is The App Crashing?](#why-is-the-app-crashing)
 - [My Hotkeys Stop Registering After Waking From Sleep](#my-hotkeys-stop-registering-after-waking-from-sleep)
 - [Server Listening On Localhost Has Not Been Accessed Error](#server-listening-on-localhost-has-not-been-accessed-error)
 
-### Free Users?
+### Spotify Free Users?
 
 Unfortunately, the endpoints used in Spotify's Web API only works for Spotify premium users, so it's not possible for this app to work for free users. There are other apps online that work locally instead, allowing it to work for free and premium users.
 
@@ -143,14 +140,7 @@ Unfortunately, the endpoints used in Spotify's Web API only works for Spotify pr
 
 ### Where Is My Information Saved?
 
-Your information is stored locally within the `BeatBind` folder. It stores your configuration settings and the token information required to interact with Spotify's Web API.
-
-### What Information Is Saved?
-
-There are two files stored within the `BeatBind` folder:
-
-1. `beatbind-config.json`, which contains your Client ID, Secret, Port, Device ID, and your hotkey combinations.
-1. `.cache`, which contains your token information to communicate with the Spotify app.
+Your information is stored locally in `beatbind-config.json` within the `BeatBind/lib` folder. It stores all of your configuration settings.
 
 ### Why Are My Settings Not Saving?
 
@@ -169,14 +159,16 @@ Computer\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
 
 ### Why Is The App Crashing?
 
-1. If you had "Start minimized" checked, you can find the app's icon hidden within your system tray and then right-click on it to find the settings menu.
-1. Within your `BeatBind` folder, delete the following files and try to open it again:
+- If you had "Start minimized" checked, you can find the app's icon hidden within your system tray and then right-click on it to find the settings menu.
+- Within your `BeatBind/lib` folder, delete the following files and try to open it again:
     - `beatbind-config.json`
     - `.cache`
 
 ### My Hotkeys Stop Registering After Waking From Sleep
 
-There are rare cases where hotkeys stop registering on system wake up from sleep, and pressing `Start & Close` button again fixes the listener. For a more permanent fix, try disabling Windows Fast Startup. If the bug keeps occurring after disabling Fast Startup, please create an Issue ticket.
+There are rare cases where hotkeys stop registering on system wake up from sleep, and pressing `Start & Close` button again fixes the listener. For a more permanent fix, try disabling Windows Fast Startup. 
+
+If the bug keeps occurring after disabling Fast Startup, please create an Issue ticket.
 
 ### Server Listening On Localhost Has Not Been Accessed Error
 
