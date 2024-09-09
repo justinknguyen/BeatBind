@@ -143,13 +143,12 @@ class Backend(object):
                 else:
                     # Play the music
                     url = f"https://api.spotify.com/v1/me/player/play?device_id={self.device_id}"
-
-                    response = requests.put(url, headers=headers, timeout=5)
-                    response.raise_for_status()
-                    if is_playing:
-                        logging.info("Paused")
-                    else:
-                        logging.info("Playing")
+                response = requests.put(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                if is_playing:
+                    logging.info("Paused")
+                else:
+                    logging.info("Playing")
         except Exception as e:
             logging.error(f"Error occurred when playing/pausing music: {e}")
 
