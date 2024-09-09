@@ -21,55 +21,59 @@ def main():
         sys.exit()
 
     print("Starting the application...")
-    backend = Backend()
-    frontend = Frontend(backend)
+    try:
+        backend = Backend()
+        frontend = Frontend(backend)
 
-    # Check if there is a config file
-    if os.path.exists(backend.config_path):
-        with open(backend.config_path, "r", encoding="utf-8") as f:
-            config = json.load(f)
-            hotkeys = config["hotkeys"]
+        # Check if there is a config file
+        if os.path.exists(backend.config_path):
+            with open(backend.config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+                hotkeys = config["hotkeys"]
 
-            for key, default_value in [
-                ("client_id", ""),
-                ("client_secret", ""),
-                ("port", 8888),
-                ("device_id", ""),
-                ("volume", 5),
-                ("seek", 5000),
-                ("rewind_instead_prev", False),
-            ]:
-                setattr(backend, key, config.get(key, default_value))
-            for key, default_value in [
-                ("play/pause", "control+alt+shift+p"),
-                ("play", "control+alt+shift+z"),
-                ("pause", "control+alt+shift+x"),
-                ("prev_track", "control+alt+shift+left"),
-                ("next_track", "control+alt+shift+right"),
-                ("volume_up", "control+alt+shift+up"),
-                ("volume_down", "control+alt+shift+down"),
-                ("mute", "control+alt+shift+space"),
-                ("seek_forward", "control+alt+shift+f"),
-                ("seek_backward", "control+alt+shift+b"),
-            ]:
-                backend.hotkeys[key] = hotkeys.get(key, default_value)
+                for key, default_value in [
+                    ("client_id", ""),
+                    ("client_secret", ""),
+                    ("port", 8888),
+                    ("device_id", ""),
+                    ("volume", 5),
+                    ("seek", 5000),
+                    ("rewind_instead_prev", False),
+                ]:
+                    setattr(backend, key, config.get(key, default_value))
+                for key, default_value in [
+                    ("play/pause", "control+alt+shift+p"),
+                    ("play", "control+alt+shift+z"),
+                    ("pause", "control+alt+shift+x"),
+                    ("prev_track", "control+alt+shift+left"),
+                    ("next_track", "control+alt+shift+right"),
+                    ("volume_up", "control+alt+shift+up"),
+                    ("volume_down", "control+alt+shift+down"),
+                    ("mute", "control+alt+shift+space"),
+                    ("seek_forward", "control+alt+shift+f"),
+                    ("seek_backward", "control+alt+shift+b"),
+                ]:
+                    backend.hotkeys[key] = hotkeys.get(key, default_value)
 
-        # If minimize is True, do not open the Settings window
-        backend.StartupTokenRefresh()
-        if config.get("minimize", False) and not frontend.menu.visible:
-            frontend.run()
+            # If minimize is True, do not open the Settings window
+            backend.StartupTokenRefresh()
+            if config.get("minimize", False) and not frontend.menu.visible:
+                frontend.run()
+            else:
+                frontend.SettingsWindow()
         else:
             frontend.SettingsWindow()
-    else:
-        frontend.SettingsWindow()
 
-    # Start message pump to process Windows messages
-    def start_message_pump():
-        win32gui.PumpMessages()
+        # Start message pump to process Windows messages
+        def start_message_pump():
+            win32gui.PumpMessages()
 
-    message_pump_thread = threading.Thread(target=start_message_pump)
-    message_pump_thread.daemon = True
-    message_pump_thread.start()
+        message_pump_thread = threading.Thread(target=start_message_pump)
+        message_pump_thread.daemon = True
+        message_pump_thread.start()
+    except Exception as e:
+        print("Error occurred, now exiting.", e)
+        sys.exit()
 
 
 if __name__ == "__main__":

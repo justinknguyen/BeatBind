@@ -270,7 +270,7 @@ class Frontend(object):
 
         root = ThemedTk(theme="breeze")
         root.withdraw()
-        root.title("BeatBind (v1.8.1)")
+        root.title("BeatBind (v1.8.2)")
         root.iconbitmap(self.icon_path)
         root.resizable(False, False)
         root.focus_force()
@@ -528,12 +528,17 @@ class Frontend(object):
                     config = json.load(f)
                     hotkeys = config.get("hotkeys", {})
 
-                    for entry, key, default_value in zip(entries, keys, keys_defaults):
-                        autofill_entry(entry, config.get(key, default_value))
+                    if not defaults_clear:
+                        for entry, key, default_value in zip(
+                            entries, keys, keys_defaults
+                        ):
+                            autofill_entry(entry, config.get(key, default_value))
 
-                    self.app.rewind_instead_prev_var.set(
-                        config.get("rewind_instead_prev", False)
-                    )
+                        self.app.rewind_instead_prev_var.set(
+                            config.get("rewind_instead_prev", False)
+                        )
+                        self.app.startup_var.set(config.get("startup", False))
+                        self.app.minimize_var.set(config.get("minimize", False))
 
                     for (
                         (modifier_frame, entry, var_dict),
@@ -566,14 +571,14 @@ class Frontend(object):
                         alt_var.set(modifiers["alt"])
                         shift_var.set(modifiers["shift"])
                         win_var.set(modifiers["win"])
-
-                    self.app.startup_var.set(config.get("startup", False))
-                    self.app.minimize_var.set(config.get("minimize", False))
             else:
-                for entry, key, default_value in zip(entries, keys, keys_defaults):
-                    autofill_entry(entry, default_value)
+                if not defaults_clear:
+                    for entry, key, default_value in zip(entries, keys, keys_defaults):
+                        autofill_entry(entry, default_value)
 
-                self.app.rewind_instead_prev_var.set(False)
+                    self.app.rewind_instead_prev_var.set(False)
+                    self.app.startup_var.set(False)
+                    self.app.minimize_var.set(False)
 
                 for (
                     (modifier_frame, entry, var_dict),
@@ -597,9 +602,6 @@ class Frontend(object):
                     alt_var.set(modifiers["alt"])
                     shift_var.set(modifiers["shift"])
                     win_var.set(modifiers["win"])
-
-                self.app.startup_var.set(False)
-                self.app.minimize_var.set(False)
 
         load_configuration(
             self.app.config_path,
