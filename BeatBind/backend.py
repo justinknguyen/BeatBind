@@ -512,7 +512,6 @@ class Backend(object):
             return os.path.exists(cache_file)
         except Exception as e:
             logging.error(f"Error occurred when checking if token exists:  {e}")
-            self.ErrorMessage(e)
 
     def StartupTokenRefresh(self):
         try:
@@ -545,7 +544,6 @@ class Backend(object):
                 self.CreateToken()
         except Exception as e:
             logging.error(f"Error occurred when refreshing token on startup:  {e}")
-            self.ErrorMessage(e)
 
     def CheckTokenExpiry(self):
         try:
@@ -571,7 +569,6 @@ class Backend(object):
                 self.CreateToken()
         except Exception as e:
             logging.error(f"Error occurred when checking token expiry: {e}")
-            self.ErrorMessage(e)
 
     def RefreshToken(self):
         try:
@@ -583,7 +580,6 @@ class Backend(object):
             logging.info("Token refreshed")
         except Exception as e:
             logging.error(f"Error occurred when refreshing token: {e}")
-            self.ErrorMessage(e)
 
     def RefreshTokenThread(self):
         while True:
