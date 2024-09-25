@@ -105,6 +105,7 @@ Then click on `Start & Close` to close the window and start listening for your h
 Please go through the below steps before creating an Issue ticket.
 
 1. Check the log file `BeatBind/beatbind.log` to see what's the problem.
+1. If it's an error about tokens, delete your `.cache` file in the folder. This can happen if you changed your Spotify credentials.
 1. Is your issue hotkey related? This app uses the `global_hotkeys` module by btsdev: https://github.com/btsdev/global_hotkeys. I recommend creating the Issue ticket there so they can solve your issue. Once it's solved, create an Issue ticket here and let me know to update the app.
 1. Exclude the BeatBind folder from your anti-virus software.
 1. If your settings are not saving, please see [Why Are My Settings Not Saving?](#why-are-my-settings-not-saving)
