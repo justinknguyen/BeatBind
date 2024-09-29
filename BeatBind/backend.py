@@ -394,6 +394,8 @@ class Backend(object):
                 reg.SetValueEx(key, app_name, 0, reg.REG_SZ, exe_path)
                 logging.info("Startup registry key successfully updated")
         except FileNotFoundError:
+            logging.info("Startup registry key was not found while trying to update")
+        except Exception:
             logging.error("Error occured when updating the startup registry key")
 
         reg.CloseKey(key)
