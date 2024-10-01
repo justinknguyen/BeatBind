@@ -178,5 +178,5 @@ If the bug keeps occurring after disabling Fast Startup, please create an Issue 
 
 Please see the top answer solution from here https://superuser.com/questions/565409/how-to-stop-an-automatic-redirect-from-http-to-https-in-chrome
 
-1. Go to `chrome://net-internals/#hsts`. Enter example.com under "Delete domain security policies" and press the Delete button.
+1. Go to `chrome://net-internals/#hsts`. Enter example.com under "Delete domain security policies" and press the "Delete" button.
 1. Now go to `chrome://settings/clearBrowserData`, tick the box "Cached images" and "files" and press click the button "Clear data".
