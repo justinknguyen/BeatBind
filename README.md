@@ -1,3 +1,9 @@
+# IMPORTANT NEWS
+
+Due to rising Spotify premium costs in Canada, it doesn't make much sense to use it over Apple Music.
+
+I've switched to Apple Music for now, but it doesn't mean I won't continue supporting this app. I'll try my best to resolve any issues, but I can't guarantee I'll be able to solve all of them. Thanks for all of the love and support <3
+
 # <img src="./BeatBind/icon.ico" width="4%" height="5%"> BeatBind - Spotify Global Hotkeys
 
 ![build](https://img.shields.io/badge/build-passing-brightgreen)
