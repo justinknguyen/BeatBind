@@ -1,8 +1,8 @@
 # IMPORTANT NEWS
 
-Due to rising Spotify Premium costs in Canada, it is more expensive than Apple Music now.
+Due to rising Spotify Premium costs, it is more expensive than Apple Music now.
 
-I've switched to Apple Music, but it doesn't mean I won't continue supporting this app. I'll try my best to resolve any issues, but I can't guarantee I'll be able to solve all of them. Some issues may require me to have Spotify Premium to fix.
+I've switched to Apple Music, but it doesn't mean I won't continue supporting this app. I'll try my best to resolve any issues, but I can't guarantee I'll be able to solve all of them. Some issues may require Spotify Premium to resolve.
 
 Thanks for all of the love and support <3
 
