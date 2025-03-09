@@ -268,7 +268,7 @@ class Frontend(object):
         try:
             root = ThemedTk(theme="breeze")
             root.withdraw()
-            root.title("BeatBind - Spotify Global Hotkeys (v1.8.3)")
+            root.title("BeatBind - Spotify Global Hotkeys (v1.8.4)")
             root.iconbitmap(self.icon_path)
             root.resizable(False, False)
             root.focus_force()
