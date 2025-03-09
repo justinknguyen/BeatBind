@@ -231,18 +231,7 @@ class Frontend(object):
                 keys_defaults,
                 hotkey_entries,
                 hotkey_keys,
-                [
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                ],
+                ["", "", "", "", "", "", "", "", "", "", "", ""],
                 hotkey_vars,
                 True,
             )
@@ -316,6 +305,8 @@ class Frontend(object):
             mute_label = ttk.Label(frame, text="Mute:")
             seek_forward_label = ttk.Label(frame, text="Seek Forward:")
             seek_backward_label = ttk.Label(frame, text="Seek Backward:")
+            save_track_label = ttk.Label(frame, text="Save Track:")
+            remove_track_label = ttk.Label(frame, text="Remove Track:")
 
             source_link = ttk.Label(
                 source_frame,
@@ -470,6 +461,8 @@ class Frontend(object):
                     "mute",
                     "seek_forward",
                     "seek_backward",
+                    "save_track",
+                    "remove_track",
                 ]
                 hotkey_defaults = [
                     "control+alt+shift+p",
@@ -482,6 +475,8 @@ class Frontend(object):
                     "control+alt+shift+space",
                     "control+alt+shift+f",
                     "control+alt+shift+b",
+                    "control+alt+shift+s",
+                    "control+alt+shift+r",
                 ]
 
                 for key in hotkey_keys:
@@ -715,6 +710,10 @@ class Frontend(object):
             hotkey_entries["next_track"][0].grid(
                 row=11, column=1, sticky="W", padx=(0, 20)
             )
+            save_track_label.grid(row=12, column=0, sticky="E")
+            hotkey_entries["save_track"][0].grid(
+                row=12, column=1, sticky="W", padx=(0, 20)
+            )
 
             volume_up_label.grid(row=7, column=2, sticky="E")
             hotkey_entries["volume_up"][0].grid(row=7, column=3, sticky="W")
@@ -726,11 +725,13 @@ class Frontend(object):
             hotkey_entries["seek_backward"][0].grid(row=10, column=3, sticky="W")
             seek_forward_label.grid(row=11, column=2, sticky="E")
             hotkey_entries["seek_forward"][0].grid(row=11, column=3, sticky="W")
+            remove_track_label.grid(row=12, column=2, sticky="E")
+            hotkey_entries["remove_track"][0].grid(row=12, column=3, sticky="W")
 
-            button_frame.grid(row=12, column=0, columnspan=4, pady=10)
+            button_frame.grid(row=13, column=0, columnspan=4, pady=10)
             save_button.pack(side="left", padx=(0, 5))
             start_button.pack(side="left", padx=(5, 0))
-            source_frame.grid(row=13, column=0, columnspan=4, pady=10)
+            source_frame.grid(row=14, column=0, columnspan=4, pady=10)
             source_link.pack(side="left")
 
             # Center window and focus
