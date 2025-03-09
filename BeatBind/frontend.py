@@ -57,7 +57,7 @@ class Frontend(object):
             save_button.config(state=tk.NORMAL)
 
         def handle_keypress(key_name, entry):
-            if key_name == "backspace" or key_name == "delete":
+            if key_name == "backspace":
                 entry.delete(0, tk.END)
             else:
                 entry.delete(0, tk.END)

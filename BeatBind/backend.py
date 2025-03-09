@@ -55,6 +55,8 @@ class Backend(object):
                 "mute": None,
                 "seek_forward": None,
                 "seek_backward": None,
+                "save_track": None,
+                "remove_track": None,
             }
 
             # Rewind instead of going to previous song settings
@@ -285,6 +287,61 @@ class Backend(object):
         except Exception as e:
             logging.error(f"Error occurred when seeking backward: {e}")
 
+    def SaveTrack(self):
+        try:
+            if self.token:
+                self.CheckTokenExpiry()
+
+                track_id = self.GetCurrentTrackId()
+                if track_id:
+                    headers = {"Authorization": "Bearer " + self.token}
+                    url = "https://api.spotify.com/v1/me/tracks"
+                    data = {"ids": [track_id]}
+                    response = requests.put(url, headers=headers, json=data, timeout=5)
+                    response.raise_for_status()
+                    logging.info("Saved track")
+                else:
+                    logging.error("No track ID found to save")
+        except Exception as e:
+            logging.error(f"Error occurred when saving track: {e}")
+
+    def RemoveTrack(self):
+        try:
+            if self.token:
+                self.CheckTokenExpiry()
+
+                track_id = self.GetCurrentTrackId()
+                if track_id:
+                    headers = {"Authorization": "Bearer " + self.token}
+                    url = "https://api.spotify.com/v1/me/tracks"
+                    data = {"ids": [track_id]}
+                    response = requests.delete(
+                        url, headers=headers, json=data, timeout=5
+                    )
+                    response.raise_for_status()
+                    logging.info("Removed track")
+                else:
+                    logging.error("No track ID found to remove")
+        except Exception as e:
+            logging.error(f"Error occurred when removing track: {e}")
+
+    def GetCurrentTrackId(self):
+        try:
+            if self.token:
+                self.CheckTokenExpiry()
+
+                headers = {"Authorization": "Bearer " + self.token}
+                url = "https://api.spotify.com/v1/me/player/currently-playing"
+                response = requests.get(url, headers=headers, timeout=5)
+                response.raise_for_status()
+                data = response.json()
+                track_id = data["item"]["id"]
+                logging.info(f"Current track ID: {track_id}")
+                return track_id
+        except Exception as e:
+            logging.error(f"Error occurred when getting current track ID: {e}")
+            return None
+
     def GetCurrentPlaybackPosition(self):
         try:
             headers = {"Authorization": "Bearer " + self.token}
@@ -454,6 +511,12 @@ class Backend(object):
         def seek_backward():
             self.SeekBackward()
 
+        def save_track():
+            self.SaveTrack()
+
+        def remove_track():
+            self.RemoveTrack()
+
         # Create the bindings list, removing any empty hotkeys
         bindings = []
         for hotkey_name, hotkey_func in [
@@ -467,6 +530,8 @@ class Backend(object):
             ("mute", mute),
             ("seek_forward", seek_forward),
             ("seek_backward", seek_backward),
+            ("save_track", save_track),
+            ("remove_track", remove_track),
         ]:
             hotkey = self.hotkeys[hotkey_name].split("+")
             if all(hotkey):
@@ -523,7 +588,7 @@ class Backend(object):
                     config = json.load(f)
                     try:
                         self.auth_manager = SpotifyOAuth(
-                            scope="user-modify-playback-state,user-read-playback-state",
+                            scope="user-modify-playback-state,user-read-playback-state,user-library-modify,user-read-currently-playing",
                             client_id=config.get("client_id", ""),
                             client_secret=config.get("client_secret", ""),
                             redirect_uri=f"http://localhost:{self.port}/callback",
@@ -559,7 +624,7 @@ class Backend(object):
                     with open(self.config_path, "r", encoding="utf-8") as f:
                         config = json.load(f)
                         self.auth_manager = SpotifyOAuth(
-                            scope="user-modify-playback-state,user-read-playback-state",
+                            scope="user-modify-playback-state,user-read-playback-state,user-library-modify,user-read-currently-playing",
                             client_id=config.get("client_id", ""),
                             client_secret=config.get("client_secret", ""),
                             redirect_uri=f"http://localhost:{self.port}/callback",
@@ -617,7 +682,7 @@ class Backend(object):
             os.remove(cache_file)
         try:
             self.auth_manager = SpotifyOAuth(
-                scope="user-modify-playback-state,user-read-playback-state",
+                scope="user-modify-playback-state,user-read-playback-state,user-library-modify,user-read-currently-playing",
                 client_id=self.client_id,
                 client_secret=self.client_secret,
                 redirect_uri=f"http://localhost:{self.port}/callback",

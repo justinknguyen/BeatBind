@@ -52,6 +52,8 @@ def main():
                     ("mute", "control+alt+shift+space"),
                     ("seek_forward", "control+alt+shift+f"),
                     ("seek_backward", "control+alt+shift+b"),
+                    ("save_track", "control+alt+shift+s"),
+                    ("remove_track", "control+alt+shift+r"),
                 ]:
                     backend.hotkeys[key] = hotkeys.get(key, default_value)
 
