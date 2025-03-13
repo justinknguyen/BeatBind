@@ -8,6 +8,8 @@ I've switched to Apple Music, but it doesn't mean I won't continue maintaining t
 
 Thanks for all of the love and support <3
 
+note: I hate how poorly written this code is lol I'll need to revist and rewrite this app in another framework.
+
 # <img src="./BeatBind/icon.ico" width="4%" height="5%"> BeatBind - Spotify Global Hotkeys
 
 ![build](https://img.shields.io/badge/build-passing-brightgreen)
