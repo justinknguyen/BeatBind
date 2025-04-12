@@ -76,6 +76,7 @@ The app requires the user to input three fields:
    ```
    http://localhost:8888/callback
    ```
+   - update: instead of localhost, use the IP address of your device instead
 1. Click on the checkbox and then "Save".
     <p>
     <img src="./images/create-app.png" width="70%" height="70%">
