@@ -5,13 +5,10 @@ import os
 Nuitka Build Command:
 (replace '--standalone' with '--onefile' to create an .exe that does not depends on other files)
 
-python -m nuitka ^
---standalone ^
---mingw64 ^
---windows-console-mode=disable ^
+python -m nuitka --standalone --windows-console-mode=disable ^
+--enable-plugin=tk-inter ^
 --include-package=tkinter ^
 --include-package=ttkthemes ^
---enable-plugin=tk-inter ^
 --include-data-file="icon.ico=./" ^
 --windows-icon-from-ico=icon.ico ^
 --output-dir="BeatBind" ^
