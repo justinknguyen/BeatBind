@@ -591,7 +591,7 @@ class Backend(object):
                             scope="user-modify-playback-state,user-read-playback-state,user-library-modify,user-read-currently-playing",
                             client_id=config.get("client_id", ""),
                             client_secret=config.get("client_secret", ""),
-                            redirect_uri=f"http://localhost:{self.port}/callback",
+                            redirect_uri=f"http://127.0.0.1:{self.port}/callback",
                             cache_path=cache_file,
                         )
                     except Exception as e:
@@ -627,7 +627,7 @@ class Backend(object):
                             scope="user-modify-playback-state,user-read-playback-state,user-library-modify,user-read-currently-playing",
                             client_id=config.get("client_id", ""),
                             client_secret=config.get("client_secret", ""),
-                            redirect_uri=f"http://localhost:{self.port}/callback",
+                            redirect_uri=f"http://127.0.0.1:{self.port}/callback",
                             cache_path=cache_file,
                         )
                     self.RefreshToken()
@@ -685,7 +685,7 @@ class Backend(object):
                 scope="user-modify-playback-state,user-read-playback-state,user-library-modify,user-read-currently-playing",
                 client_id=self.client_id,
                 client_secret=self.client_secret,
-                redirect_uri=f"http://localhost:{self.port}/callback",
+                redirect_uri=f"http://127.0.0.1:{self.port}/callback",
                 cache_path=cache_file,
             )
         except SpotifyOauthError as e:

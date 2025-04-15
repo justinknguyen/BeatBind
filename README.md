@@ -13,7 +13,7 @@ note: I hate how poorly written this code is lol I'll need to revist and rewrite
 # <img src="./BeatBind/icon.ico" width="4%" height="5%"> BeatBind - Spotify Global Hotkeys
 
 ![build](https://img.shields.io/badge/build-passing-brightgreen)
-[![version](https://img.shields.io/badge/version-1.8.3-blue)](https://github.com/justinknguyen/BeatBind/releases/tag/v1.8.3)
+[![version](https://img.shields.io/badge/version-1.8.5-blue)](https://github.com/justinknguyen/BeatBind/releases/tag/v1.8.5)
 ![python](https://img.shields.io/badge/python-3.10.9-yellow)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/justinknguyen/BeatBind/issues)
 
@@ -74,9 +74,8 @@ The app requires the user to input three fields:
 1. In the app, you can change the `Port` field if it's already being used on your local network.
 1. Back on the website, enter the following into "Redirect URI" with the port you chose (e.g., 8888):
    ```
-   http://localhost:8888/callback
+   http://127.0.0.1:8888/callback
    ```
-   - update: Spotify just made an update to not allow localhost. Will be fixed in a couple of days
 1. Click on the checkbox and then "Save".
     <p>
     <img src="./images/create-app.png" width="70%" height="70%">
