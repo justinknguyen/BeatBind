@@ -144,7 +144,7 @@ Unfortunately, the endpoints used in Spotify's Web API only works for Spotify pr
 ### How Do I Disable Certain Hotkeys?
 
 1. Uncheck all of the `Modifiers` checkboxes.
-1. In the `Key` field, press "Backspace" or "Delete" on your keyboard to clear the field.
+1. In the `Key` field, press "Backspace" on your keyboard to clear the field.
     <p>
     <img src="./images/unbind.png" width="40%" height="40%">
     </p>
