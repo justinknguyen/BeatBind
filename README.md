@@ -44,7 +44,7 @@ Download the latest version from the [Releases](https://github.com/justinknguyen
 
 Instead of downloading, you can build the `.exe` file yourself with the provided Nuitka build command in the [build.py](https://github.com/justinknguyen/BeatBind/blob/main/BeatBind/build.py) file.
 
-You'll need a python environment on your local machine first and install Nuitka, then you can install all of the required packages under [requirements.txt](https://github.com/justinknguyen/BeatBind/blob/main/BeatBind/requirements.txt).
+You'll need a python environment on your local machine first, then install Nuitka, then install all of the required packages under [requirements.txt](https://github.com/justinknguyen/BeatBind/blob/main/BeatBind/requirements.txt). Afterwards, you can run the build command.
 
 ## Requirements
 
