@@ -1,14 +1,10 @@
 # IMPORTANT NEWS
 
-Due to rising Spotify Premium costs, it is more expensive than Apple Music now.
-
-I've switched to Apple Music, but it doesn't mean I won't continue maintaining this app. I'll try my best to resolve any issues, but I can't guarantee I'll be able to solve all of them. Some issues may require Spotify Premium to resolve. 
+I no longer use Spotify, but it doesn't mean I won't continue maintaining this app. I'll try my best to resolve any issues, but I can't guarantee I'll be able to solve all of them. Some issues may require Spotify Premium to resolve. 
 
 **I will not add additional features in the meantime.**
 
 Thanks for all of the love and support <3
-
-note: I hate how poorly written this code is lol I'll need to revist and rewrite this app in another framework.
 
 # <img src="./BeatBind/icon.ico" width="4%" height="5%"> BeatBind - Spotify Global Hotkeys
 
@@ -44,7 +40,11 @@ Please see [FAQ](#faq) for more information and [Troubleshooting](#troubleshooti
 
 Download the latest version from the [Releases](https://github.com/justinknguyen/BeatBind/releases) page.
 
-You can build the `.exe` yourself with the provided nuitka build command in the [build.py](https://github.com/justinknguyen/BeatBind/blob/main/BeatBind/build.py) file.
+### Building the app yourself
+
+Instead of downloading, you can build the `.exe` file yourself with the provided Nuitka build command in the [build.py](https://github.com/justinknguyen/BeatBind/blob/main/BeatBind/build.py) file.
+
+You'll need a python environment on your local machine first and install Nuitka, then you can install all of the required packages under [requirements.txt](https://github.com/justinknguyen/BeatBind/blob/main/BeatBind/requirements.txt).
 
 ## Requirements
 
