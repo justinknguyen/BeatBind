@@ -22,6 +22,7 @@ namespace BeatBind
         private Button _authenticateButton = null!;
         private Label _statusLabel = null!;
         private Panel _hotkeyPanel = null!;
+        private Label _lastHotkeyLabel = null!;
         private FlowLayoutPanel _hotkeyFlowPanel = null!;
         private Button _addHotkeyButton = null!;
         private Button _saveConfigButton = null!;
@@ -46,7 +47,7 @@ namespace BeatBind
 
             // Form settings
             Text = "BeatBind - Spotify Global Hotkeys";
-            Size = new Size(500, 600);
+            Size = new Size(500, 700);
             StartPosition = FormStartPosition.CenterScreen;
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
@@ -109,6 +110,23 @@ namespace BeatBind
                 ForeColor = Color.Red
             };
             statusGroup.Controls.Add(_statusLabel);
+
+            // Last Hotkey Triggered Section
+            var lastHotkeyGroup = new GroupBox
+            {
+                Text = "Last Hotkey Triggered",
+                Height = 50,
+                Dock = DockStyle.Top
+            };
+            _lastHotkeyLabel = new Label
+            {
+                Text = "(none)",
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Font = new Font(FontFamily.GenericSansSerif, 10, FontStyle.Bold),
+                ForeColor = Color.Blue
+            };
+            lastHotkeyGroup.Controls.Add(_lastHotkeyLabel);
 
             // Hotkey Configuration Section
             _hotkeyPanel = new Panel
@@ -189,8 +207,9 @@ namespace BeatBind
             // Add all sections to main panel
             mainPanel.Controls.Add(spotifyConfigGroup, 0, 0);
             mainPanel.Controls.Add(statusGroup, 0, 1);
-            mainPanel.Controls.Add(_hotkeyPanel, 0, 2);
-            mainPanel.Controls.Add(buttonPanel, 0, 3);
+            mainPanel.Controls.Add(lastHotkeyGroup, 0, 2);
+            mainPanel.Controls.Add(_hotkeyPanel, 0, 3);
+            mainPanel.Controls.Add(buttonPanel, 0, 4);
 
             Controls.Add(mainPanel);
 
@@ -282,18 +301,30 @@ namespace BeatBind
 
             var hotkeys = _configManager.Hotkeys;
 
-            _hotkeyManager.RegisterHotkey(hotkeys.PlayPause, async () => await _backend.PlayPauseAsync());
-            _hotkeyManager.RegisterHotkey(hotkeys.NextTrack, async () => await _backend.NextTrackAsync());
-            _hotkeyManager.RegisterHotkey(hotkeys.PreviousTrack, async () => await _backend.PreviousTrackAsync());
-            _hotkeyManager.RegisterHotkey(hotkeys.VolumeUp, async () => await _backend.AdjustVolumeAsync(_configManager.Config.VolumeStep));
-            _hotkeyManager.RegisterHotkey(hotkeys.VolumeDown, async () => await _backend.AdjustVolumeAsync(-_configManager.Config.VolumeStep));
-            _hotkeyManager.RegisterHotkey(hotkeys.Mute, async () => await _backend.MuteAsync());
-            _hotkeyManager.RegisterHotkey(hotkeys.SeekForward, async () => await _backend.SeekAsync(_configManager.Config.SeekStep));
-            _hotkeyManager.RegisterHotkey(hotkeys.SeekBackward, async () => await _backend.SeekAsync(-_configManager.Config.SeekStep));
-            _hotkeyManager.RegisterHotkey(hotkeys.SaveTrack, async () => await _backend.SaveCurrentTrackAsync());
-            _hotkeyManager.RegisterHotkey(hotkeys.RemoveTrack, async () => await _backend.RemoveCurrentTrackAsync());
+            _hotkeyManager.RegisterHotkey(hotkeys.PlayPause, async () => { UpdateLastHotkeyLabel("Play/Pause"); await _backend.PlayPauseAsync(); });
+            _hotkeyManager.RegisterHotkey(hotkeys.NextTrack, async () => { UpdateLastHotkeyLabel("Next Track"); await _backend.NextTrackAsync(); });
+            _hotkeyManager.RegisterHotkey(hotkeys.PreviousTrack, async () => { UpdateLastHotkeyLabel("Previous Track"); await _backend.PreviousTrackAsync(); });
+            _hotkeyManager.RegisterHotkey(hotkeys.VolumeUp, async () => { UpdateLastHotkeyLabel("Volume Up"); await _backend.AdjustVolumeAsync(_configManager.Config.VolumeStep); });
+            _hotkeyManager.RegisterHotkey(hotkeys.VolumeDown, async () => { UpdateLastHotkeyLabel("Volume Down"); await _backend.AdjustVolumeAsync(-_configManager.Config.VolumeStep); });
+            _hotkeyManager.RegisterHotkey(hotkeys.Mute, async () => { UpdateLastHotkeyLabel("Mute"); await _backend.MuteAsync(); });
+            _hotkeyManager.RegisterHotkey(hotkeys.SeekForward, async () => { UpdateLastHotkeyLabel("Seek Forward"); await _backend.SeekAsync(_configManager.Config.SeekStep); });
+            _hotkeyManager.RegisterHotkey(hotkeys.SeekBackward, async () => { UpdateLastHotkeyLabel("Seek Backward"); await _backend.SeekAsync(-_configManager.Config.SeekStep); });
+            _hotkeyManager.RegisterHotkey(hotkeys.SaveTrack, async () => { UpdateLastHotkeyLabel("Save Track"); await _backend.SaveCurrentTrackAsync(); });
+            _hotkeyManager.RegisterHotkey(hotkeys.RemoveTrack, async () => { UpdateLastHotkeyLabel("Remove Track"); await _backend.RemoveCurrentTrackAsync(); });
 
             _logger.LogInformation("Global hotkeys registered");
+        }
+
+        private void UpdateLastHotkeyLabel(string action)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => _lastHotkeyLabel.Text = action));
+            }
+            else
+            {
+                _lastHotkeyLabel.Text = action;
+            }
         }
 
         private async void OnAuthenticateClick(object? sender, EventArgs e)
