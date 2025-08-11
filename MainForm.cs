@@ -254,9 +254,10 @@ namespace BeatBind
             };
 
             // Create context menu
+
             var contextMenu = new ContextMenuStrip();
             contextMenu.Items.Add("Show", null, (s, e) => { Show(); WindowState = FormWindowState.Normal; });
-            contextMenu.Items.Add("Exit", null, (s, e) => Close());
+            contextMenu.Items.Add("Exit", null, (s, e) => Application.Exit());
 
             _notifyIcon.ContextMenuStrip = contextMenu;
             _notifyIcon.DoubleClick += (s, e) => { Show(); WindowState = FormWindowState.Normal; };

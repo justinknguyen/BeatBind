@@ -45,7 +45,7 @@ namespace BeatBind
 
         public string RedirectUri
         {
-            get => _config.RedirectUri ?? "http://localhost:8080/callback";
+            get => _config.RedirectUri ?? "http://127.0.0.1:8888/callback";
             set
             {
                 _config.RedirectUri = value;
@@ -115,7 +115,7 @@ namespace BeatBind
     {
         public string? ClientId { get; set; }
         public string? ClientSecret { get; set; }
-        public string? RedirectUri { get; set; } = "http://localhost:8080/callback";
+        public string? RedirectUri { get; set; } = "http://127.0.0.1:8888/callback";
         public HotkeyConfiguration Hotkeys { get; set; } = new();
         public bool StartWithWindows { get; set; } = false;
         public bool MinimizeToTray { get; set; } = true;

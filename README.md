@@ -122,7 +122,7 @@ Settings are stored in: `%APPDATA%\BeatBind\config.json`
 {
   "ClientId": "your-spotify-client-id",
   "ClientSecret": "your-spotify-client-secret",
-  "RedirectUri": "http://localhost:8080/callback",
+  "RedirectUri": "http://127.0.0.1:8888/callback",
   "Hotkeys": {
     "PlayPause": "Ctrl+Alt+Space",
     "NextTrack": "Ctrl+Alt+Right",
