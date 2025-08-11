@@ -70,36 +70,22 @@ namespace BeatBind
                     services.AddTransient<AuthenticateUserUseCase>();
                     services.AddTransient<SaveConfigurationUseCase>();
 
-                    // Presentation services
-                    services.AddSingleton<MainForm>(serviceProvider =>
+                    // Register MainForm first without HotkeyManagementService
+                    services.AddSingleton<MainForm>();
+
+                    // Register IHotkeyService that depends on MainForm
+                    services.AddSingleton<IHotkeyService, WindowsHotkeyService>(serviceProvider =>
                     {
-                        var form = new MainForm(
-                            serviceProvider.GetRequiredService<MusicControlService>(),
-                            serviceProvider.GetRequiredService<HotkeyManagementService>(),
-                            serviceProvider.GetRequiredService<AuthenticateUserUseCase>(),
-                            serviceProvider.GetRequiredService<SaveConfigurationUseCase>(),
-                            serviceProvider.GetRequiredService<IConfigurationService>(),
-                            serviceProvider.GetRequiredService<ILogger<MainForm>>()
-                        );
-
-                        // Register hotkey service using the main form
-                        var hotkeyService = new WindowsHotkeyService(form, 
-                            serviceProvider.GetRequiredService<ILogger<WindowsHotkeyService>>());
-                        
-                        var hotkeyManagement = new HotkeyManagementService(
-                            hotkeyService,
-                            serviceProvider.GetRequiredService<IConfigurationService>(),
-                            serviceProvider.GetRequiredService<MusicControlService>(),
-                            serviceProvider.GetRequiredService<ILogger<HotkeyManagementService>>()
-                        );
-
-                        // Update the form's hotkey management service
-                        SetHotkeyManagementService(form, hotkeyManagement);
-
-                        return form;
+                        var mainForm = serviceProvider.GetRequiredService<MainForm>();
+                        var logger = serviceProvider.GetRequiredService<ILogger<WindowsHotkeyService>>();
+                        return new WindowsHotkeyService(mainForm, logger);
                     });
 
-                    services.AddTransient<HotkeyManagementService>();
+                    // Register HotkeyManagementService
+                    services.AddSingleton<HotkeyManagementService>();
+
+                    // Configure MainForm with HotkeyManagementService after all services are registered
+                    services.AddSingleton<IHostedService, MainFormInitializerService>();
                 })
                 .ConfigureLogging(logging =>
                 {
@@ -108,11 +94,28 @@ namespace BeatBind
                     logging.SetMinimumLevel(LogLevel.Information);
                 });
         }
+    }
 
-        private static void SetHotkeyManagementService(MainForm form, HotkeyManagementService service)
+    public class MainFormInitializerService : IHostedService
+    {
+        private readonly MainForm _mainForm;
+        private readonly HotkeyManagementService _hotkeyManagementService;
+
+        public MainFormInitializerService(MainForm mainForm, HotkeyManagementService hotkeyManagementService)
         {
-            // This is a simplified approach - in a production app, you'd want to handle this more elegantly
-            // For now, we'll assume the form can work with the service passed in the constructor
+            _mainForm = mainForm;
+            _hotkeyManagementService = hotkeyManagementService;
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            _mainForm.SetHotkeyManagementService(_hotkeyManagementService);
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
     }
 }

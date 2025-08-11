@@ -11,7 +11,7 @@ namespace BeatBind.Presentation.Forms
     public partial class MainForm : Form
     {
         private readonly MusicControlService _musicControlService;
-        private readonly HotkeyManagementService _hotkeyManagementService;
+        private HotkeyManagementService _hotkeyManagementService;
         private readonly AuthenticateUserUseCase _authenticateUserUseCase;
         private readonly SaveConfigurationUseCase _saveConfigurationUseCase;
         private readonly IConfigurationService _configurationService;
@@ -34,14 +34,12 @@ namespace BeatBind.Presentation.Forms
 
         public MainForm(
             MusicControlService musicControlService,
-            HotkeyManagementService hotkeyManagementService,
             AuthenticateUserUseCase authenticateUserUseCase,
             SaveConfigurationUseCase saveConfigurationUseCase,
             IConfigurationService configurationService,
             ILogger<MainForm> logger)
         {
             _musicControlService = musicControlService;
-            _hotkeyManagementService = hotkeyManagementService;
             _authenticateUserUseCase = authenticateUserUseCase;
             _saveConfigurationUseCase = saveConfigurationUseCase;
             _configurationService = configurationService;
@@ -51,8 +49,13 @@ namespace BeatBind.Presentation.Forms
             SetupNotifyIcon();
             LoadConfiguration();
             UpdateAuthenticationStatus();
+        }
+
+        public void SetHotkeyManagementService(HotkeyManagementService hotkeyManagementService)
+        {
+            _hotkeyManagementService = hotkeyManagementService;
             
-            // Initialize hotkeys from configuration
+            // Initialize hotkeys from configuration once the service is set
             _hotkeyManagementService.InitializeHotkeys();
         }
 
@@ -62,7 +65,7 @@ namespace BeatBind.Presentation.Forms
 
             // Form settings
             Text = "BeatBind - Spotify Global Hotkeys";
-            Size = new Size(500, 700);
+            Size = new Size(550, 700);
             StartPosition = FormStartPosition.CenterScreen;
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
@@ -395,7 +398,7 @@ namespace BeatBind.Presentation.Forms
             {
                 var hotkey = hotkeyDialog.Hotkey;
                 AddHotkeyEntryToUI(hotkey);
-                _hotkeyManagementService.AddHotkey(hotkey);
+                _hotkeyManagementService?.AddHotkey(hotkey);
             }
         }
 
@@ -415,7 +418,7 @@ namespace BeatBind.Presentation.Forms
             if (hotkeyDialog.ShowDialog() == DialogResult.OK)
             {
                 var updatedHotkey = hotkeyDialog.Hotkey;
-                _hotkeyManagementService.UpdateHotkey(updatedHotkey);
+                _hotkeyManagementService?.UpdateHotkey(updatedHotkey);
                 
                 // Update UI
                 if (_hotkeyEntries.TryGetValue(hotkey.Id.ToString(), out var entry))
@@ -432,7 +435,7 @@ namespace BeatBind.Presentation.Forms
             
             if (result == DialogResult.Yes)
             {
-                _hotkeyManagementService.RemoveHotkey(hotkey.Id);
+                _hotkeyManagementService?.RemoveHotkey(hotkey.Id);
                 
                 if (_hotkeyEntries.TryGetValue(hotkey.Id.ToString(), out var entry))
                 {
