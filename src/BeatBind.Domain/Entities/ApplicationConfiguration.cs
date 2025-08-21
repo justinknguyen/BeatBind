@@ -10,5 +10,15 @@ namespace BeatBind.Domain.Entities
         public bool MinimizeToTray { get; set; } = true;
         public bool ShowNotifications { get; set; } = true;
         public int DefaultVolume { get; set; } = 50;
+        
+        // Audio Control Settings
+        public bool PreviousTrackRewindToStart { get; set; } = true;
+        public int VolumeSteps { get; set; } = 10;
+        public int SeekMilliseconds { get; set; } = 10000;
+        
+        // Authentication Storage
+        public string AccessToken { get; set; } = string.Empty;
+        public string RefreshToken { get; set; } = string.Empty;
+        public DateTime TokenExpiresAt { get; set; }
     }
 }

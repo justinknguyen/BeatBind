@@ -18,5 +18,6 @@ namespace BeatBind.Domain.Interfaces
         Task<bool> ToggleRepeatAsync();
         Task<bool> SaveCurrentTrackAsync();
         Task<bool> RemoveCurrentTrackAsync();
+        Task<bool> SeekToPositionAsync(int positionMs);
     }
 }

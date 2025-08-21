@@ -133,6 +133,52 @@ namespace BeatBind.Infrastructure.Spotify
                    DateTime.UtcNow < authResult.ExpiresAt;
         }
 
+        public AuthenticationResult? GetStoredAuthentication()
+        {
+            try
+            {
+                var config = _configurationService.GetConfiguration();
+                
+                if (string.IsNullOrEmpty(config.AccessToken) || string.IsNullOrEmpty(config.RefreshToken))
+                {
+                    return null;
+                }
+
+                return new AuthenticationResult
+                {
+                    Success = true,
+                    AccessToken = config.AccessToken,
+                    RefreshToken = config.RefreshToken,
+                    ExpiresAt = config.TokenExpiresAt
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading stored authentication");
+                return null;
+            }
+        }
+
+        public void SaveAuthentication(AuthenticationResult authResult)
+        {
+            try
+            {
+                var config = _configurationService.GetConfiguration();
+                config.AccessToken = authResult.AccessToken;
+                config.RefreshToken = authResult.RefreshToken;
+                config.TokenExpiresAt = authResult.ExpiresAt;
+                
+                // Save the updated configuration
+                _configurationService.SaveConfiguration(config);
+                
+                _logger.LogInformation("Authentication tokens saved successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving authentication tokens");
+            }
+        }
+
         private async Task<bool> StartCallbackListenerAsync(string redirectUri)
         {
             try

@@ -21,6 +21,7 @@ namespace BeatBind.Presentation.Forms
         private bool _isAuthenticated;
 
         // UI Controls
+        private TabControl _mainTabControl = null!;
         private TextBox _clientIdTextBox = null!;
         private TextBox _clientSecretTextBox = null!;
         private Button _authenticateButton = null!;
@@ -31,6 +32,13 @@ namespace BeatBind.Presentation.Forms
         private Button _addHotkeyButton = null!;
         private Button _saveConfigButton = null!;
         private Dictionary<string, HotkeyEntry> _hotkeyEntries = new();
+        
+        // Settings controls
+        private CheckBox _startupCheckBox = null!;
+        private CheckBox _minimizeCheckBox = null!;
+        private CheckBox _rewindCheckBox = null!;
+        private NumericUpDown _volumeStepsNumeric = null!;
+        private NumericUpDown _seekMillisecondsNumeric = null!;
 
         public MainForm(
             MusicControlService musicControlService,
@@ -65,53 +73,789 @@ namespace BeatBind.Presentation.Forms
 
             // Form settings
             Text = "BeatBind - Spotify Global Hotkeys";
-            Size = new Size(550, 700);
+            Size = new Size(650, 550);
             StartPosition = FormStartPosition.CenterScreen;
-            FormBorderStyle = FormBorderStyle.FixedSingle;
-            MaximizeBox = false;
+            FormBorderStyle = FormBorderStyle.Sizable;
+            MinimumSize = new Size(600, 500);
+            BackColor = Color.FromArgb(248, 249, 250);
 
-            // Main layout
-            var mainPanel = new TableLayoutPanel
+            // Create modern tab control
+            _mainTabControl = new TabControl
+            {
+                Dock = DockStyle.Fill,
+                Margin = new Padding(10),
+                Font = new Font("Segoe UI", 10f),
+                Appearance = TabAppearance.Normal,
+                SizeMode = TabSizeMode.Fixed,
+                ItemSize = new Size(120, 35)
+            };
+
+            // Create tabs
+            CreateAuthenticationTab();
+            CreateHotkeysTab();
+            CreateSettingsTab();
+
+            // Create main layout for form
+            var formLayout = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 6,
-                Padding = new Padding(10)
+                RowCount = 2,
+                BackColor = Color.FromArgb(248, 249, 250),
+                Padding = new Padding(15)
             };
 
-            // Client credentials section
-            var credentialsGroup = CreateCredentialsSection();
-            mainPanel.Controls.Add(credentialsGroup);
-            mainPanel.SetRow(credentialsGroup, 0);
+            // Set row styles - tabs take most space, button takes fixed space
+            formLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100f)); // Tabs
+            formLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 60f)); // Save button
 
-            // Authentication section
-            var authGroup = CreateAuthenticationSection();
-            mainPanel.Controls.Add(authGroup);
-            mainPanel.SetRow(authGroup, 1);
+            // Tab control container
+            var tabContainer = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(248, 249, 250)
+            };
+            tabContainer.Controls.Add(_mainTabControl);
 
-            // Status section
-            var statusGroup = CreateStatusSection();
-            mainPanel.Controls.Add(statusGroup);
-            mainPanel.SetRow(statusGroup, 2);
+            // Save button container
+            var saveButtonContainer = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(248, 249, 250),
+                Padding = new Padding(0, 10, 0, 0)
+            };
 
-            // Last hotkey section
-            var lastHotkeyGroup = CreateLastHotkeySection();
-            mainPanel.Controls.Add(lastHotkeyGroup);
-            mainPanel.SetRow(lastHotkeyGroup, 3);
+            _saveConfigButton = new Button
+            {
+                Text = "💾 Save Configuration",
+                Size = new Size(200, 40),
+                Font = new Font("Segoe UI", 10f),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(40, 167, 69),
+                ForeColor = Color.White,
+                Cursor = Cursors.Hand,
+                Anchor = AnchorStyles.None
+            };
+            _saveConfigButton.FlatAppearance.BorderSize = 0;
+            _saveConfigButton.Click += SaveConfigButton_Click;
 
-            // Hotkey configuration section
-            _hotkeyPanel = CreateHotkeyConfigurationSection();
-            mainPanel.Controls.Add(_hotkeyPanel);
-            mainPanel.SetRow(_hotkeyPanel, 4);
+            // Center the button
+            saveButtonContainer.Resize += (s, e) => {
+                _saveConfigButton.Location = new Point(
+                    (saveButtonContainer.Width - _saveConfigButton.Width) / 2,
+                    (saveButtonContainer.Height - _saveConfigButton.Height) / 2
+                );
+            };
 
-            // Save configuration section
-            var saveGroup = CreateSaveConfigurationSection();
-            mainPanel.Controls.Add(saveGroup);
-            mainPanel.SetRow(saveGroup, 5);
+            saveButtonContainer.Controls.Add(_saveConfigButton);
 
-            Controls.Add(mainPanel);
+            formLayout.Controls.Add(tabContainer, 0, 0);
+            formLayout.Controls.Add(saveButtonContainer, 0, 1);
+            
+            Controls.Add(formLayout);
 
             ResumeLayout(false);
+        }
+
+        private void CreateAuthenticationTab()
+        {
+            var authTab = new TabPage("🔐 Authentication")
+            {
+                BackColor = Color.White,
+                Padding = new Padding(15)
+            };
+
+            var mainLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                BackColor = Color.White
+            };
+
+            // Set row styles to fit the available space
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 60f)); // Credentials
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 40f)); // Authentication & Status
+
+            // Spotify Credentials Card
+            var credentialsCard = CreateCompactCard("Spotify API Credentials", CreateCredentialsContentWithoutSaveButton());
+            mainLayout.Controls.Add(credentialsCard, 0, 0);
+
+            // Combined Authentication & Status Card
+            var authStatusCard = CreateCompactCard("Authentication & Status", CreateCombinedAuthStatusContent());
+            mainLayout.Controls.Add(authStatusCard, 0, 1);
+
+            authTab.Controls.Add(mainLayout);
+            _mainTabControl.TabPages.Add(authTab);
+        }
+
+        private void CreateHotkeysTab()
+        {
+            var hotkeysTab = new TabPage("⌨️ Hotkeys")
+            {
+                BackColor = Color.White,
+                Padding = new Padding(20)
+            };
+
+            var scrollPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                BackColor = Color.White
+            };
+
+            var mainLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Top,
+                ColumnCount = 1,
+                RowCount = 2,
+                AutoSize = true,
+                BackColor = Color.White
+            };
+
+            // Last Hotkey Status Card
+            var lastHotkeyCard = CreateModernCard("Last Triggered Hotkey", CreateLastHotkeyContent());
+            mainLayout.Controls.Add(lastHotkeyCard);
+
+            // Hotkey Management Card
+            var hotkeyCard = CreateModernCard("Hotkey Management", CreateHotkeyManagementContent());
+            mainLayout.Controls.Add(hotkeyCard);
+
+            scrollPanel.Controls.Add(mainLayout);
+            hotkeysTab.Controls.Add(scrollPanel);
+            _mainTabControl.TabPages.Add(hotkeysTab);
+        }
+
+        private void CreateSettingsTab()
+        {
+            var settingsTab = new TabPage("⚙️ Settings")
+            {
+                BackColor = Color.White,
+                Padding = new Padding(15)
+            };
+
+            var mainLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                BackColor = Color.White
+            };
+
+            // Set row styles to fit the available space
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 60f)); // Application Settings
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 30f)); // About
+
+            // Application Settings Card
+            var appSettingsCard = CreateCompactCard("Application Settings", CreateCompactAppSettingsContent());
+            mainLayout.Controls.Add(appSettingsCard, 0, 0);
+
+            // About Card
+            var aboutCard = CreateCompactCard("About", CreateAboutContent());
+            mainLayout.Controls.Add(aboutCard, 0, 1);
+
+            settingsTab.Controls.Add(mainLayout);
+            _mainTabControl.TabPages.Add(settingsTab);
+        }
+
+        private Panel CreateModernCard(string title, Control content)
+        {
+            var card = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = content.Height + 60,
+                Margin = new Padding(0, 0, 0, 15),
+                BackColor = Color.White,
+                BorderStyle = BorderStyle.None
+            };
+
+            // Add shadow effect (simplified)
+            card.Paint += (s, e) =>
+            {
+                var rect = card.ClientRectangle;
+                rect.Width -= 1;
+                rect.Height -= 1;
+                e.Graphics.DrawRectangle(new Pen(Color.FromArgb(220, 220, 220)), rect);
+            };
+
+            var titleLabel = new Label
+            {
+                Text = title,
+                Font = new Font("Segoe UI", 12f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(33, 37, 41),
+                Dock = DockStyle.Top,
+                Height = 35,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Padding = new Padding(15, 10, 15, 0),
+                BackColor = Color.FromArgb(248, 249, 250)
+            };
+
+            var contentPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Padding = new Padding(15),
+                BackColor = Color.White
+            };
+            contentPanel.Controls.Add(content);
+
+            card.Controls.Add(contentPanel);
+            card.Controls.Add(titleLabel);
+
+            return card;
+        }
+
+        private Panel CreateCompactCard(string title, Control content)
+        {
+            var card = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Margin = new Padding(0, 0, 0, 8),
+                BackColor = Color.White,
+                BorderStyle = BorderStyle.None
+            };
+
+            // Add shadow effect (simplified)
+            card.Paint += (s, e) =>
+            {
+                var rect = card.ClientRectangle;
+                rect.Width -= 1;
+                rect.Height -= 1;
+                e.Graphics.DrawRectangle(new Pen(Color.FromArgb(220, 220, 220)), rect);
+            };
+
+            var titleLabel = new Label
+            {
+                Text = title,
+                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(33, 37, 41),
+                Dock = DockStyle.Top,
+                Height = 25,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Padding = new Padding(10, 5, 10, 0),
+                BackColor = Color.FromArgb(248, 249, 250)
+            };
+
+            var contentPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Padding = new Padding(10),
+                BackColor = Color.White
+            };
+            contentPanel.Controls.Add(content);
+
+            card.Controls.Add(contentPanel);
+            card.Controls.Add(titleLabel);
+
+            return card;
+        }
+
+        private Control CreateCredentialsContentWithoutSaveButton()
+        {
+            var panel = new Panel { Dock = DockStyle.Fill };
+            
+            var layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 2,
+                Padding = new Padding(0)
+            };
+
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 35));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 35));
+
+            var clientIdLabel = new Label 
+            { 
+                Text = "Client ID:", 
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleRight,
+                Font = new Font("Segoe UI", 9f),
+                ForeColor = Color.FromArgb(73, 80, 87),
+                Margin = new Padding(0, 0, 10, 0)
+            };
+            
+            _clientIdTextBox = new TextBox 
+            { 
+                Anchor = AnchorStyles.Left | AnchorStyles.Right,
+                Font = new Font("Segoe UI", 9f),
+                BorderStyle = BorderStyle.FixedSingle,
+                Height = 23,
+                Margin = new Padding(0, 6, 0, 6)
+            };
+
+            var clientSecretLabel = new Label 
+            { 
+                Text = "Client Secret:", 
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleRight,
+                Font = new Font("Segoe UI", 9f),
+                ForeColor = Color.FromArgb(73, 80, 87),
+                Margin = new Padding(0, 0, 10, 0)
+            };
+            
+            _clientSecretTextBox = new TextBox 
+            { 
+                Anchor = AnchorStyles.Left | AnchorStyles.Right,
+                UseSystemPasswordChar = true,
+                Font = new Font("Segoe UI", 9f),
+                BorderStyle = BorderStyle.FixedSingle,
+                Height = 23,
+                Margin = new Padding(0, 6, 0, 6)
+            };
+
+            layout.Controls.Add(clientIdLabel, 0, 0);
+            layout.Controls.Add(_clientIdTextBox, 1, 0);
+            layout.Controls.Add(clientSecretLabel, 0, 1);
+            layout.Controls.Add(_clientSecretTextBox, 1, 1);
+
+            panel.Controls.Add(layout);
+            return panel;
+        }
+
+
+        private Control CreateAuthenticationContent()
+        {
+            var panel = new Panel { Dock = DockStyle.Fill };
+
+            _authenticateButton = new Button
+            {
+                Text = "🔗 Authenticate with Spotify",
+                Size = new Size(200, 35),
+                Font = new Font("Segoe UI", 9f),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Cursor = Cursors.Hand,
+                Dock = DockStyle.Left
+            };
+            _authenticateButton.FlatAppearance.BorderSize = 0;
+            _authenticateButton.Click += AuthenticateButton_Click;
+
+            panel.Controls.Add(_authenticateButton);
+            return panel;
+        }
+
+        private Control CreateStatusContent()
+        {
+            var panel = new Panel { Dock = DockStyle.Fill };
+
+            _statusLabel = new Label
+            {
+                Text = "Not authenticated",
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft,
+                ForeColor = Color.FromArgb(220, 53, 69),
+                Font = new Font("Segoe UI", 10f, FontStyle.Bold)
+            };
+            
+            panel.Controls.Add(_statusLabel);
+            return panel;
+        }
+
+        private Control CreateCombinedAuthStatusContent()
+        {
+            var panel = new Panel { Dock = DockStyle.Fill };
+
+            var layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 1,
+                BackColor = Color.White
+            };
+
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));
+
+            _authenticateButton = new Button
+            {
+                Text = "🔗 Authenticate with Spotify",
+                Size = new Size(200, 35),
+                Font = new Font("Segoe UI", 9f),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Cursor = Cursors.Hand,
+                Dock = DockStyle.Left,
+                Margin = new Padding(0, 5, 15, 5)
+            };
+            _authenticateButton.FlatAppearance.BorderSize = 0;
+            _authenticateButton.Click += AuthenticateButton_Click;
+
+            _statusLabel = new Label
+            {
+                Text = "Not authenticated",
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft,
+                ForeColor = Color.FromArgb(220, 53, 69),
+                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
+                Margin = new Padding(0, 5, 0, 5)
+            };
+
+            layout.Controls.Add(_authenticateButton, 0, 0);
+            layout.Controls.Add(_statusLabel, 1, 0);
+
+            panel.Controls.Add(layout);
+            return panel;
+        }
+
+        private Control CreateLastHotkeyContent()
+        {
+            var panel = new Panel { Height = 40, Dock = DockStyle.Top };
+
+            _lastHotkeyLabel = new Label
+            {
+                Text = "No hotkey triggered yet",
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Font = new Font("Segoe UI", 10f),
+                ForeColor = Color.FromArgb(108, 117, 125)
+            };
+
+            panel.Controls.Add(_lastHotkeyLabel);
+            return panel;
+        }
+
+        private Control CreateHotkeyManagementContent()
+        {
+            var panel = new Panel { Height = 300, Dock = DockStyle.Top };
+
+            var headerPanel = new Panel
+            {
+                Height = 50,
+                Dock = DockStyle.Top,
+                BackColor = Color.Transparent
+            };
+
+            _addHotkeyButton = new Button
+            {
+                Text = "➕ Add New Hotkey",
+                Size = new Size(150, 35),
+                Font = new Font("Segoe UI", 9f),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Cursor = Cursors.Hand,
+                Location = new Point(0, 8)
+            };
+            _addHotkeyButton.FlatAppearance.BorderSize = 0;
+            _addHotkeyButton.Click += AddHotkeyButton_Click;
+
+            headerPanel.Controls.Add(_addHotkeyButton);
+
+            _hotkeyFlowPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                AutoScroll = true,
+                BackColor = Color.LightBlue, // Temporary color to see if panel is visible
+                Padding = new Padding(5, 10, 5, 0),
+                BorderStyle = BorderStyle.FixedSingle // Temporary border to see panel bounds
+            };
+
+            panel.Controls.Add(headerPanel);
+            panel.Controls.Add(_hotkeyFlowPanel);
+
+            _hotkeyPanel = panel;
+            return panel;
+        }
+
+        private Control CreateAppSettingsContent()
+        {
+            var panel = new Panel { Height = 280, Dock = DockStyle.Top };
+
+            var scrollPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true
+            };
+
+            var layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Top,
+                ColumnCount = 2,
+                RowCount = 6,
+                AutoSize = true,
+                Padding = new Padding(0)
+            };
+
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));
+
+            // General Settings
+            var generalLabel = new Label
+            {
+                Text = "General Settings",
+                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(33, 37, 41),
+                Dock = DockStyle.Top,
+                Height = 25,
+                Margin = new Padding(0, 10, 0, 5)
+            };
+            layout.Controls.Add(generalLabel, 0, 0);
+            layout.SetColumnSpan(generalLabel, 2);
+
+            _startupCheckBox = new CheckBox
+            {
+                Text = "Start with Windows",
+                Font = new Font("Segoe UI", 9f),
+                Dock = DockStyle.Fill,
+                Margin = new Padding(0, 5, 0, 5)
+            };
+            layout.Controls.Add(_startupCheckBox, 0, 1);
+
+            _minimizeCheckBox = new CheckBox
+            {
+                Text = "Minimize to system tray",
+                Font = new Font("Segoe UI", 9f),
+                Dock = DockStyle.Fill,
+                Margin = new Padding(0, 5, 0, 5)
+            };
+            layout.Controls.Add(_minimizeCheckBox, 1, 1);
+
+            // Audio Control Settings
+            var audioLabel = new Label
+            {
+                Text = "Audio Control Settings",
+                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(33, 37, 41),
+                Dock = DockStyle.Top,
+                Height = 25,
+                Margin = new Padding(0, 15, 0, 5)
+            };
+            layout.Controls.Add(audioLabel, 0, 2);
+            layout.SetColumnSpan(audioLabel, 2);
+
+            _rewindCheckBox = new CheckBox
+            {
+                Text = "Previous Track: rewind to start",
+                Font = new Font("Segoe UI", 9f),
+                Dock = DockStyle.Fill,
+                Margin = new Padding(0, 5, 0, 5),
+                Checked = true
+            };
+            layout.Controls.Add(_rewindCheckBox, 0, 3);
+            layout.SetColumnSpan(_rewindCheckBox, 2);
+
+            // Volume Steps
+            var volumeLabel = new Label
+            {
+                Text = "Volume Steps:",
+                Font = new Font("Segoe UI", 9f),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Margin = new Padding(0, 5, 0, 5)
+            };
+            layout.Controls.Add(volumeLabel, 0, 4);
+
+            _volumeStepsNumeric = new NumericUpDown
+            {
+                Minimum = 1,
+                Maximum = 50,
+                Value = 10,
+                Font = new Font("Segoe UI", 9f),
+                Dock = DockStyle.Left,
+                Width = 80,
+                Margin = new Padding(0, 5, 0, 5)
+            };
+            layout.Controls.Add(_volumeStepsNumeric, 1, 4);
+
+            // Seek Milliseconds
+            var seekLabel = new Label
+            {
+                Text = "Seek (ms):",
+                Font = new Font("Segoe UI", 9f),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Margin = new Padding(0, 5, 0, 5)
+            };
+            layout.Controls.Add(seekLabel, 0, 5);
+
+            _seekMillisecondsNumeric = new NumericUpDown
+            {
+                Minimum = 1000,
+                Maximum = 60000,
+                Value = 10000,
+                Increment = 1000,
+                Font = new Font("Segoe UI", 9f),
+                Dock = DockStyle.Left,
+                Width = 80,
+                Margin = new Padding(0, 5, 0, 5)
+            };
+            layout.Controls.Add(_seekMillisecondsNumeric, 1, 5);
+
+            scrollPanel.Controls.Add(layout);
+            panel.Controls.Add(scrollPanel);
+            return panel;
+        }
+
+        private Control CreateAboutContent()
+        {
+            var panel = new Panel { Dock = DockStyle.Fill };
+
+            var aboutLabel = new Label
+            {
+                Text = "BeatBind v1.0\nGlobal hotkeys for Spotify\n\nDeveloped with ❤️",
+                Dock = DockStyle.Fill,
+                Font = new Font("Segoe UI", 9f),
+                ForeColor = Color.FromArgb(108, 117, 125),
+                TextAlign = ContentAlignment.TopLeft
+            };
+
+            panel.Controls.Add(aboutLabel);
+            return panel;
+        }
+
+        private Control CreateCompactAppSettingsContent()
+        {
+            var panel = new Panel { Dock = DockStyle.Fill };
+
+            var layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 5,
+                Padding = new Padding(5),
+                BackColor = Color.White
+            };
+
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // General Settings header
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Checkboxes
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Audio Settings header  
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Audio checkboxes
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Numeric controls
+
+            // General Settings
+            var generalLabel = new Label
+            {
+                Text = "General Settings",
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(33, 37, 41),
+                AutoSize = true,
+                Margin = new Padding(0, 0, 0, 3)
+            };
+            layout.Controls.Add(generalLabel, 0, 0);
+            layout.SetColumnSpan(generalLabel, 2);
+
+            var checkboxPanel1 = new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = true,
+                Dock = DockStyle.Fill,
+                AutoSize = true,
+                Margin = new Padding(0, 0, 0, 8)
+            };
+
+            _startupCheckBox = new CheckBox
+            {
+                Text = "Start with Windows",
+                Font = new Font("Segoe UI", 8f),
+                AutoSize = true,
+                Margin = new Padding(0, 0, 20, 0)
+            };
+
+            _minimizeCheckBox = new CheckBox
+            {
+                Text = "Minimize to tray",
+                Font = new Font("Segoe UI", 8f),
+                AutoSize = true
+            };
+
+            checkboxPanel1.Controls.Add(_startupCheckBox);
+            checkboxPanel1.Controls.Add(_minimizeCheckBox);
+            layout.Controls.Add(checkboxPanel1, 0, 1);
+            layout.SetColumnSpan(checkboxPanel1, 2);
+
+            // Audio Control Settings
+            var audioLabel = new Label
+            {
+                Text = "Audio Control Settings",
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(33, 37, 41),
+                AutoSize = true,
+                Margin = new Padding(0, 5, 0, 3)
+            };
+            layout.Controls.Add(audioLabel, 0, 2);
+            layout.SetColumnSpan(audioLabel, 2);
+
+            _rewindCheckBox = new CheckBox
+            {
+                Text = "Previous Track: rewind to start",
+                Font = new Font("Segoe UI", 8f),
+                Checked = true,
+                AutoSize = true,
+                Margin = new Padding(0, 0, 0, 8)
+            };
+            layout.Controls.Add(_rewindCheckBox, 0, 3);
+            layout.SetColumnSpan(_rewindCheckBox, 2);
+
+            // Volume and Seek controls in a compact layout
+            var controlsPanel = new TableLayoutPanel
+            {
+                ColumnCount = 4,
+                RowCount = 2,
+                Dock = DockStyle.Fill,
+                AutoSize = true
+            };
+            controlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            controlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            controlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            controlsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+
+            var volumeLabel = new Label
+            {
+                Text = "Volume Steps:",
+                Font = new Font("Segoe UI", 8f),
+                TextAlign = ContentAlignment.MiddleLeft,
+                AutoSize = true,
+                Margin = new Padding(0, 3, 5, 3)
+            };
+
+            _volumeStepsNumeric = new NumericUpDown
+            {
+                Minimum = 1,
+                Maximum = 50,
+                Value = 10,
+                Font = new Font("Segoe UI", 8f),
+                Width = 60,
+                Margin = new Padding(0, 3, 15, 3)
+            };
+
+            var seekLabel = new Label
+            {
+                Text = "Seek (ms):",
+                Font = new Font("Segoe UI", 8f),
+                TextAlign = ContentAlignment.MiddleLeft,
+                AutoSize = true,
+                Margin = new Padding(0, 3, 5, 3)
+            };
+
+            _seekMillisecondsNumeric = new NumericUpDown
+            {
+                Minimum = 1000,
+                Maximum = 60000,
+                Value = 10000,
+                Increment = 1000,
+                Font = new Font("Segoe UI", 8f),
+                Width = 80,
+                Margin = new Padding(0, 3, 0, 3)
+            };
+
+            controlsPanel.Controls.Add(volumeLabel, 0, 0);
+            controlsPanel.Controls.Add(_volumeStepsNumeric, 1, 0);
+            controlsPanel.Controls.Add(seekLabel, 2, 0);
+            controlsPanel.Controls.Add(_seekMillisecondsNumeric, 3, 0);
+
+            layout.Controls.Add(controlsPanel, 0, 4);
+            layout.SetColumnSpan(controlsPanel, 2);
+
+            panel.Controls.Add(layout);
+            return panel;
         }
 
         private GroupBox CreateCredentialsSection()
@@ -276,7 +1020,7 @@ namespace BeatBind.Presentation.Forms
             _saveConfigButton = new Button
             {
                 Text = "Save Configuration",
-                Size = new Size(150, 30),
+                Size = new Size(50, 30),
                 Dock = DockStyle.Fill
             };
             _saveConfigButton.Click += SaveConfigButton_Click;
@@ -309,6 +1053,13 @@ namespace BeatBind.Presentation.Forms
                 var config = _configurationService.GetConfiguration();
                 _clientIdTextBox.Text = config.ClientId;
                 _clientSecretTextBox.Text = config.ClientSecret;
+
+                // Load application settings
+                _startupCheckBox.Checked = config.StartMinimized;
+                _minimizeCheckBox.Checked = config.MinimizeToTray;
+                _rewindCheckBox.Checked = config.PreviousTrackRewindToStart;
+                _volumeStepsNumeric.Value = config.VolumeSteps;
+                _seekMillisecondsNumeric.Value = config.SeekMilliseconds;
 
                 LoadHotkeysFromConfiguration(config.Hotkeys);
             }
@@ -379,6 +1130,13 @@ namespace BeatBind.Presentation.Forms
                 config.ClientId = _clientIdTextBox.Text;
                 config.ClientSecret = _clientSecretTextBox.Text;
                 config.Hotkeys = GetHotkeysFromUI();
+                
+                // Save application settings
+                config.StartMinimized = _startupCheckBox.Checked;
+                config.MinimizeToTray = _minimizeCheckBox.Checked;
+                config.PreviousTrackRewindToStart = _rewindCheckBox.Checked;
+                config.VolumeSteps = (int)_volumeStepsNumeric.Value;
+                config.SeekMilliseconds = (int)_seekMillisecondsNumeric.Value;
 
                 _saveConfigurationUseCase.Execute(config);
                 
@@ -410,6 +1168,9 @@ namespace BeatBind.Presentation.Forms
 
             _hotkeyEntries[hotkey.Id.ToString()] = entry;
             _hotkeyFlowPanel.Controls.Add(entry);
+            
+            // Debug: Log the addition
+            _logger.LogInformation($"Added hotkey to UI: {hotkey.Action} with ID {hotkey.Id}. Total controls: {_hotkeyFlowPanel.Controls.Count}");
         }
 
         private void EditHotkey(Hotkey hotkey)
@@ -430,7 +1191,7 @@ namespace BeatBind.Presentation.Forms
 
         private void DeleteHotkey(Hotkey hotkey)
         {
-            var result = MessageBox.Show($"Are you sure you want to delete the hotkey '{hotkey.Description}'?", 
+            var result = MessageBox.Show($"Are you sure you want to delete the hotkey '{hotkey.Action}'?", 
                 "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             
             if (result == DialogResult.Yes)
@@ -453,15 +1214,52 @@ namespace BeatBind.Presentation.Forms
 
         private void UpdateAuthenticationStatus()
         {
+            // Check if we have stored authentication
+            bool hasStoredAuth = CheckStoredAuthentication();
+            _isAuthenticated = hasStoredAuth;
+
             if (_isAuthenticated)
             {
                 _statusLabel.Text = "Authenticated ✓";
-                _statusLabel.ForeColor = Color.Green;
+                _statusLabel.ForeColor = Color.FromArgb(40, 167, 69);
+                _authenticateButton.Text = "🔗 Re-authenticate";
             }
             else
             {
                 _statusLabel.Text = "Not authenticated";
-                _statusLabel.ForeColor = Color.Red;
+                _statusLabel.ForeColor = Color.FromArgb(220, 53, 69);
+                _authenticateButton.Text = "🔗 Authenticate with Spotify";
+            }
+        }
+
+        private bool CheckStoredAuthentication()
+        {
+            try
+            {
+                // Check if the music control service (which uses SpotifyService) has valid authentication
+                var config = _configurationService.GetConfiguration();
+                
+                if (!string.IsNullOrEmpty(config.AccessToken) && !string.IsNullOrEmpty(config.RefreshToken))
+                {
+                    // Check if token is still valid or can be refreshed
+                    if (config.TokenExpiresAt > DateTime.UtcNow.AddMinutes(5)) // 5 minute buffer
+                    {
+                        _logger.LogInformation("Found valid stored authentication");
+                        return true;
+                    }
+                    else if (!string.IsNullOrEmpty(config.RefreshToken))
+                    {
+                        _logger.LogInformation("Found stored authentication with refresh token available");
+                        return true; // Will be refreshed automatically by SpotifyService
+                    }
+                }
+                
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking stored authentication");
+                return false;
             }
         }
 

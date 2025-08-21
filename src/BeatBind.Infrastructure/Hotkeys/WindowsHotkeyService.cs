@@ -64,7 +64,7 @@ namespace BeatBind.Infrastructure.Hotkeys
                 if (success)
                 {
                     _registeredHotkeys[hotkey.Id] = (hotkey, action);
-                    _logger.LogInformation("Registered hotkey: {Description} (ID: {HotkeyId})", hotkey.Description, hotkey.Id);
+                    _logger.LogInformation("Registered hotkey: {Action} (ID: {HotkeyId})", hotkey.Action, hotkey.Id);
                 }
                 else
                 {
@@ -97,7 +97,7 @@ namespace BeatBind.Infrastructure.Hotkeys
                 {
                     var hotkey = _registeredHotkeys[hotkeyId].Hotkey;
                     _registeredHotkeys.Remove(hotkeyId);
-                    _logger.LogInformation("Unregistered hotkey: {Description} (ID: {HotkeyId})", hotkey.Description, hotkeyId);
+                    _logger.LogInformation("Unregistered hotkey: {Action} (ID: {HotkeyId})", hotkey.Action, hotkeyId);
                 }
                 else
                 {
@@ -145,7 +145,7 @@ namespace BeatBind.Infrastructure.Hotkeys
             {
                 try
                 {
-                    _logger.LogDebug("Hotkey triggered: {Description} (ID: {HotkeyId})", hotkeyInfo.Hotkey.Description, hotkeyId);
+                    _logger.LogDebug("Hotkey triggered: {Action} (ID: {HotkeyId})", hotkeyInfo.Hotkey.Action, hotkeyId);
                     
                     // Invoke the action
                     hotkeyInfo.Action?.Invoke();

@@ -27,18 +27,47 @@ namespace BeatBind.Presentation.Forms
 
         private void InitializeComponent()
         {
-            Size = new Size(450, 40);
-            BorderStyle = BorderStyle.FixedSingle;
-            
+            Size = new Size(550, 70);
+            BackColor = Color.White;
+            BorderStyle = BorderStyle.None;
+            Margin = new Padding(0, 0, 0, 10);
+
+            // Card container with shadow effect
+            var cardPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White,
+                Padding = new Padding(1)
+            };
+
+            // Add shadow effect
+            cardPanel.Paint += (s, e) =>
+            {
+                var rect = cardPanel.ClientRectangle;
+                rect.Width -= 1;
+                rect.Height -= 1;
+                using (var shadowPen = new Pen(Color.FromArgb(220, 220, 220)))
+                {
+                    e.Graphics.DrawRectangle(shadowPen, rect);
+                }
+            };
+
+            var contentPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White,
+                Padding = new Padding(15, 10, 15, 10)
+            };
+
             var layout = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 4,
                 RowCount = 1,
-                Padding = new Padding(5)
+                BackColor = Color.White
             };
 
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45));
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -47,30 +76,48 @@ namespace BeatBind.Presentation.Forms
             {
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
-                Font = new Font(FontFamily.GenericSansSerif, 9, FontStyle.Bold)
+                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(33, 37, 41),
+                BackColor = Color.Transparent
             };
 
             _keysLabel = new Label
             {
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleCenter,
-                Font = new Font(FontFamily.GenericMonospace, 8)
+                Font = new Font("Consolas", 9f),
+                ForeColor = Color.FromArgb(108, 117, 125),
+                BackColor = Color.FromArgb(248, 249, 250),
+                BorderStyle = BorderStyle.FixedSingle,
+                Margin = new Padding(0, 8, 8, 8)
             };
 
             _editButton = new Button
             {
-                Text = "Edit",
-                Size = new Size(50, 25),
-                UseVisualStyleBackColor = true
+                Text = "✏️ Edit",
+                Size = new Size(70, 30),
+                Font = new Font("Segoe UI", 8f),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(255, 193, 7),
+                ForeColor = Color.FromArgb(33, 37, 41),
+                Cursor = Cursors.Hand,
+                Margin = new Padding(5, 10, 5, 10)
             };
+            _editButton.FlatAppearance.BorderSize = 0;
             _editButton.Click += (s, e) => EditRequested?.Invoke(this, EventArgs.Empty);
 
             _deleteButton = new Button
             {
-                Text = "Delete",
-                Size = new Size(55, 25),
-                UseVisualStyleBackColor = true
+                Text = "🗑️ Delete",
+                Size = new Size(75, 30),
+                Font = new Font("Segoe UI", 8f),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(220, 53, 69),
+                ForeColor = Color.White,
+                Cursor = Cursors.Hand,
+                Margin = new Padding(5, 10, 0, 10)
             };
+            _deleteButton.FlatAppearance.BorderSize = 0;
             _deleteButton.Click += (s, e) => DeleteRequested?.Invoke(this, EventArgs.Empty);
 
             layout.Controls.Add(_descriptionLabel, 0, 0);
@@ -78,7 +125,9 @@ namespace BeatBind.Presentation.Forms
             layout.Controls.Add(_editButton, 2, 0);
             layout.Controls.Add(_deleteButton, 3, 0);
 
-            Controls.Add(layout);
+            contentPanel.Controls.Add(layout);
+            cardPanel.Controls.Add(contentPanel);
+            Controls.Add(cardPanel);
         }
 
         public void UpdateHotkey(Hotkey hotkey)
@@ -90,7 +139,7 @@ namespace BeatBind.Presentation.Forms
 
         private void UpdateDisplay()
         {
-            _descriptionLabel.Text = _hotkey.Description;
+            _descriptionLabel.Text = _hotkey.Action.ToString();
             _keysLabel.Text = FormatHotkeyString(_hotkey);
         }
 

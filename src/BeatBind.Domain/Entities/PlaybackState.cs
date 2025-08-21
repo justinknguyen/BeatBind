@@ -6,6 +6,8 @@ namespace BeatBind.Domain.Entities
         public bool ShuffleState { get; set; }
         public RepeatMode RepeatState { get; set; }
         public int Volume { get; set; }
+        public int ProgressMs { get; set; }
+        public int DurationMs { get; set; }
         public Track? CurrentTrack { get; set; }
         public Device? Device { get; set; }
     }

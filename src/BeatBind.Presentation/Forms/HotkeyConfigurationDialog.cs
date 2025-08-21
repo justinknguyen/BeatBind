@@ -8,15 +8,15 @@ namespace BeatBind.Presentation.Forms
     public partial class HotkeyConfigurationDialog : Form
     {
         private ComboBox _actionComboBox = null!;
-        private TextBox _descriptionTextBox = null!;
+        private ComboBox _keyComboBox = null!;
         private CheckBox _ctrlCheckBox = null!;
         private CheckBox _altCheckBox = null!;
         private CheckBox _shiftCheckBox = null!;
         private CheckBox _winCheckBox = null!;
-        private ComboBox _keyComboBox = null!;
         private CheckBox _enabledCheckBox = null!;
         private Button _okButton = null!;
         private Button _cancelButton = null!;
+        private Label _previewLabel = null!;
 
         public Hotkey Hotkey { get; private set; } = new();
 
@@ -40,83 +40,280 @@ namespace BeatBind.Presentation.Forms
         private void InitializeComponent()
         {
             Text = "Hotkey Configuration";
-            Size = new Size(400, 350);
+            Size = new Size(450, 350);
             StartPosition = FormStartPosition.CenterParent;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
+            BackColor = Color.FromArgb(248, 249, 250);
+            Font = new Font("Segoe UI", 9f);
 
-            var mainLayout = new TableLayoutPanel
+            // Main container
+            var mainContainer = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Padding = new Padding(20),
+                BackColor = Color.FromArgb(248, 249, 250)
+            };
+
+            // Content panel
+            var contentPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White,
+                Padding = new Padding(20)
+            };
+
+            // Add border to content panel
+            contentPanel.Paint += (s, e) =>
+            {
+                var rect = contentPanel.ClientRectangle;
+                rect.Width -= 1;
+                rect.Height -= 1;
+                e.Graphics.DrawRectangle(new Pen(Color.FromArgb(220, 220, 220)), rect);
+            };
+
+            var layout = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 2,
-                RowCount = 8,
+                RowCount = 6,
+                BackColor = Color.White,
+                Padding = new Padding(10)
+            };
+
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+            // Action
+            var actionLabel = new Label
+            {
+                Text = "Action:",
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(33, 37, 41),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleRight,
+                Margin = new Padding(0, 5, 10, 5)
+            };
+            layout.Controls.Add(actionLabel, 0, 0);
+
+            _actionComboBox = new ComboBox
+            {
+                Dock = DockStyle.Fill,
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new Font("Segoe UI", 9f),
+                Margin = new Padding(0, 5, 0, 5)
+            };
+            _actionComboBox.SelectedIndexChanged += (s, e) => UpdatePreview();
+            layout.Controls.Add(_actionComboBox, 1, 0);
+
+            // Key
+            var keyLabel = new Label
+            {
+                Text = "Key:",
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(33, 37, 41),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleRight,
+                Margin = new Padding(0, 5, 10, 5)
+            };
+            layout.Controls.Add(keyLabel, 0, 1);
+
+            _keyComboBox = new ComboBox
+            {
+                Dock = DockStyle.Fill,
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new Font("Segoe UI", 9f),
+                Margin = new Padding(0, 5, 0, 5)
+            };
+            _keyComboBox.SelectedIndexChanged += (s, e) => UpdatePreview();
+            layout.Controls.Add(_keyComboBox, 1, 1);
+
+            // Modifiers
+            var modifiersLabel = new Label
+            {
+                Text = "Modifiers:",
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(33, 37, 41),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.TopRight,
+                Margin = new Padding(0, 10, 10, 5)
+            };
+            layout.Controls.Add(modifiersLabel, 0, 2);
+
+            var modifiersPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = true,
+                Margin = new Padding(0, 10, 0, 5)
+            };
+
+            _ctrlCheckBox = new CheckBox
+            {
+                Text = "Ctrl",
+                AutoSize = true,
+                Font = new Font("Segoe UI", 9f),
+                Margin = new Padding(0, 0, 15, 5)
+            };
+            _ctrlCheckBox.CheckedChanged += (s, e) => UpdatePreview();
+
+            _altCheckBox = new CheckBox
+            {
+                Text = "Alt",
+                AutoSize = true,
+                Font = new Font("Segoe UI", 9f),
+                Margin = new Padding(0, 0, 15, 5)
+            };
+            _altCheckBox.CheckedChanged += (s, e) => UpdatePreview();
+
+            _shiftCheckBox = new CheckBox
+            {
+                Text = "Shift",
+                AutoSize = true,
+                Font = new Font("Segoe UI", 9f),
+                Margin = new Padding(0, 0, 15, 5)
+            };
+            _shiftCheckBox.CheckedChanged += (s, e) => UpdatePreview();
+
+            _winCheckBox = new CheckBox
+            {
+                Text = "Win",
+                AutoSize = true,
+                Font = new Font("Segoe UI", 9f),
+                Margin = new Padding(0, 0, 15, 5)
+            };
+            _winCheckBox.CheckedChanged += (s, e) => UpdatePreview();
+
+            modifiersPanel.Controls.AddRange(new Control[] { _ctrlCheckBox, _altCheckBox, _shiftCheckBox, _winCheckBox });
+            layout.Controls.Add(modifiersPanel, 1, 2);
+
+            // Preview
+            var previewLabel = new Label
+            {
+                Text = "Preview:",
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(33, 37, 41),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleRight,
+                Margin = new Padding(0, 10, 10, 5)
+            };
+            layout.Controls.Add(previewLabel, 0, 3);
+
+            _previewLabel = new Label
+            {
+                Text = "No hotkey configured",
+                Font = new Font("Consolas", 9f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(108, 117, 125),
+                BackColor = Color.FromArgb(248, 249, 250),
+                BorderStyle = BorderStyle.FixedSingle,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Dock = DockStyle.Fill,
+                Margin = new Padding(0, 10, 0, 5)
+            };
+            layout.Controls.Add(_previewLabel, 1, 3);
+
+            // Enabled
+            var enabledLabel = new Label
+            {
+                Text = "Enabled:",
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(33, 37, 41),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleRight,
+                Margin = new Padding(0, 10, 10, 5)
+            };
+            layout.Controls.Add(enabledLabel, 0, 4);
+
+            _enabledCheckBox = new CheckBox
+            {
+                Text = "Enable this hotkey",
+                Checked = true,
+                Font = new Font("Segoe UI", 9f),
+                Dock = DockStyle.Fill,
+                Margin = new Padding(0, 10, 0, 5)
+            };
+            layout.Controls.Add(_enabledCheckBox, 1, 4);
+
+            // Button panel
+            var buttonPanel = new Panel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 60,
+                BackColor = Color.FromArgb(248, 249, 250),
                 Padding = new Padding(15)
             };
 
-            mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));
-            mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60));
-
-            // Action
-            var actionLabel = new Label { Text = "Action:", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleRight };
-            _actionComboBox = new ComboBox { Dock = DockStyle.Fill, DropDownStyle = ComboBoxStyle.DropDownList };
-            _actionComboBox.SelectedIndexChanged += ActionComboBox_SelectedIndexChanged;
-
-            // Description
-            var descLabel = new Label { Text = "Description:", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleRight };
-            _descriptionTextBox = new TextBox { Dock = DockStyle.Fill };
-
-            // Modifiers
-            var modifiersLabel = new Label { Text = "Modifiers:", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleRight };
-            var modifiersPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.LeftToRight };
-            
-            _ctrlCheckBox = new CheckBox { Text = "Ctrl", AutoSize = true };
-            _altCheckBox = new CheckBox { Text = "Alt", AutoSize = true };
-            _shiftCheckBox = new CheckBox { Text = "Shift", AutoSize = true };
-            _winCheckBox = new CheckBox { Text = "Win", AutoSize = true };
-
-            modifiersPanel.Controls.AddRange(new Control[] { _ctrlCheckBox, _altCheckBox, _shiftCheckBox, _winCheckBox });
-
-            // Key
-            var keyLabel = new Label { Text = "Key:", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleRight };
-            _keyComboBox = new ComboBox { Dock = DockStyle.Fill, DropDownStyle = ComboBoxStyle.DropDownList };
-
-            // Enabled
-            var enabledLabel = new Label { Text = "Enabled:", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleRight };
-            _enabledCheckBox = new CheckBox { Dock = DockStyle.Fill, Checked = true };
-
-            // Buttons
-            var buttonPanel = new FlowLayoutPanel 
-            { 
-                Dock = DockStyle.Fill, 
-                FlowDirection = FlowDirection.RightToLeft,
+            var buttonLayout = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Right,
+                FlowDirection = FlowDirection.LeftToRight,
+                AutoSize = true,
                 Anchor = AnchorStyles.Right
             };
 
-            _cancelButton = new Button { Text = "Cancel", Size = new Size(75, 25), DialogResult = DialogResult.Cancel };
-            _okButton = new Button { Text = "OK", Size = new Size(75, 25), DialogResult = DialogResult.OK };
+            _cancelButton = new Button
+            {
+                Text = "Cancel",
+                Size = new Size(80, 35),
+                Font = new Font("Segoe UI", 9f),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(108, 117, 125),
+                ForeColor = Color.White,
+                DialogResult = DialogResult.Cancel,
+                Margin = new Padding(0, 0, 10, 0)
+            };
+            _cancelButton.FlatAppearance.BorderSize = 0;
+
+            _okButton = new Button
+            {
+                Text = "Save",
+                Size = new Size(80, 35),
+                Font = new Font("Segoe UI", 9f),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(40, 167, 69),
+                ForeColor = Color.White,
+                DialogResult = DialogResult.OK
+            };
+            _okButton.FlatAppearance.BorderSize = 0;
             _okButton.Click += OkButton_Click;
 
-            buttonPanel.Controls.AddRange(new Control[] { _cancelButton, _okButton });
+            buttonLayout.Controls.Add(_cancelButton);
+            buttonLayout.Controls.Add(_okButton);
+            buttonPanel.Controls.Add(buttonLayout);
 
-            // Add to layout
-            mainLayout.Controls.Add(actionLabel, 0, 0);
-            mainLayout.Controls.Add(_actionComboBox, 1, 0);
-            mainLayout.Controls.Add(descLabel, 0, 1);
-            mainLayout.Controls.Add(_descriptionTextBox, 1, 1);
-            mainLayout.Controls.Add(modifiersLabel, 0, 2);
-            mainLayout.Controls.Add(modifiersPanel, 1, 2);
-            mainLayout.Controls.Add(keyLabel, 0, 3);
-            mainLayout.Controls.Add(_keyComboBox, 1, 3);
-            mainLayout.Controls.Add(enabledLabel, 0, 4);
-            mainLayout.Controls.Add(_enabledCheckBox, 1, 4);
-            mainLayout.SetColumnSpan(buttonPanel, 2);
-            mainLayout.Controls.Add(buttonPanel, 0, 6);
-
-            Controls.Add(mainLayout);
+            contentPanel.Controls.Add(layout);
+            mainContainer.Controls.Add(contentPanel);
+            mainContainer.Controls.Add(buttonPanel);
+            Controls.Add(mainContainer);
 
             AcceptButton = _okButton;
             CancelButton = _cancelButton;
+        }
+
+
+        private void UpdatePreview()
+        {
+            var parts = new List<string>();
+
+            if (_ctrlCheckBox?.Checked == true) parts.Add("Ctrl");
+            if (_altCheckBox?.Checked == true) parts.Add("Alt");
+            if (_shiftCheckBox?.Checked == true) parts.Add("Shift");
+            if (_winCheckBox?.Checked == true) parts.Add("Win");
+
+            if (_keyComboBox?.SelectedItem != null)
+                parts.Add(_keyComboBox.SelectedItem.ToString()!);
+
+            if (_previewLabel != null)
+            {
+                _previewLabel.Text = parts.Count > 0 ? string.Join(" + ", parts) : "No hotkey configured";
+            }
         }
 
         private void PopulateActionComboBox()
@@ -155,30 +352,30 @@ namespace BeatBind.Presentation.Forms
         private void LoadHotkeyData(Hotkey hotkey)
         {
             _actionComboBox.SelectedValue = hotkey.Action;
-            _descriptionTextBox.Text = hotkey.Description;
             _ctrlCheckBox.Checked = hotkey.Modifiers.HasFlag(DomainModifierKeys.Control);
             _altCheckBox.Checked = hotkey.Modifiers.HasFlag(DomainModifierKeys.Alt);
             _shiftCheckBox.Checked = hotkey.Modifiers.HasFlag(DomainModifierKeys.Shift);
             _winCheckBox.Checked = hotkey.Modifiers.HasFlag(DomainModifierKeys.Windows);
             _keyComboBox.SelectedItem = (Keys)hotkey.KeyCode;
             _enabledCheckBox.Checked = hotkey.IsEnabled;
+            UpdatePreview();
         }
 
-        private void ActionComboBox_SelectedIndexChanged(object? sender, EventArgs e)
-        {
-            if (_actionComboBox.SelectedValue is HotkeyAction action)
-            {
-                _descriptionTextBox.Text = GetActionDisplayName(action);
-            }
-        }
 
         private void OkButton_Click(object? sender, EventArgs e)
         {
             if (ValidateInput())
             {
-                Hotkey.Action = (HotkeyAction)_actionComboBox.SelectedValue;
-                Hotkey.Description = _descriptionTextBox.Text;
-                Hotkey.KeyCode = (int)(Keys)_keyComboBox.SelectedItem;
+                // If this is a new hotkey (ID is 0), generate a new ID
+                if (Hotkey.Id == 0)
+                {
+                    Hotkey.Id = Environment.TickCount;
+                }
+
+                Hotkey.Action = _actionComboBox.SelectedValue is HotkeyAction action
+                    ? action
+                    : HotkeyAction.PlayPause; // or another default/fallback action
+                Hotkey.KeyCode = _keyComboBox.SelectedItem is Keys key ? (int)key : 0;
                 Hotkey.IsEnabled = _enabledCheckBox.Checked;
 
                 var modifiers = DomainModifierKeys.None;
@@ -196,11 +393,6 @@ namespace BeatBind.Presentation.Forms
 
         private bool ValidateInput()
         {
-            if (string.IsNullOrWhiteSpace(_descriptionTextBox.Text))
-            {
-                MessageBox.Show("Please enter a description.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
 
             if (_actionComboBox.SelectedValue == null)
             {
@@ -231,6 +423,8 @@ namespace BeatBind.Presentation.Forms
                 HotkeyAction.RemoveTrack => "Remove Track",
                 HotkeyAction.ToggleShuffle => "Toggle Shuffle",
                 HotkeyAction.ToggleRepeat => "Toggle Repeat",
+                HotkeyAction.SeekForward => "Seek Forward",
+                HotkeyAction.SeekBackward => "Seek Backward",
                 _ => action.ToString()
             };
         }

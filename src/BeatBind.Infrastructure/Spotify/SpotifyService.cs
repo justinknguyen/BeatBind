@@ -15,7 +15,6 @@ namespace BeatBind.Infrastructure.Spotify
         private readonly IConfigurationService _configurationService;
         
         private AuthenticationResult? _currentAuth;
-        private int _lastVolume = 50;
 
         public SpotifyService(
             HttpClient httpClient,
@@ -27,6 +26,47 @@ namespace BeatBind.Infrastructure.Spotify
             _logger = logger;
             _authenticationService = authenticationService;
             _configurationService = configurationService;
+            
+            // Try to load stored authentication on startup
+            LoadStoredAuthentication();
+        }
+
+        private void LoadStoredAuthentication()
+        {
+            try
+            {
+                var storedAuth = _authenticationService.GetStoredAuthentication();
+                if (storedAuth != null && _authenticationService.IsTokenValid(storedAuth))
+                {
+                    _currentAuth = storedAuth;
+                    _logger.LogInformation("Loaded valid stored authentication");
+                }
+                else if (storedAuth != null && !string.IsNullOrEmpty(storedAuth.RefreshToken))
+                {
+                    // Try to refresh the token if we have a refresh token
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var refreshedAuth = await _authenticationService.RefreshTokenAsync(storedAuth.RefreshToken);
+                            if (refreshedAuth.Success)
+                            {
+                                _currentAuth = refreshedAuth;
+                                _authenticationService.SaveAuthentication(refreshedAuth);
+                                _logger.LogInformation("Successfully refreshed stored authentication");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to refresh stored authentication");
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading stored authentication");
+            }
         }
 
         public bool IsAuthenticated => _currentAuth != null && _authenticationService.IsTokenValid(_currentAuth);
@@ -39,7 +79,9 @@ namespace BeatBind.Infrastructure.Spotify
                 
                 if (_currentAuth.Success && !string.IsNullOrEmpty(_currentAuth.AccessToken))
                 {
-                    _logger.LogInformation("Successfully authenticated with Spotify");
+                    // Save the authentication tokens for future use
+                    _authenticationService.SaveAuthentication(_currentAuth);
+                    _logger.LogInformation("Successfully authenticated with Spotify and saved tokens");
                     return true;
                 }
                 else
@@ -65,6 +107,14 @@ namespace BeatBind.Infrastructure.Spotify
                 }
 
                 _currentAuth = await _authenticationService.RefreshTokenAsync(_currentAuth.RefreshToken);
+                
+                if (_currentAuth.Success)
+                {
+                    // Save the refreshed tokens
+                    _authenticationService.SaveAuthentication(_currentAuth);
+                    _logger.LogInformation("Successfully refreshed and saved authentication tokens");
+                }
+                
                 return _currentAuth.Success;
             }
             catch (Exception ex)
@@ -232,6 +282,28 @@ namespace BeatBind.Infrastructure.Spotify
             }
         }
 
+        public async Task<bool> SeekToPositionAsync(int positionMs)
+        {
+            try
+            {
+                if (!await EnsureValidTokenAsync()) return false;
+
+                positionMs = Math.Max(0, positionMs);
+                var url = $"https://api.spotify.com/v1/me/player/seek?position_ms={positionMs}";
+                
+                var request = new HttpRequestMessage(HttpMethod.Put, url);
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _currentAuth!.AccessToken);
+
+                var response = await _httpClient.SendAsync(request);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error seeking to position");
+                return false;
+            }
+        }
+
         private async Task<bool> EnsureValidTokenAsync()
         {
             if (_currentAuth == null)
@@ -278,7 +350,8 @@ namespace BeatBind.Infrastructure.Spotify
             {
                 IsPlaying = root.GetProperty("is_playing").GetBoolean(),
                 ShuffleState = root.GetProperty("shuffle_state").GetBoolean(),
-                Volume = root.GetProperty("device").GetProperty("volume_percent").GetInt32()
+                Volume = root.GetProperty("device").GetProperty("volume_percent").GetInt32(),
+                ProgressMs = root.GetProperty("progress_ms").GetInt32()
             };
 
             // Parse repeat state
@@ -294,16 +367,19 @@ namespace BeatBind.Infrastructure.Spotify
             // Parse current track
             if (root.TryGetProperty("item", out var item))
             {
+                var durationMs = item.GetProperty("duration_ms").GetInt32();
+                playbackState.DurationMs = durationMs;
+                
                 playbackState.CurrentTrack = new Track
                 {
                     Id = item.GetProperty("id").GetString() ?? string.Empty,
                     Name = item.GetProperty("name").GetString() ?? string.Empty,
                     Uri = item.GetProperty("uri").GetString() ?? string.Empty,
-                    DurationMs = item.GetProperty("duration_ms").GetInt32(),
+                    DurationMs = durationMs,
                     Artist = item.GetProperty("artists")[0].GetProperty("name").GetString() ?? string.Empty,
                     Album = item.GetProperty("album").GetProperty("name").GetString() ?? string.Empty,
                     IsPlaying = playbackState.IsPlaying,
-                    ProgressMs = root.GetProperty("progress_ms").GetInt32()
+                    ProgressMs = playbackState.ProgressMs
                 };
             }
 

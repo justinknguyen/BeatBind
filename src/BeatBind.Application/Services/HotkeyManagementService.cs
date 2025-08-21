@@ -145,6 +145,12 @@ namespace BeatBind.Application.Services
                 case HotkeyAction.ToggleRepeat:
                     await _musicControlService.ToggleRepeatAsync();
                     break;
+                case HotkeyAction.SeekForward:
+                    await _musicControlService.SeekForwardAsync();
+                    break;
+                case HotkeyAction.SeekBackward:
+                    await _musicControlService.SeekBackwardAsync();
+                    break;
                 default:
                     _logger.LogWarning("Unknown hotkey action: {Action}", action);
                     break;

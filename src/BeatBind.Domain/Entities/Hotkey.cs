@@ -6,7 +6,6 @@ namespace BeatBind.Domain.Entities
         public int KeyCode { get; set; } // Store as int instead of Keys enum
         public ModifierKeys Modifiers { get; set; }
         public HotkeyAction Action { get; set; }
-        public string Description { get; set; } = string.Empty;
         public bool IsEnabled { get; set; } = true;
     }
 
@@ -31,6 +30,8 @@ namespace BeatBind.Domain.Entities
         SaveTrack,
         RemoveTrack,
         ToggleShuffle,
-        ToggleRepeat
+        ToggleRepeat,
+        SeekForward,
+        SeekBackward
     }
 }

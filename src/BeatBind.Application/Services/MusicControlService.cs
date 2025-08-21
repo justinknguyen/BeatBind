@@ -7,12 +7,14 @@ namespace BeatBind.Application.Services
     public class MusicControlService
     {
         private readonly ISpotifyService _spotifyService;
+        private readonly IConfigurationService _configurationService;
         private readonly ILogger<MusicControlService> _logger;
         private int _lastVolume = 50;
 
-        public MusicControlService(ISpotifyService spotifyService, ILogger<MusicControlService> logger)
+        public MusicControlService(ISpotifyService spotifyService, IConfigurationService configurationService, ILogger<MusicControlService> logger)
         {
             _spotifyService = spotifyService;
+            _configurationService = configurationService;
             _logger = logger;
         }
 
@@ -55,6 +57,18 @@ namespace BeatBind.Application.Services
         {
             try
             {
+                var config = _configurationService.GetConfiguration();
+                
+                if (config.PreviousTrackRewindToStart)
+                {
+                    var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
+                    if (playbackState != null && playbackState.ProgressMs > 5000) // 5 seconds
+                    {
+                        // Rewind to start of current track
+                        return await _spotifyService.SeekToPositionAsync(0);
+                    }
+                }
+                
                 return await _spotifyService.PreviousTrackAsync();
             }
             catch (Exception ex)
@@ -68,10 +82,11 @@ namespace BeatBind.Application.Services
         {
             try
             {
+                var config = _configurationService.GetConfiguration();
                 var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
                 if (playbackState != null)
                 {
-                    var newVolume = Math.Min(100, playbackState.Volume + 10);
+                    var newVolume = Math.Min(100, playbackState.Volume + config.VolumeSteps);
                     return await _spotifyService.SetVolumeAsync(newVolume);
                 }
                 return false;
@@ -87,10 +102,11 @@ namespace BeatBind.Application.Services
         {
             try
             {
+                var config = _configurationService.GetConfiguration();
                 var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
                 if (playbackState != null)
                 {
-                    var newVolume = Math.Max(0, playbackState.Volume - 10);
+                    var newVolume = Math.Max(0, playbackState.Volume - config.VolumeSteps);
                     return await _spotifyService.SetVolumeAsync(newVolume);
                 }
                 return false;
@@ -176,6 +192,46 @@ namespace BeatBind.Application.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to toggle repeat");
+                return false;
+            }
+        }
+
+        public async Task<bool> SeekForwardAsync()
+        {
+            try
+            {
+                var config = _configurationService.GetConfiguration();
+                var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
+                if (playbackState != null)
+                {
+                    var newPosition = Math.Min(playbackState.DurationMs, playbackState.ProgressMs + config.SeekMilliseconds);
+                    return await _spotifyService.SeekToPositionAsync(newPosition);
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to seek forward");
+                return false;
+            }
+        }
+
+        public async Task<bool> SeekBackwardAsync()
+        {
+            try
+            {
+                var config = _configurationService.GetConfiguration();
+                var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
+                if (playbackState != null)
+                {
+                    var newPosition = Math.Max(0, playbackState.ProgressMs - config.SeekMilliseconds);
+                    return await _spotifyService.SeekToPositionAsync(newPosition);
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to seek backward");
                 return false;
             }
         }
