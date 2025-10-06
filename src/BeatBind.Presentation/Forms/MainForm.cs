@@ -5,6 +5,7 @@ using BeatBind.Application.Services;
 using BeatBind.Application.UseCases;
 using BeatBind.Domain.Entities;
 using BeatBind.Domain.Interfaces;
+using BeatBind.Presentation.Themes;
 using Microsoft.Extensions.Logging;
 
 namespace BeatBind.Presentation.Forms
@@ -38,6 +39,7 @@ namespace BeatBind.Presentation.Forms
         private CheckBox _startupCheckBox = null!;
         private CheckBox _minimizeCheckBox = null!;
         private CheckBox _rewindCheckBox = null!;
+        private CheckBox _darkModeCheckBox = null!;
         private NumericUpDown _volumeStepsNumeric = null!;
         private NumericUpDown _seekMillisecondsNumeric = null!;
 
@@ -58,6 +60,13 @@ namespace BeatBind.Presentation.Forms
             SetupNotifyIcon();
             LoadConfiguration();
             UpdateAuthenticationStatus();
+        }
+
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+            // Force a theme refresh after the form is fully loaded
+            ApplyTheme();
         }
 
         public void SetHotkeyManagementService(HotkeyManagementService hotkeyManagementService)
@@ -282,7 +291,7 @@ namespace BeatBind.Presentation.Forms
                 Dock = DockStyle.Top,
                 Height = content.Height + 60,
                 Margin = new Padding(0, 0, 0, 15),
-                BackColor = Color.White,
+                BackColor = Theme.CardBackground,
                 BorderStyle = BorderStyle.None
             };
 
@@ -292,26 +301,27 @@ namespace BeatBind.Presentation.Forms
                 var rect = card.ClientRectangle;
                 rect.Width -= 1;
                 rect.Height -= 1;
-                e.Graphics.DrawRectangle(new Pen(Color.FromArgb(220, 220, 220)), rect);
+                e.Graphics.DrawRectangle(new Pen(Theme.Border), rect);
             };
 
             var titleLabel = new Label
             {
                 Text = title,
                 Font = new Font("Segoe UI", 12f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(33, 37, 41),
+                ForeColor = Theme.IsDarkMode ? Color.FromArgb(189, 193, 198) : Color.FromArgb(33, 37, 41),
                 Dock = DockStyle.Top,
                 Height = 35,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(15, 10, 15, 0),
-                BackColor = Color.FromArgb(248, 249, 250)
+                BackColor = Theme.IsDarkMode ? Color.FromArgb(50, 51, 54) : Color.FromArgb(248, 249, 250),
+                Tag = "header" // Tag to identify header labels
             };
 
             var contentPanel = new Panel
             {
                 Dock = DockStyle.Fill,
                 Padding = new Padding(15),
-                BackColor = Color.White
+                BackColor = Theme.CardBackground
             };
             contentPanel.Controls.Add(content);
 
@@ -327,7 +337,7 @@ namespace BeatBind.Presentation.Forms
             {
                 Dock = DockStyle.Fill,
                 Margin = new Padding(0, 0, 0, 8),
-                BackColor = Color.White,
+                BackColor = Theme.CardBackground,
                 BorderStyle = BorderStyle.None
             };
 
@@ -337,26 +347,27 @@ namespace BeatBind.Presentation.Forms
                 var rect = card.ClientRectangle;
                 rect.Width -= 1;
                 rect.Height -= 1;
-                e.Graphics.DrawRectangle(new Pen(Color.FromArgb(220, 220, 220)), rect);
+                e.Graphics.DrawRectangle(new Pen(Theme.Border), rect);
             };
 
             var titleLabel = new Label
             {
                 Text = title,
                 Font = new Font("Segoe UI", 10f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(33, 37, 41),
+                ForeColor = Theme.IsDarkMode ? Color.FromArgb(189, 193, 198) : Color.FromArgb(33, 37, 41),
                 Dock = DockStyle.Top,
                 Height = 25,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(10, 5, 10, 0),
-                BackColor = Color.FromArgb(248, 249, 250)
+                BackColor = Theme.IsDarkMode ? Color.FromArgb(50, 51, 54) : Color.FromArgb(248, 249, 250),
+                Tag = "header" // Tag to identify header labels
             };
 
             var contentPanel = new Panel
             {
                 Dock = DockStyle.Fill,
                 Padding = new Padding(10),
-                BackColor = Color.White
+                BackColor = Theme.CardBackground
             };
             contentPanel.Controls.Add(content);
 
@@ -787,11 +798,21 @@ namespace BeatBind.Presentation.Forms
             {
                 Text = "Minimize to tray",
                 Font = new Font("Segoe UI", 8f),
+                AutoSize = true,
+                Margin = new Padding(0, 0, 20, 0)
+            };
+
+            _darkModeCheckBox = new CheckBox
+            {
+                Text = "Dark mode",
+                Font = new Font("Segoe UI", 8f),
                 AutoSize = true
             };
+            _darkModeCheckBox.CheckedChanged += DarkModeCheckBox_CheckedChanged;
 
             checkboxPanel1.Controls.Add(_startupCheckBox);
             checkboxPanel1.Controls.Add(_minimizeCheckBox);
+            checkboxPanel1.Controls.Add(_darkModeCheckBox);
             layout.Controls.Add(checkboxPanel1, 0, 1);
             layout.SetColumnSpan(checkboxPanel1, 2);
 
@@ -1084,13 +1105,18 @@ namespace BeatBind.Presentation.Forms
                 _rewindCheckBox.Checked = config.PreviousTrackRewindToStart;
                 _volumeStepsNumeric.Value = config.VolumeSteps;
                 _seekMillisecondsNumeric.Value = config.SeekMilliseconds;
+                _darkModeCheckBox.Checked = config.DarkMode;
+
+                // Apply theme based on config
+                Theme.IsDarkMode = config.DarkMode;
+                ApplyTheme();
 
                 LoadHotkeysFromConfiguration(config.Hotkeys);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to load configuration");
-                MessageBox.Show("Failed to load configuration. Using defaults.", "Configuration Error", 
+                MessageBox.Show("Failed to load configuration. Using defaults.", "Configuration Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
@@ -1167,22 +1193,135 @@ namespace BeatBind.Presentation.Forms
                 config.ClientId = _clientIdTextBox.Text;
                 config.ClientSecret = _clientSecretTextBox.Text;
                 config.Hotkeys = GetHotkeysFromUI();
-                
+
                 // Save application settings
                 config.StartMinimized = _startupCheckBox.Checked;
                 config.MinimizeToTray = _minimizeCheckBox.Checked;
                 config.PreviousTrackRewindToStart = _rewindCheckBox.Checked;
                 config.VolumeSteps = (int)_volumeStepsNumeric.Value;
                 config.SeekMilliseconds = (int)_seekMillisecondsNumeric.Value;
+                config.DarkMode = _darkModeCheckBox.Checked;
 
                 _saveConfigurationUseCase.Execute(config);
-                
+
                 MessageBox.Show("Configuration saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to save configuration");
                 MessageBox.Show($"Failed to save configuration: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void DarkModeCheckBox_CheckedChanged(object? sender, EventArgs e)
+        {
+            Theme.IsDarkMode = _darkModeCheckBox.Checked;
+            ApplyTheme();
+        }
+
+        private void ApplyTheme()
+        {
+            // Form background
+            BackColor = Theme.FormBackground;
+
+            // Tab control
+            _mainTabControl.BackColor = Theme.FormBackground;
+            foreach (TabPage tab in _mainTabControl.TabPages)
+            {
+                tab.BackColor = Theme.CardBackground;
+            }
+
+            // Update all colors
+            UpdateControlColors(this);
+        }
+
+        private void UpdateControlColors(Control control)
+        {
+            foreach (Control child in control.Controls)
+            {
+                if (child is Panel panel)
+                {
+                    // Check if it's a light background (white or light gray)
+                    bool isLightBg = panel.BackColor.R > 200 && panel.BackColor.G > 200 && panel.BackColor.B > 200;
+                    // Check if it's a medium gray background
+                    bool isMediumBg = panel.BackColor.R >= 240 && panel.BackColor.G >= 240 && panel.BackColor.B >= 240;
+                    // Check if it's already dark
+                    bool isDarkBg = panel.BackColor.R < 100 && panel.BackColor.G < 100 && panel.BackColor.B < 100;
+
+                    if (isLightBg && !isDarkBg)
+                    {
+                        // If it's pure white or very light, make it card background
+                        if (panel.BackColor.R >= 250)
+                            panel.BackColor = Theme.CardBackground;
+                        // If it's light gray, make it header background
+                        else if (isMediumBg)
+                            panel.BackColor = Theme.HeaderBackground;
+                    }
+                }
+                else if (child is Label label)
+                {
+                    // Handle header labels specially
+                    if (label.Tag?.ToString() == "header")
+                    {
+                        label.ForeColor = Theme.IsDarkMode ? Color.FromArgb(189, 193, 198) : Color.FromArgb(33, 37, 41);
+                        label.BackColor = Theme.IsDarkMode ? Color.FromArgb(50, 51, 54) : Color.FromArgb(248, 249, 250);
+                    }
+                    else
+                    {
+                        // Update based on current color brightness
+                        bool isDark = label.ForeColor.R < 128;
+
+                        if (!isDark) // If it's currently a light-mode color
+                        {
+                            if (label.ForeColor.R < 80) // Very dark = primary
+                                label.ForeColor = Theme.PrimaryText;
+                            else if (label.ForeColor.R < 150) // Medium = label
+                                label.ForeColor = Theme.LabelText;
+                            else // Light gray = secondary
+                                label.ForeColor = Theme.SecondaryText;
+                        }
+                        else // Already dark mode color
+                        {
+                            if (label.ForeColor.R > 200) // Very light = primary
+                                label.ForeColor = Theme.PrimaryText;
+                            else if (label.ForeColor.R > 170) // Medium = label
+                                label.ForeColor = Theme.LabelText;
+                            else // Dimmer = secondary
+                                label.ForeColor = Theme.SecondaryText;
+                        }
+                    }
+                }
+                else if (child is TextBox textBox)
+                {
+                    textBox.BackColor = Theme.InputBackground;
+                    textBox.ForeColor = Theme.PrimaryText;
+                }
+                else if (child is NumericUpDown numericUpDown)
+                {
+                    numericUpDown.BackColor = Theme.InputBackground;
+                    numericUpDown.ForeColor = Theme.PrimaryText;
+                }
+                else if (child is CheckBox checkBox)
+                {
+                    checkBox.ForeColor = Theme.PrimaryText;
+                }
+                else if (child is Button button && button != _saveConfigButton && button != _authenticateButton && button != _addHotkeyButton)
+                {
+                    // Don't change primary action buttons
+                    if (button.BackColor == Color.FromArgb(108, 117, 125) || button.BackColor == Color.FromArgb(95, 99, 104))
+                    {
+                        button.BackColor = Theme.SecondaryButton;
+                        button.ForeColor = Color.White;
+                    }
+                }
+                else if (child is TableLayoutPanel || child is FlowLayoutPanel)
+                {
+                    bool isLightBg = child.BackColor.R > 200 && child.BackColor.G > 200 && child.BackColor.B > 200;
+                    if (isLightBg)
+                        child.BackColor = Theme.CardBackground;
+                }
+
+                UpdateControlColors(child);
             }
         }
 

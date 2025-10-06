@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using BeatBind.Domain.Entities;
+using BeatBind.Presentation.Themes;
 using DomainModifierKeys = BeatBind.Domain.Entities.ModifierKeys;
 
 namespace BeatBind.Presentation.Forms
@@ -23,6 +24,10 @@ namespace BeatBind.Presentation.Forms
             _hotkey = hotkey;
             InitializeComponent();
             UpdateDisplay();
+            ApplyTheme();
+
+            // Subscribe to theme changes
+            Theme.ThemeChanged += (s, e) => ApplyTheme();
         }
 
         private void InitializeComponent()
@@ -142,6 +147,14 @@ namespace BeatBind.Presentation.Forms
         {
             _descriptionLabel.Text = _hotkey.Action.ToString();
             _keysLabel.Text = FormatHotkeyString(_hotkey);
+        }
+
+        private void ApplyTheme()
+        {
+            BackColor = Theme.CardBackground;
+            _descriptionLabel.ForeColor = Theme.PrimaryText;
+            _keysLabel.ForeColor = Theme.SecondaryText;
+            _keysLabel.BackColor = Theme.HeaderBackground;
         }
 
         private static string FormatHotkeyString(Hotkey hotkey)
