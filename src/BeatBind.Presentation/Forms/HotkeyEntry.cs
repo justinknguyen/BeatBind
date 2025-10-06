@@ -27,10 +27,10 @@ namespace BeatBind.Presentation.Forms
 
         private void InitializeComponent()
         {
-            Size = new Size(550, 70);
+            Size = new Size(540, 60);
             BackColor = Color.White;
             BorderStyle = BorderStyle.None;
-            Margin = new Padding(0, 0, 0, 10);
+            Margin = new Padding(0, 0, 0, 8);
 
             // Card container with shadow effect
             var cardPanel = new Panel
@@ -56,7 +56,7 @@ namespace BeatBind.Presentation.Forms
             {
                 Dock = DockStyle.Fill,
                 BackColor = Color.White,
-                Padding = new Padding(15, 10, 15, 10)
+                Padding = new Padding(12, 8, 12, 8)
             };
 
             var layout = new TableLayoutPanel
@@ -67,7 +67,7 @@ namespace BeatBind.Presentation.Forms
                 BackColor = Color.White
             };
 
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -76,7 +76,7 @@ namespace BeatBind.Presentation.Forms
             {
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
-                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
+                Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(33, 37, 41),
                 BackColor = Color.Transparent
             };
@@ -85,37 +85,38 @@ namespace BeatBind.Presentation.Forms
             {
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleCenter,
-                Font = new Font("Consolas", 9f),
+                Font = new Font("Consolas", 8.5f),
                 ForeColor = Color.FromArgb(108, 117, 125),
                 BackColor = Color.FromArgb(248, 249, 250),
                 BorderStyle = BorderStyle.FixedSingle,
-                Margin = new Padding(0, 8, 8, 8)
+                Margin = new Padding(0, 5, 8, 5),
+                Padding = new Padding(8, 5, 8, 5)
             };
 
             _editButton = new Button
             {
-                Text = "✏️ Edit",
-                Size = new Size(70, 30),
-                Font = new Font("Segoe UI", 8f),
+                Text = "✏️",
+                Size = new Size(40, 32),
+                Font = new Font("Segoe UI", 10f),
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(255, 193, 7),
                 ForeColor = Color.FromArgb(33, 37, 41),
                 Cursor = Cursors.Hand,
-                Margin = new Padding(5, 10, 5, 10)
+                Margin = new Padding(4, 5, 4, 5)
             };
             _editButton.FlatAppearance.BorderSize = 0;
             _editButton.Click += (s, e) => EditRequested?.Invoke(this, EventArgs.Empty);
 
             _deleteButton = new Button
             {
-                Text = "🗑️ Delete",
-                Size = new Size(75, 30),
-                Font = new Font("Segoe UI", 8f),
+                Text = "🗑️",
+                Size = new Size(40, 32),
+                Font = new Font("Segoe UI", 10f),
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(220, 53, 69),
                 ForeColor = Color.White,
                 Cursor = Cursors.Hand,
-                Margin = new Padding(5, 10, 0, 10)
+                Margin = new Padding(4, 5, 0, 5)
             };
             _deleteButton.FlatAppearance.BorderSize = 0;
             _deleteButton.Click += (s, e) => DeleteRequested?.Invoke(this, EventArgs.Empty);

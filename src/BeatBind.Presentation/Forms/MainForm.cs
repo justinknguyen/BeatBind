@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using BeatBind.Application.Services;
 using BeatBind.Application.UseCases;
@@ -520,14 +521,7 @@ namespace BeatBind.Presentation.Forms
 
         private Control CreateHotkeyManagementContent()
         {
-            var panel = new Panel { Height = 300, Dock = DockStyle.Top };
-
-            var headerPanel = new Panel
-            {
-                Height = 50,
-                Dock = DockStyle.Top,
-                BackColor = Color.Transparent
-            };
+            var panel = new Panel { Height = 400, Dock = DockStyle.Top };
 
             _addHotkeyButton = new Button
             {
@@ -538,12 +532,12 @@ namespace BeatBind.Presentation.Forms
                 BackColor = Color.FromArgb(0, 123, 255),
                 ForeColor = Color.White,
                 Cursor = Cursors.Hand,
-                Location = new Point(0, 8)
+                Location = new Point(0, 8),
+                Dock = DockStyle.Top,
+                Margin = new Padding(0, 0, 0, 10)
             };
             _addHotkeyButton.FlatAppearance.BorderSize = 0;
             _addHotkeyButton.Click += AddHotkeyButton_Click;
-
-            headerPanel.Controls.Add(_addHotkeyButton);
 
             _hotkeyFlowPanel = new FlowLayoutPanel
             {
@@ -551,13 +545,29 @@ namespace BeatBind.Presentation.Forms
                 FlowDirection = FlowDirection.TopDown,
                 WrapContents = false,
                 AutoScroll = true,
-                BackColor = Color.LightBlue, // Temporary color to see if panel is visible
-                Padding = new Padding(5, 10, 5, 0),
-                BorderStyle = BorderStyle.FixedSingle // Temporary border to see panel bounds
+                BackColor = Color.White,
+                Padding = new Padding(0, 5, 5, 5)
             };
 
-            panel.Controls.Add(headerPanel);
+            // Resize hotkey entries when the panel resizes
+            _hotkeyFlowPanel.ClientSizeChanged += (s, e) =>
+            {
+                _hotkeyFlowPanel.SuspendLayout();
+                var scrollbarWidth = _hotkeyFlowPanel.VerticalScroll.Visible ? SystemInformation.VerticalScrollBarWidth : 0;
+                var availableWidth = _hotkeyFlowPanel.ClientSize.Width - _hotkeyFlowPanel.Padding.Horizontal - scrollbarWidth - 5;
+
+                foreach (Control control in _hotkeyFlowPanel.Controls)
+                {
+                    if (control is HotkeyEntry)
+                    {
+                        control.Width = Math.Max(400, availableWidth);
+                    }
+                }
+                _hotkeyFlowPanel.ResumeLayout(true);
+            };
+
             panel.Controls.Add(_hotkeyFlowPanel);
+            panel.Controls.Add(_addHotkeyButton);
 
             _hotkeyPanel = panel;
             return panel;
@@ -1073,13 +1083,26 @@ namespace BeatBind.Presentation.Forms
 
         private void LoadHotkeysFromConfiguration(List<Hotkey> hotkeys)
         {
+            if (_hotkeyFlowPanel == null)
+            {
+                _logger.LogWarning("_hotkeyFlowPanel is null in LoadHotkeysFromConfiguration");
+                return;
+            }
+
+            _hotkeyFlowPanel.SuspendLayout();
             _hotkeyFlowPanel.Controls.Clear();
             _hotkeyEntries.Clear();
+
+            _logger.LogInformation($"Loading {hotkeys.Count} hotkeys from configuration");
 
             foreach (var hotkey in hotkeys)
             {
                 AddHotkeyEntryToUI(hotkey);
             }
+
+            _hotkeyFlowPanel.ResumeLayout(true);
+
+            _logger.LogInformation($"Total controls in _hotkeyFlowPanel: {_hotkeyFlowPanel.Controls.Count}");
         }
 
         private async void AuthenticateButton_Click(object? sender, EventArgs e)
@@ -1155,6 +1178,16 @@ namespace BeatBind.Presentation.Forms
             if (hotkeyDialog.ShowDialog() == DialogResult.OK)
             {
                 var hotkey = hotkeyDialog.Hotkey;
+
+                // Check if a hotkey with the same action already exists
+                var existingHotkey = GetHotkeysFromUI().FirstOrDefault(h => h.Action == hotkey.Action);
+                if (existingHotkey != null)
+                {
+                    MessageBox.Show($"A hotkey for '{hotkey.Action}' already exists. Please edit or delete the existing hotkey first.",
+                        "Duplicate Action", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 AddHotkeyEntryToUI(hotkey);
                 _hotkeyManagementService?.AddHotkey(hotkey);
             }
@@ -1167,10 +1200,15 @@ namespace BeatBind.Presentation.Forms
             entry.DeleteRequested += (s, e) => DeleteHotkey(hotkey);
 
             _hotkeyEntries[hotkey.Id.ToString()] = entry;
+
+            // Ensure visibility
+            entry.Visible = true;
+
             _hotkeyFlowPanel.Controls.Add(entry);
-            
+
             // Debug: Log the addition
-            _logger.LogInformation($"Added hotkey to UI: {hotkey.Action} with ID {hotkey.Id}. Total controls: {_hotkeyFlowPanel.Controls.Count}");
+            _logger.LogInformation($"Added hotkey to UI: {hotkey.Action} with ID {hotkey.Id}. Size: {entry.Width}x{entry.Height}. Visible: {entry.Visible}. Parent: {entry.Parent != null}. Total controls: {_hotkeyFlowPanel.Controls.Count}");
+            _logger.LogInformation($"FlowPanel size: {_hotkeyFlowPanel.Width}x{_hotkeyFlowPanel.Height}. Visible: {_hotkeyFlowPanel.Visible}");
         }
 
         private void EditHotkey(Hotkey hotkey)
