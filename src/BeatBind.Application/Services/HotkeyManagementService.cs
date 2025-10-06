@@ -11,6 +11,8 @@ namespace BeatBind.Application.Services
         private readonly MusicControlService _musicControlService;
         private readonly ILogger<HotkeyManagementService> _logger;
 
+        public event EventHandler<Hotkey>? HotkeyTriggered;
+
         public HotkeyManagementService(
             IHotkeyService hotkeyService,
             IConfigurationService configurationService,
@@ -98,6 +100,10 @@ namespace BeatBind.Application.Services
             try
             {
                 _logger.LogInformation("Hotkey pressed: {Action}", hotkey.Action);
+
+                // Notify subscribers that a hotkey was triggered
+                HotkeyTriggered?.Invoke(this, hotkey);
+
                 await ExecuteHotkeyAction(hotkey.Action);
             }
             catch (Exception ex)

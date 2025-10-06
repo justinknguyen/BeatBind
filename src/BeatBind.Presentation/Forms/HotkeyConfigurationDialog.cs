@@ -250,43 +250,51 @@ namespace BeatBind.Presentation.Forms
                 Padding = new Padding(15)
             };
 
-            var buttonLayout = new FlowLayoutPanel
+            var buttonContainer = new Panel
             {
-                Dock = DockStyle.Right,
-                FlowDirection = FlowDirection.LeftToRight,
-                AutoSize = true,
-                Anchor = AnchorStyles.Right
+                Dock = DockStyle.Fill,
+                BackColor = Color.Transparent
             };
 
             _cancelButton = new Button
             {
                 Text = "Cancel",
-                Size = new Size(80, 35),
+                Size = new Size(100, 35),
                 Font = new Font("Segoe UI", 9f),
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(108, 117, 125),
                 ForeColor = Color.White,
                 DialogResult = DialogResult.Cancel,
-                Margin = new Padding(0, 0, 10, 0)
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right
             };
             _cancelButton.FlatAppearance.BorderSize = 0;
 
             _okButton = new Button
             {
                 Text = "Save",
-                Size = new Size(80, 35),
+                Size = new Size(100, 35),
                 Font = new Font("Segoe UI", 9f),
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(40, 167, 69),
                 ForeColor = Color.White,
-                DialogResult = DialogResult.OK
+                DialogResult = DialogResult.OK,
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right
             };
             _okButton.FlatAppearance.BorderSize = 0;
             _okButton.Click += OkButton_Click;
 
-            buttonLayout.Controls.Add(_cancelButton);
-            buttonLayout.Controls.Add(_okButton);
-            buttonPanel.Controls.Add(buttonLayout);
+            // Position buttons
+            buttonContainer.Resize += (s, e) =>
+            {
+                _okButton.Location = new Point(buttonContainer.Width - _okButton.Width,
+                    (buttonContainer.Height - _okButton.Height) / 2);
+                _cancelButton.Location = new Point(_okButton.Left - _cancelButton.Width - 10,
+                    (buttonContainer.Height - _cancelButton.Height) / 2);
+            };
+
+            buttonContainer.Controls.Add(_cancelButton);
+            buttonContainer.Controls.Add(_okButton);
+            buttonPanel.Controls.Add(buttonContainer);
 
             contentPanel.Controls.Add(layout);
             mainContainer.Controls.Add(contentPanel);

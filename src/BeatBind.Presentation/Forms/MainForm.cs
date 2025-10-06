@@ -63,9 +63,25 @@ namespace BeatBind.Presentation.Forms
         public void SetHotkeyManagementService(HotkeyManagementService hotkeyManagementService)
         {
             _hotkeyManagementService = hotkeyManagementService;
-            
+
+            // Subscribe to hotkey triggered events
+            _hotkeyManagementService.HotkeyTriggered += OnHotkeyTriggered;
+
             // Initialize hotkeys from configuration once the service is set
             _hotkeyManagementService.InitializeHotkeys();
+        }
+
+        private void OnHotkeyTriggered(object? sender, Hotkey hotkey)
+        {
+            // Update UI on the UI thread
+            if (InvokeRequired)
+            {
+                Invoke(() => OnHotkeyTriggered(sender, hotkey));
+                return;
+            }
+
+            _lastHotkeyLabel.Text = $"{hotkey.Action}";
+            _lastHotkeyLabel.ForeColor = Color.FromArgb(0, 123, 255);
         }
 
         private void InitializeComponent()
@@ -1317,7 +1333,12 @@ namespace BeatBind.Presentation.Forms
                 return;
             }
 
-            _hotkeyManagementService?.Dispose();
+            if (_hotkeyManagementService != null)
+            {
+                _hotkeyManagementService.HotkeyTriggered -= OnHotkeyTriggered;
+                _hotkeyManagementService.Dispose();
+            }
+
             _notifyIcon?.Dispose();
             base.OnFormClosing(e);
         }
