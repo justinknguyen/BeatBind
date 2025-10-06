@@ -353,63 +353,64 @@ namespace BeatBind.Presentation.Forms
         private Control CreateCredentialsContentWithoutSaveButton()
         {
             var panel = new Panel { Dock = DockStyle.Fill };
-            
+
             var layout = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                ColumnCount = 2,
-                RowCount = 2,
-                Padding = new Padding(0)
+                ColumnCount = 1,
+                RowCount = 4,
+                Padding = new Padding(15)
             };
 
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 35));
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 35));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Client ID Label
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Client ID TextBox
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Client Secret Label
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Client Secret TextBox
 
-            var clientIdLabel = new Label 
-            { 
-                Text = "Client ID:", 
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleRight,
-                Font = new Font("Segoe UI", 9f),
+            var clientIdLabel = new Label
+            {
+                Text = "Client ID",
+                Dock = DockStyle.Top,
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(73, 80, 87),
-                Margin = new Padding(0, 0, 10, 0)
+                Margin = new Padding(0, 0, 0, 5),
+                AutoSize = true
             };
-            
-            _clientIdTextBox = new TextBox 
-            { 
-                Anchor = AnchorStyles.Left | AnchorStyles.Right,
-                Font = new Font("Segoe UI", 9f),
+
+            _clientIdTextBox = new TextBox
+            {
+                Dock = DockStyle.Top,
+                Font = new Font("Segoe UI", 10f),
                 BorderStyle = BorderStyle.FixedSingle,
-                Height = 23,
-                Margin = new Padding(0, 6, 0, 6)
+                Height = 30,
+                Margin = new Padding(0, 0, 0, 15)
             };
 
-            var clientSecretLabel = new Label 
-            { 
-                Text = "Client Secret:", 
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleRight,
-                Font = new Font("Segoe UI", 9f),
+            var clientSecretLabel = new Label
+            {
+                Text = "Client Secret",
+                Dock = DockStyle.Top,
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(73, 80, 87),
-                Margin = new Padding(0, 0, 10, 0)
+                Margin = new Padding(0, 0, 0, 5),
+                AutoSize = true
             };
-            
-            _clientSecretTextBox = new TextBox 
-            { 
-                Anchor = AnchorStyles.Left | AnchorStyles.Right,
+
+            _clientSecretTextBox = new TextBox
+            {
+                Dock = DockStyle.Top,
                 UseSystemPasswordChar = true,
-                Font = new Font("Segoe UI", 9f),
+                Font = new Font("Segoe UI", 10f),
                 BorderStyle = BorderStyle.FixedSingle,
-                Height = 23,
-                Margin = new Padding(0, 6, 0, 6)
+                Height = 30,
+                Margin = new Padding(0, 0, 0, 0)
             };
 
             layout.Controls.Add(clientIdLabel, 0, 0);
-            layout.Controls.Add(_clientIdTextBox, 1, 0);
-            layout.Controls.Add(clientSecretLabel, 0, 1);
-            layout.Controls.Add(_clientSecretTextBox, 1, 1);
+            layout.Controls.Add(_clientIdTextBox, 0, 1);
+            layout.Controls.Add(clientSecretLabel, 0, 2);
+            layout.Controls.Add(_clientSecretTextBox, 0, 3);
 
             panel.Controls.Add(layout);
             return panel;
@@ -457,48 +458,45 @@ namespace BeatBind.Presentation.Forms
 
         private Control CreateCombinedAuthStatusContent()
         {
-            var panel = new Panel { Dock = DockStyle.Fill };
+            var panel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(15) };
 
-            var layout = new TableLayoutPanel
+            var statusContainer = new Panel
             {
-                Dock = DockStyle.Fill,
-                ColumnCount = 2,
-                RowCount = 1,
-                BackColor = Color.White
+                Dock = DockStyle.Top,
+                Height = 60,
+                BackColor = Color.FromArgb(248, 249, 250),
+                Padding = new Padding(15)
             };
-
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60));
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));
-
-            _authenticateButton = new Button
-            {
-                Text = "🔗 Authenticate with Spotify",
-                Size = new Size(200, 35),
-                Font = new Font("Segoe UI", 9f),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
-                Cursor = Cursors.Hand,
-                Dock = DockStyle.Left,
-                Margin = new Padding(0, 5, 15, 5)
-            };
-            _authenticateButton.FlatAppearance.BorderSize = 0;
-            _authenticateButton.Click += AuthenticateButton_Click;
 
             _statusLabel = new Label
             {
                 Text = "Not authenticated",
                 Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleLeft,
+                TextAlign = ContentAlignment.MiddleCenter,
                 ForeColor = Color.FromArgb(220, 53, 69),
-                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
-                Margin = new Padding(0, 5, 0, 5)
+                Font = new Font("Segoe UI", 11f, FontStyle.Bold)
             };
 
-            layout.Controls.Add(_authenticateButton, 0, 0);
-            layout.Controls.Add(_statusLabel, 1, 0);
+            statusContainer.Controls.Add(_statusLabel);
 
-            panel.Controls.Add(layout);
+            _authenticateButton = new Button
+            {
+                Text = "🔗 Authenticate with Spotify",
+                Height = 40,
+                Font = new Font("Segoe UI", 10f),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                Cursor = Cursors.Hand,
+                Dock = DockStyle.Top,
+                Margin = new Padding(0, 10, 0, 0)
+            };
+            _authenticateButton.FlatAppearance.BorderSize = 0;
+            _authenticateButton.Click += AuthenticateButton_Click;
+
+            panel.Controls.Add(_authenticateButton);
+            panel.Controls.Add(statusContainer);
+
             return panel;
         }
 
