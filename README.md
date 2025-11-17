@@ -6,6 +6,8 @@ I no longer use Spotify, but it doesn't mean I won't continue maintaining this a
 
 Thanks for all of the love and support <3
 
+Note: I'm working on rewriting this project into C# to solve the false virus flags. It'll also have a far better UI/UX design!
+
 # <img src="./BeatBind/icon.ico" width="4%" height="5%"> BeatBind - Spotify Global Hotkeys
 
 ![build](https://img.shields.io/badge/build-passing-brightgreen)
