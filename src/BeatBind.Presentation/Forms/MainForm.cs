@@ -374,7 +374,7 @@ namespace BeatBind.Presentation.Forms
                 Height = 25,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(10, 5, 10, 0),
-                BackColor = Color.FromArgb(70, 70, 70),
+                BackColor = Color.FromArgb(56, 142, 60),
                 Tag = "header" // Tag to identify header labels
             };
 
