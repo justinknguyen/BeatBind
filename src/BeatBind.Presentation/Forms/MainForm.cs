@@ -111,45 +111,52 @@ namespace BeatBind.Presentation.Forms
 
             // Form settings
             Text = "BeatBind - Spotify Global Hotkeys";
-            Size = new Size(650, 550);
+            Size = new Size(700, 650);
             StartPosition = FormStartPosition.CenterScreen;
             FormBorderStyle = FormBorderStyle.Sizable;
-            MinimumSize = new Size(600, 500);
-            BackColor = Theme.FormBackground;
+            MinimumSize = new Size(650, 600);
 
-            // Create modern tab control
+            // Create MaterialTabControl FIRST
             _mainTabControl = new MaterialTabControl
             {
                 Dock = DockStyle.Fill,
-                Margin = new Padding(10),
                 Depth = 0,
                 MouseState = MaterialSkin.MouseState.HOVER
             };
 
-            // Create tabs
+            // Now create tabs (they need _mainTabControl to exist)
             CreateHotkeysTab();
             CreateAuthenticationTab();
             CreateSettingsTab();
+
+            // Create MaterialTabSelector for the tab headers
+            var tabSelector = new MaterialTabSelector
+            {
+                BaseTabControl = _mainTabControl,
+                Depth = 0,
+                Dock = DockStyle.Top,
+                Height = 48
+            };
 
             // Create main layout for form
             var formLayout = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 2,
-                BackColor = Theme.FormBackground,
-                Padding = new Padding(15)
+                RowCount = 3,
+                Padding = new Padding(0)
             };
 
-            // Set row styles - tabs take most space, button takes fixed space
+            // Set row styles
+            formLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48f)); // Tab selector
             formLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100f)); // Tabs
-            formLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 60f)); // Save button
+            formLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 70f)); // Save button
 
             // Tab control container
             var tabContainer = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Theme.FormBackground
+                Padding = new Padding(15)
             };
             tabContainer.Controls.Add(_mainTabControl);
 
@@ -157,14 +164,13 @@ namespace BeatBind.Presentation.Forms
             var saveButtonContainer = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Theme.FormBackground,
-                Padding = new Padding(0, 10, 0, 0)
+                Padding = new Padding(0, 10, 0, 10)
             };
 
             _saveConfigButton = new MaterialButton
             {
                 Text = "SAVE CONFIGURATION",
-                Size = new Size(220, 40),
+                Size = new Size(220, 45),
                 Type = MaterialButton.MaterialButtonType.Contained,
                 Depth = 0,
                 Anchor = AnchorStyles.None,
@@ -183,8 +189,9 @@ namespace BeatBind.Presentation.Forms
 
             saveButtonContainer.Controls.Add(_saveConfigButton);
 
-            formLayout.Controls.Add(tabContainer, 0, 0);
-            formLayout.Controls.Add(saveButtonContainer, 0, 1);
+            formLayout.Controls.Add(tabSelector, 0, 0);
+            formLayout.Controls.Add(tabContainer, 0, 1);
+            formLayout.Controls.Add(saveButtonContainer, 0, 2);
             
             Controls.Add(formLayout);
 
@@ -316,12 +323,12 @@ namespace BeatBind.Presentation.Forms
             {
                 Text = title,
                 Font = new Font("Segoe UI", 12f, FontStyle.Bold),
-                ForeColor = Theme.IsDarkMode ? Color.FromArgb(189, 193, 198) : Color.FromArgb(33, 37, 41),
+                ForeColor = Color.White,
                 Dock = DockStyle.Top,
                 Height = 35,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(15, 10, 15, 0),
-                BackColor = Theme.IsDarkMode ? Color.FromArgb(50, 51, 54) : Color.FromArgb(248, 249, 250),
+                BackColor = Color.FromArgb(56, 142, 60),
                 Tag = "header" // Tag to identify header labels
             };
 
@@ -362,12 +369,12 @@ namespace BeatBind.Presentation.Forms
             {
                 Text = title,
                 Font = new Font("Segoe UI", 10f, FontStyle.Bold),
-                ForeColor = Theme.IsDarkMode ? Color.FromArgb(189, 193, 198) : Color.FromArgb(33, 37, 41),
+                ForeColor = Color.White,
                 Dock = DockStyle.Top,
                 Height = 25,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(10, 5, 10, 0),
-                BackColor = Theme.IsDarkMode ? Color.FromArgb(50, 51, 54) : Color.FromArgb(248, 249, 250),
+                BackColor = Color.FromArgb(70, 70, 70),
                 Tag = "header" // Tag to identify header labels
             };
 
@@ -453,7 +460,7 @@ namespace BeatBind.Presentation.Forms
 
         private Control CreateCombinedAuthStatusContent()
         {
-            var panel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(15) };
+            var panel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(15, 15, 15, 20) };
 
             var statusContainer = new Panel
             {
@@ -481,8 +488,8 @@ namespace BeatBind.Presentation.Forms
                 Type = MaterialButton.MaterialButtonType.Contained,
                 Depth = 0,
                 Dock = DockStyle.Top,
-                Margin = new Padding(0, 10, 0, 0),
-                UseAccentColor = true,
+                Margin = new Padding(0, 10, 0, 10),
+                UseAccentColor = false,
                 AutoSize = false
             };
             _authenticateButton.Click += AuthenticateButton_Click;
@@ -987,8 +994,7 @@ namespace BeatBind.Presentation.Forms
 
             // Don't change primary action buttons
             // Check if it's a secondary button (by checking against known secondary colors or just default)
-            // This is a bit heuristic, but we can check if it matches the "other" theme's secondary color
-            var otherThemeSecondary = Theme.IsDarkMode ? Color.FromArgb(108, 117, 125) : Color.FromArgb(95, 99, 104);
+            var otherThemeSecondary = Color.FromArgb(95, 99, 104);
             
             if (button.BackColor == otherThemeSecondary || button.BackColor == Theme.SecondaryButton)
             {
