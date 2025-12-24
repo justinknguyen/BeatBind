@@ -8,11 +8,6 @@ namespace BeatBind.Domain.Common
 
         protected Result(bool isSuccess, string error)
         {
-            if (isSuccess && error != string.Empty)
-                throw new InvalidOperationException();
-            if (!isSuccess && error == string.Empty)
-                throw new InvalidOperationException();
-
             IsSuccess = isSuccess;
             Error = error;
         }

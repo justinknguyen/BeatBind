@@ -821,32 +821,30 @@ namespace BeatBind.Presentation.Forms
 
         private async void AuthenticateButton_Click(object? sender, EventArgs e)
         {
+            _authenticateButton.Enabled = false;
+            _authenticateButton.Text = "Authenticating...";
+
             try
             {
-                // Save credentials first
+                // Save credentials first if provided
                 if (!string.IsNullOrEmpty(_clientIdTextBox.Text) && !string.IsNullOrEmpty(_clientSecretTextBox.Text))
                 {
                     await _mediator.Send(new UpdateClientCredentialsCommand(_clientIdTextBox.Text, _clientSecretTextBox.Text));
                 }
 
-                _authenticateButton.Enabled = false;
-                _authenticateButton.Text = "Authenticating...";
-
                 var result = await _mediator.Send(new AuthenticateUserCommand());
-                var success = result.IsSuccess;
                 
-                _isAuthenticated = success;
+                _isAuthenticated = result.IsSuccess;
                 UpdateAuthenticationStatus();
 
-                if (success)
-                {
-                    MessageBox.Show("Authentication successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    MessageBox.Show("Authentication failed. Please check your credentials and try again.", "Error", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                var message = result.IsSuccess
+                    ? "Authentication successful!"
+                    : $"Authentication failed. {result.Error}";
+                
+                var icon = result.IsSuccess ? MessageBoxIcon.Information : MessageBoxIcon.Error;
+                var title = result.IsSuccess ? "Success" : "Error";
+                
+                MessageBox.Show(message, title, MessageBoxButtons.OK, icon);
             }
             catch (Exception ex)
             {
@@ -868,8 +866,6 @@ namespace BeatBind.Presentation.Forms
                 config.ClientId = _clientIdTextBox.Text;
                 config.ClientSecret = _clientSecretTextBox.Text;
                 config.Hotkeys = GetHotkeysFromUI();
-
-                // Save application settings
                 config.StartMinimized = _startupCheckBox.Checked;
                 config.MinimizeToTray = _minimizeCheckBox.Checked;
                 config.PreviousTrackRewindToStart = _rewindCheckBox.Checked;
@@ -877,9 +873,16 @@ namespace BeatBind.Presentation.Forms
                 config.SeekMilliseconds = (int)_seekMillisecondsNumeric.Value;
                 config.DarkMode = _darkModeCheckBox.Checked;
 
-                await _mediator.Send(new SaveConfigurationCommand(config));
+                var result = await _mediator.Send(new SaveConfigurationCommand(config));
 
-                MessageBox.Show("Configuration saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                var message = result.IsSuccess
+                    ? "Configuration saved successfully!"
+                    : $"Failed to save configuration: {result.Error}";
+                
+                var icon = result.IsSuccess ? MessageBoxIcon.Information : MessageBoxIcon.Error;
+                var title = result.IsSuccess ? "Success" : "Error";
+                
+                MessageBox.Show(message, title, MessageBoxButtons.OK, icon);
             }
             catch (Exception ex)
             {

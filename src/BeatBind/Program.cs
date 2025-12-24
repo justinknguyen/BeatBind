@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using BeatBind.Application.Behaviors;
 using BeatBind.Application.Services;
 using BeatBind.Domain.Interfaces;
+using BeatBind.Hosting;
 using BeatBind.Infrastructure.Configuration;
 using BeatBind.Infrastructure.Hotkeys;
 using BeatBind.Infrastructure.Spotify;
@@ -66,42 +67,9 @@ namespace BeatBind
             return Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    // Infrastructure services
-                    services.AddSingleton<IConfigurationService, JsonConfigurationService>();
-                    services.AddTransient<IAuthenticationService, SpotifyAuthenticationService>();
-                    services.AddTransient<ISpotifyService, SpotifyService>();
-                    services.AddHttpClient<ISpotifyService, SpotifyService>();
-                    services.AddHttpClient<IAuthenticationService, SpotifyAuthenticationService>();
-
-                    // Application services
-                    services.AddTransient<MusicControlService>();
-                    
-                    // Register MediatR
-                    services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(BeatBind.Application.Abstractions.Messaging.ICommand).Assembly));
-                    
-                    // Register Validators
-                    services.AddValidatorsFromAssembly(typeof(BeatBind.Application.Abstractions.Messaging.ICommand).Assembly);
-
-                    // Register Pipeline Behavior
-                    services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-                    services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-
-                    // Register MainForm first without HotkeyManagementService
-                    services.AddSingleton<MainForm>();
-
-                    // Register IHotkeyService that depends on MainForm
-                    services.AddSingleton<IHotkeyService, WindowsHotkeyService>(serviceProvider =>
-                    {
-                        var mainForm = serviceProvider.GetRequiredService<MainForm>();
-                        var logger = serviceProvider.GetRequiredService<ILogger<WindowsHotkeyService>>();
-                        return new WindowsHotkeyService(mainForm, logger);
-                    });
-
-                    // Register HotkeyManagementService
-                    services.AddSingleton<HotkeyManagementService>();
-
-                    // Configure MainForm with HotkeyManagementService after all services are registered
-                    services.AddSingleton<IHostedService, MainFormInitializerService>();
+                    ConfigureInfrastructure(services);
+                    ConfigureApplication(services);
+                    ConfigurePresentation(services);
                 })
                 .ConfigureLogging(logging =>
                 {
@@ -110,28 +78,45 @@ namespace BeatBind
                     logging.SetMinimumLevel(LogLevel.Information);
                 });
         }
-    }
 
-    public class MainFormInitializerService : IHostedService
-    {
-        private readonly MainForm _mainForm;
-        private readonly HotkeyManagementService _hotkeyManagementService;
-
-        public MainFormInitializerService(MainForm mainForm, HotkeyManagementService hotkeyManagementService)
+        private static void ConfigureInfrastructure(IServiceCollection services)
         {
-            _mainForm = mainForm;
-            _hotkeyManagementService = hotkeyManagementService;
+            services.AddSingleton<IConfigurationService, JsonConfigurationService>();
+            services.AddTransient<IAuthenticationService, SpotifyAuthenticationService>();
+            services.AddTransient<ISpotifyService, SpotifyService>();
+            services.AddHttpClient<ISpotifyService, SpotifyService>();
+            services.AddHttpClient<IAuthenticationService, SpotifyAuthenticationService>();
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        private static void ConfigureApplication(IServiceCollection services)
         {
-            _mainForm.SetHotkeyManagementService(_hotkeyManagementService);
-            return Task.CompletedTask;
+            services.AddTransient<MusicControlService>();
+            
+            // MediatR
+            services.AddMediatR(cfg => 
+                cfg.RegisterServicesFromAssembly(typeof(Application.Abstractions.Messaging.ICommand).Assembly));
+            
+            // Validators
+            services.AddValidatorsFromAssembly(typeof(Application.Abstractions.Messaging.ICommand).Assembly);
+
+            // Pipeline Behaviors
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        private static void ConfigurePresentation(IServiceCollection services)
         {
-            return Task.CompletedTask;
+            services.AddSingleton<MainForm>();
+
+            services.AddSingleton<IHotkeyService, WindowsHotkeyService>(sp =>
+            {
+                var mainForm = sp.GetRequiredService<MainForm>();
+                var logger = sp.GetRequiredService<ILogger<WindowsHotkeyService>>();
+                return new WindowsHotkeyService(mainForm, logger);
+            });
+
+            services.AddSingleton<HotkeyManagementService>();
+            services.AddSingleton<IHostedService, MainFormInitializerService>();
         }
     }
 }

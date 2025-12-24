@@ -179,7 +179,7 @@ namespace BeatBind.Infrastructure.Spotify
             }
         }
 
-        private async Task<bool> StartCallbackListenerAsync(string redirectUri)
+        private Task<bool> StartCallbackListenerAsync(string redirectUri)
         {
             try
             {
@@ -187,12 +187,12 @@ namespace BeatBind.Infrastructure.Spotify
                 _httpListener.Prefixes.Add(redirectUri.EndsWith('/') ? redirectUri : redirectUri + "/");
                 _httpListener.Start();
                 _logger.LogInformation("Started HTTP listener on {RedirectUri}", redirectUri);
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to start HTTP listener");
-                return false;
+                return Task.FromResult(false);
             }
         }
 
