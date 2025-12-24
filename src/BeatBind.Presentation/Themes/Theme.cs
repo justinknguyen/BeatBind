@@ -4,19 +4,8 @@ namespace BeatBind.Presentation.Themes
 {
     public static class Theme
     {
-        private static bool _isDarkMode = false;
-
-        public static bool IsDarkMode
-        {
-            get => _isDarkMode;
-            set
-            {
-                _isDarkMode = value;
-                ThemeChanged?.Invoke(null, EventArgs.Empty);
-            }
-        }
-
-        public static event EventHandler? ThemeChanged;
+        // Always use dark mode
+        public static bool IsDarkMode => true;
 
         // Background Colors
         public static Color FormBackground => IsDarkMode ? Color.FromArgb(32, 33, 36) : Color.FromArgb(248, 249, 250);

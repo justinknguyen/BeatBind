@@ -41,7 +41,6 @@ namespace BeatBind.Presentation.Forms
         private CheckBox _startupCheckBox = null!;
         private CheckBox _minimizeCheckBox = null!;
         private CheckBox _rewindCheckBox = null!;
-        private CheckBox _darkModeCheckBox = null!;
         private NumericUpDown _volumeStepsNumeric = null!;
         private NumericUpDown _seekMillisecondsNumeric = null!;
 
@@ -641,18 +640,8 @@ namespace BeatBind.Presentation.Forms
                 ForeColor = Theme.PrimaryText
             };
 
-            _darkModeCheckBox = new CheckBox
-            {
-                Text = "Dark mode",
-                Font = new Font("Segoe UI", 8f),
-                AutoSize = true,
-                ForeColor = Theme.PrimaryText
-            };
-            _darkModeCheckBox.CheckedChanged += DarkModeCheckBox_CheckedChanged;
-
             checkboxPanel1.Controls.Add(_startupCheckBox);
             checkboxPanel1.Controls.Add(_minimizeCheckBox);
-            checkboxPanel1.Controls.Add(_darkModeCheckBox);
             layout.Controls.Add(checkboxPanel1, 0, 1);
             layout.SetColumnSpan(checkboxPanel1, 2);
 
@@ -781,10 +770,8 @@ namespace BeatBind.Presentation.Forms
                 _rewindCheckBox.Checked = config.PreviousTrackRewindToStart;
                 _volumeStepsNumeric.Value = config.VolumeSteps;
                 _seekMillisecondsNumeric.Value = config.SeekMilliseconds;
-                _darkModeCheckBox.Checked = config.DarkMode;
 
-                // Apply theme based on config
-                Theme.IsDarkMode = config.DarkMode;
+                // Always use dark mode
                 ApplyTheme();
 
                 LoadHotkeysFromConfiguration(config.Hotkeys);
@@ -873,7 +860,7 @@ namespace BeatBind.Presentation.Forms
                 config.PreviousTrackRewindToStart = _rewindCheckBox.Checked;
                 config.VolumeSteps = (int)_volumeStepsNumeric.Value;
                 config.SeekMilliseconds = (int)_seekMillisecondsNumeric.Value;
-                config.DarkMode = _darkModeCheckBox.Checked;
+                config.DarkMode = true;  // Always dark mode
 
                 var result = await _mediator.Send(new SaveConfigurationCommand(config));
 
@@ -891,12 +878,6 @@ namespace BeatBind.Presentation.Forms
                 _logger.LogError(ex, "Failed to save configuration");
                 MessageBox.Show($"Failed to save configuration: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void DarkModeCheckBox_CheckedChanged(object? sender, EventArgs e)
-        {
-            Theme.IsDarkMode = _darkModeCheckBox.Checked;
-            ApplyTheme();
         }
 
         private void ApplyTheme()

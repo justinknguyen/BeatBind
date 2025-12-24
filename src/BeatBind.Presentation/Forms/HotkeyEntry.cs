@@ -25,9 +25,6 @@ namespace BeatBind.Presentation.Forms
             InitializeComponent();
             UpdateDisplay();
             ApplyTheme();
-
-            // Subscribe to theme changes
-            Theme.ThemeChanged += (s, e) => ApplyTheme();
         }
 
         private void InitializeComponent()
