@@ -223,7 +223,7 @@ namespace BeatBind.Infrastructure.Spotify
                 var response = context.Response;
 
                 // Send response to browser
-                var responseString = "<html><head><title>BeatBind</title></head><body><h1>Authentication Complete</h1><p>You can close this window.</p></body></html>";
+                var responseString = "<html><head><title>BeatBind</title></head><body><h1>Authentication Complete</h1><p>You can close this window.</p><script>window.close();</script></body></html>";
                 var buffer = Encoding.UTF8.GetBytes(responseString);
                 response.ContentLength64 = buffer.Length;
                 await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);

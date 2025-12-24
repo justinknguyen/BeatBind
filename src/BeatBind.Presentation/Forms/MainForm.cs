@@ -447,46 +447,6 @@ namespace BeatBind.Presentation.Forms
             return panel;
         }
 
-
-        private Control CreateAuthenticationContent()
-        {
-            var panel = new Panel { Dock = DockStyle.Fill };
-
-            _authenticateButton = new Button
-            {
-                Text = "🔗 Authenticate with Spotify",
-                Size = new Size(200, 35),
-                Font = new Font("Segoe UI", 9f),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
-                Cursor = Cursors.Hand,
-                Dock = DockStyle.Left
-            };
-            _authenticateButton.FlatAppearance.BorderSize = 0;
-            _authenticateButton.Click += AuthenticateButton_Click;
-
-            panel.Controls.Add(_authenticateButton);
-            return panel;
-        }
-
-        private Control CreateStatusContent()
-        {
-            var panel = new Panel { Dock = DockStyle.Fill };
-
-            _statusLabel = new Label
-            {
-                Text = "Not authenticated",
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleLeft,
-                ForeColor = Color.FromArgb(220, 53, 69),
-                Font = new Font("Segoe UI", 10f, FontStyle.Bold)
-            };
-            
-            panel.Controls.Add(_statusLabel);
-            return panel;
-        }
-
         private Control CreateCombinedAuthStatusContent()
         {
             var panel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(15) };
@@ -599,135 +559,6 @@ namespace BeatBind.Presentation.Forms
             panel.Controls.Add(_addHotkeyButton);
 
             _hotkeyPanel = panel;
-            return panel;
-        }
-
-        private Control CreateAppSettingsContent()
-        {
-            var panel = new Panel { Height = 280, Dock = DockStyle.Top };
-
-            var scrollPanel = new Panel
-            {
-                Dock = DockStyle.Fill,
-                AutoScroll = true
-            };
-
-            var layout = new TableLayoutPanel
-            {
-                Dock = DockStyle.Top,
-                ColumnCount = 2,
-                RowCount = 6,
-                AutoSize = true,
-                Padding = new Padding(0)
-            };
-
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60));
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));
-
-            // General Settings
-            var generalLabel = new Label
-            {
-                Text = "General Settings",
-                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(33, 37, 41),
-                Dock = DockStyle.Top,
-                Height = 25,
-                Margin = new Padding(0, 10, 0, 5)
-            };
-            layout.Controls.Add(generalLabel, 0, 0);
-            layout.SetColumnSpan(generalLabel, 2);
-
-            _startupCheckBox = new CheckBox
-            {
-                Text = "Start with Windows",
-                Font = new Font("Segoe UI", 9f),
-                Dock = DockStyle.Fill,
-                Margin = new Padding(0, 5, 0, 5)
-            };
-            layout.Controls.Add(_startupCheckBox, 0, 1);
-
-            _minimizeCheckBox = new CheckBox
-            {
-                Text = "Minimize to system tray",
-                Font = new Font("Segoe UI", 9f),
-                Dock = DockStyle.Fill,
-                Margin = new Padding(0, 5, 0, 5)
-            };
-            layout.Controls.Add(_minimizeCheckBox, 1, 1);
-
-            // Audio Control Settings
-            var audioLabel = new Label
-            {
-                Text = "Audio Control Settings",
-                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(33, 37, 41),
-                Dock = DockStyle.Top,
-                Height = 25,
-                Margin = new Padding(0, 15, 0, 5)
-            };
-            layout.Controls.Add(audioLabel, 0, 2);
-            layout.SetColumnSpan(audioLabel, 2);
-
-            _rewindCheckBox = new CheckBox
-            {
-                Text = "Previous Track: rewind to start",
-                Font = new Font("Segoe UI", 9f),
-                Dock = DockStyle.Fill,
-                Margin = new Padding(0, 5, 0, 5),
-                Checked = true
-            };
-            layout.Controls.Add(_rewindCheckBox, 0, 3);
-            layout.SetColumnSpan(_rewindCheckBox, 2);
-
-            // Volume Steps
-            var volumeLabel = new Label
-            {
-                Text = "Volume Steps:",
-                Font = new Font("Segoe UI", 9f),
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Margin = new Padding(0, 5, 0, 5)
-            };
-            layout.Controls.Add(volumeLabel, 0, 4);
-
-            _volumeStepsNumeric = new NumericUpDown
-            {
-                Minimum = 1,
-                Maximum = 50,
-                Value = 10,
-                Font = new Font("Segoe UI", 9f),
-                Dock = DockStyle.Left,
-                Width = 80,
-                Margin = new Padding(0, 5, 0, 5)
-            };
-            layout.Controls.Add(_volumeStepsNumeric, 1, 4);
-
-            // Seek Milliseconds
-            var seekLabel = new Label
-            {
-                Text = "Seek (ms):",
-                Font = new Font("Segoe UI", 9f),
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Margin = new Padding(0, 5, 0, 5)
-            };
-            layout.Controls.Add(seekLabel, 0, 5);
-
-            _seekMillisecondsNumeric = new NumericUpDown
-            {
-                Minimum = 1000,
-                Maximum = 60000,
-                Value = 10000,
-                Increment = 1000,
-                Font = new Font("Segoe UI", 9f),
-                Dock = DockStyle.Left,
-                Width = 80,
-                Margin = new Padding(0, 5, 0, 5)
-            };
-            layout.Controls.Add(_seekMillisecondsNumeric, 1, 5);
-
-            scrollPanel.Controls.Add(layout);
-            panel.Controls.Add(scrollPanel);
             return panel;
         }
 
@@ -1082,94 +913,110 @@ namespace BeatBind.Presentation.Forms
         {
             foreach (Control child in control.Controls)
             {
-                if (child is Panel panel)
-                {
-                    // Check if it's a light background (white or light gray)
-                    bool isLightBg = panel.BackColor.R > 200 && panel.BackColor.G > 200 && panel.BackColor.B > 200;
-                    // Check if it's a medium gray background
-                    bool isMediumBg = panel.BackColor.R >= 240 && panel.BackColor.G >= 240 && panel.BackColor.B >= 240;
-                    // Check if it's already dark
-                    bool isDarkBg = panel.BackColor.R < 100 && panel.BackColor.G < 100 && panel.BackColor.B < 100;
-
-                    if (isLightBg && !isDarkBg)
-                    {
-                        // If it's pure white or very light, make it card background
-                        if (panel.BackColor.R >= 250)
-                            panel.BackColor = Theme.CardBackground;
-                        // If it's light gray, make it header background
-                        else if (isMediumBg)
-                            panel.BackColor = Theme.HeaderBackground;
-                    }
-                }
-                else if (child is Label label)
-                {
-                    // Handle header labels specially
-                    if (label.Tag?.ToString() == "header")
-                    {
-                        label.ForeColor = Theme.PrimaryText;
-                        label.BackColor = Theme.HeaderBackground;
-                    }
-                    else
-                    {
-                        // Update based on current color brightness
-                        bool isDark = label.ForeColor.R < 128;
-
-                        if (!isDark) // If it's currently a light-mode color
-                        {
-                            if (label.ForeColor.R < 80) // Very dark = primary
-                                label.ForeColor = Theme.PrimaryText;
-                            else if (label.ForeColor.R < 150) // Medium = label
-                                label.ForeColor = Theme.LabelText;
-                            else // Light gray = secondary
-                                label.ForeColor = Theme.SecondaryText;
-                        }
-                        else // Already dark mode color
-                        {
-                            if (label.ForeColor.R > 200) // Very light = primary
-                                label.ForeColor = Theme.PrimaryText;
-                            else if (label.ForeColor.R > 170) // Medium = label
-                                label.ForeColor = Theme.LabelText;
-                            else // Dimmer = secondary
-                                label.ForeColor = Theme.SecondaryText;
-                        }
-                    }
-                }
-                else if (child is TextBox textBox)
-                {
-                    textBox.BackColor = Theme.InputBackground;
-                    textBox.ForeColor = Theme.PrimaryText;
-                }
-                else if (child is NumericUpDown numericUpDown)
-                {
-                    numericUpDown.BackColor = Theme.InputBackground;
-                    numericUpDown.ForeColor = Theme.PrimaryText;
-                }
-                else if (child is CheckBox checkBox)
-                {
-                    checkBox.ForeColor = Theme.PrimaryText;
-                }
-                else if (child is Button button && button != _saveConfigButton && button != _authenticateButton && button != _addHotkeyButton)
-                {
-                    // Don't change primary action buttons
-                    // Check if it's a secondary button (by checking against known secondary colors or just default)
-                    // This is a bit heuristic, but we can check if it matches the "other" theme's secondary color
-                    var otherThemeSecondary = Theme.IsDarkMode ? Color.FromArgb(108, 117, 125) : Color.FromArgb(95, 99, 104);
-                    
-                    if (button.BackColor == otherThemeSecondary || button.BackColor == Theme.SecondaryButton)
-                    {
-                        button.BackColor = Theme.SecondaryButton;
-                        button.ForeColor = Color.White;
-                    }
-                }
-                else if (child is TableLayoutPanel || child is FlowLayoutPanel)
-                {
-                    bool isLightBg = child.BackColor.R > 200 && child.BackColor.G > 200 && child.BackColor.B > 200;
-                    if (isLightBg)
-                        child.BackColor = Theme.CardBackground;
-                }
+                if (child is Panel panel) UpdatePanelColors(panel);
+                else if (child is Label label) UpdateLabelColors(label);
+                else if (child is TextBox textBox) UpdateTextBoxColors(textBox);
+                else if (child is NumericUpDown numericUpDown) UpdateNumericUpDownColors(numericUpDown);
+                else if (child is CheckBox checkBox) UpdateCheckBoxColors(checkBox);
+                else if (child is Button button) UpdateButtonColors(button);
+                else if (child is TableLayoutPanel || child is FlowLayoutPanel) UpdateLayoutColors(child);
 
                 UpdateControlColors(child);
             }
+        }
+
+        private void UpdatePanelColors(Panel panel)
+        {
+            // Check if it's a light background (white or light gray)
+            bool isLightBg = panel.BackColor.R > 200 && panel.BackColor.G > 200 && panel.BackColor.B > 200;
+            // Check if it's a medium gray background
+            bool isMediumBg = panel.BackColor.R >= 240 && panel.BackColor.G >= 240 && panel.BackColor.B >= 240;
+            // Check if it's already dark
+            bool isDarkBg = panel.BackColor.R < 100 && panel.BackColor.G < 100 && panel.BackColor.B < 100;
+
+            if (isLightBg && !isDarkBg)
+            {
+                // If it's pure white or very light, make it card background
+                if (panel.BackColor.R >= 250)
+                    panel.BackColor = Theme.CardBackground;
+                // If it's light gray, make it header background
+                else if (isMediumBg)
+                    panel.BackColor = Theme.HeaderBackground;
+            }
+        }
+
+        private void UpdateLabelColors(Label label)
+        {
+            // Handle header labels specially
+            if (label.Tag?.ToString() == "header")
+            {
+                label.ForeColor = Theme.PrimaryText;
+                label.BackColor = Theme.HeaderBackground;
+                return;
+            }
+
+            // Update based on current color brightness
+            bool isDark = label.ForeColor.R < 128;
+
+            if (!isDark) // If it's currently a light-mode color
+            {
+                if (label.ForeColor.R < 80) // Very dark = primary
+                    label.ForeColor = Theme.PrimaryText;
+                else if (label.ForeColor.R < 150) // Medium = label
+                    label.ForeColor = Theme.LabelText;
+                else // Light gray = secondary
+                    label.ForeColor = Theme.SecondaryText;
+            }
+            else // Already dark mode color
+            {
+                if (label.ForeColor.R > 200) // Very light = primary
+                    label.ForeColor = Theme.PrimaryText;
+                else if (label.ForeColor.R > 170) // Medium = label
+                    label.ForeColor = Theme.LabelText;
+                else // Dimmer = secondary
+                    label.ForeColor = Theme.SecondaryText;
+            }
+        }
+
+        private void UpdateTextBoxColors(TextBox textBox)
+        {
+            textBox.BackColor = Theme.InputBackground;
+            textBox.ForeColor = Theme.PrimaryText;
+        }
+
+        private void UpdateNumericUpDownColors(NumericUpDown numericUpDown)
+        {
+            numericUpDown.BackColor = Theme.InputBackground;
+            numericUpDown.ForeColor = Theme.PrimaryText;
+        }
+
+        private void UpdateCheckBoxColors(CheckBox checkBox)
+        {
+            checkBox.ForeColor = Theme.PrimaryText;
+        }
+
+        private void UpdateButtonColors(Button button)
+        {
+            if (button == _saveConfigButton || button == _authenticateButton || button == _addHotkeyButton)
+                return;
+
+            // Don't change primary action buttons
+            // Check if it's a secondary button (by checking against known secondary colors or just default)
+            // This is a bit heuristic, but we can check if it matches the "other" theme's secondary color
+            var otherThemeSecondary = Theme.IsDarkMode ? Color.FromArgb(108, 117, 125) : Color.FromArgb(95, 99, 104);
+            
+            if (button.BackColor == otherThemeSecondary || button.BackColor == Theme.SecondaryButton)
+            {
+                button.BackColor = Theme.SecondaryButton;
+                button.ForeColor = Color.White;
+            }
+        }
+
+        private void UpdateLayoutColors(Control layout)
+        {
+            bool isLightBg = layout.BackColor.R > 200 && layout.BackColor.G > 200 && layout.BackColor.B > 200;
+            if (isLightBg)
+                layout.BackColor = Theme.CardBackground;
         }
 
         private void AddHotkeyButton_Click(object? sender, EventArgs e)
