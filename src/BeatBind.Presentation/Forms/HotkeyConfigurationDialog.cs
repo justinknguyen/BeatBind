@@ -95,7 +95,7 @@ namespace BeatBind.Presentation.Forms
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
-            BackColor = Color.FromArgb(248, 249, 250);
+            BackColor = Theme.FormBackground;
             Font = new Font("Segoe UI", 9f);
 
             // Main container
@@ -103,14 +103,14 @@ namespace BeatBind.Presentation.Forms
             {
                 Dock = DockStyle.Fill,
                 Padding = new Padding(20),
-                BackColor = Color.FromArgb(248, 249, 250)
+                BackColor = Theme.FormBackground
             };
 
             // Content panel
             var contentPanel = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.White,
+                BackColor = Theme.CardBackground,
                 Padding = new Padding(20)
             };
 
@@ -120,7 +120,7 @@ namespace BeatBind.Presentation.Forms
                 var rect = contentPanel.ClientRectangle;
                 rect.Width -= 1;
                 rect.Height -= 1;
-                e.Graphics.DrawRectangle(new Pen(Color.FromArgb(220, 220, 220)), rect);
+                e.Graphics.DrawRectangle(new Pen(Theme.Border), rect);
             };
 
             var layout = new TableLayoutPanel
@@ -128,7 +128,7 @@ namespace BeatBind.Presentation.Forms
                 Dock = DockStyle.Fill,
                 ColumnCount = 2,
                 RowCount = 6,
-                BackColor = Color.White,
+                BackColor = Theme.CardBackground,
                 Padding = new Padding(10)
             };
 
@@ -146,7 +146,7 @@ namespace BeatBind.Presentation.Forms
             {
                 Text = "Action:",
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(33, 37, 41),
+                ForeColor = Theme.PrimaryText,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleRight,
                 Margin = new Padding(0, 5, 10, 5)
@@ -158,7 +158,9 @@ namespace BeatBind.Presentation.Forms
                 Dock = DockStyle.Fill,
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Font = new Font("Segoe UI", 9f),
-                Margin = new Padding(0, 5, 0, 5)
+                Margin = new Padding(0, 5, 0, 5),
+                BackColor = Theme.InputBackground,
+                ForeColor = Theme.PrimaryText
             };
             _actionComboBox.SelectedIndexChanged += (s, e) => UpdatePreview();
             layout.Controls.Add(_actionComboBox, 1, 0);
@@ -168,7 +170,7 @@ namespace BeatBind.Presentation.Forms
             {
                 Text = "Key:",
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(33, 37, 41),
+                ForeColor = Theme.PrimaryText,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleRight,
                 Margin = new Padding(0, 5, 10, 5)
@@ -180,7 +182,9 @@ namespace BeatBind.Presentation.Forms
                 Dock = DockStyle.Fill,
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Font = new Font("Segoe UI", 9f),
-                Margin = new Padding(0, 5, 0, 5)
+                Margin = new Padding(0, 5, 0, 5),
+                BackColor = Theme.InputBackground,
+                ForeColor = Theme.PrimaryText
             };
             _keyComboBox.SelectedIndexChanged += (s, e) => UpdatePreview();
             layout.Controls.Add(_keyComboBox, 1, 1);
@@ -190,7 +194,7 @@ namespace BeatBind.Presentation.Forms
             {
                 Text = "Modifiers:",
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(33, 37, 41),
+                ForeColor = Theme.PrimaryText,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.TopRight,
                 Margin = new Padding(0, 10, 10, 5)
@@ -210,7 +214,8 @@ namespace BeatBind.Presentation.Forms
                 Text = "Ctrl",
                 AutoSize = true,
                 Font = new Font("Segoe UI", 9f),
-                Margin = new Padding(0, 0, 15, 5)
+                Margin = new Padding(0, 0, 15, 5),
+                ForeColor = Theme.PrimaryText
             };
             _ctrlCheckBox.CheckedChanged += (s, e) => UpdatePreview();
 
@@ -219,7 +224,8 @@ namespace BeatBind.Presentation.Forms
                 Text = "Alt",
                 AutoSize = true,
                 Font = new Font("Segoe UI", 9f),
-                Margin = new Padding(0, 0, 15, 5)
+                Margin = new Padding(0, 0, 15, 5),
+                ForeColor = Theme.PrimaryText
             };
             _altCheckBox.CheckedChanged += (s, e) => UpdatePreview();
 
@@ -228,7 +234,8 @@ namespace BeatBind.Presentation.Forms
                 Text = "Shift",
                 AutoSize = true,
                 Font = new Font("Segoe UI", 9f),
-                Margin = new Padding(0, 0, 15, 5)
+                Margin = new Padding(0, 0, 15, 5),
+                ForeColor = Theme.PrimaryText
             };
             _shiftCheckBox.CheckedChanged += (s, e) => UpdatePreview();
 
@@ -237,7 +244,8 @@ namespace BeatBind.Presentation.Forms
                 Text = "Win",
                 AutoSize = true,
                 Font = new Font("Segoe UI", 9f),
-                Margin = new Padding(0, 0, 15, 5)
+                Margin = new Padding(0, 0, 15, 5),
+                ForeColor = Theme.PrimaryText
             };
             _winCheckBox.CheckedChanged += (s, e) => UpdatePreview();
 
@@ -249,7 +257,7 @@ namespace BeatBind.Presentation.Forms
             {
                 Text = "Preview:",
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(33, 37, 41),
+                ForeColor = Theme.PrimaryText,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleRight,
                 Margin = new Padding(0, 10, 10, 5)
@@ -260,8 +268,8 @@ namespace BeatBind.Presentation.Forms
             {
                 Text = "No hotkey configured",
                 Font = new Font("Consolas", 9f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(108, 117, 125),
-                BackColor = Color.FromArgb(248, 249, 250),
+                ForeColor = Theme.SecondaryText,
+                BackColor = Theme.HeaderBackground,
                 BorderStyle = BorderStyle.FixedSingle,
                 TextAlign = ContentAlignment.MiddleCenter,
                 Dock = DockStyle.Fill,
@@ -274,7 +282,7 @@ namespace BeatBind.Presentation.Forms
             {
                 Text = "Enabled:",
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(33, 37, 41),
+                ForeColor = Theme.PrimaryText,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleRight,
                 Margin = new Padding(0, 10, 10, 5)
@@ -287,7 +295,8 @@ namespace BeatBind.Presentation.Forms
                 Checked = true,
                 Font = new Font("Segoe UI", 9f),
                 Dock = DockStyle.Fill,
-                Margin = new Padding(0, 10, 0, 5)
+                Margin = new Padding(0, 10, 0, 5),
+                ForeColor = Theme.PrimaryText
             };
             layout.Controls.Add(_enabledCheckBox, 1, 4);
 
@@ -296,7 +305,7 @@ namespace BeatBind.Presentation.Forms
             {
                 Dock = DockStyle.Bottom,
                 Height = 60,
-                BackColor = Color.FromArgb(248, 249, 250),
+                BackColor = Theme.FormBackground,
                 Padding = new Padding(15)
             };
 
@@ -312,7 +321,7 @@ namespace BeatBind.Presentation.Forms
                 Size = new Size(100, 35),
                 Font = new Font("Segoe UI", 9f),
                 FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(108, 117, 125),
+                BackColor = Theme.SecondaryButton,
                 ForeColor = Color.White,
                 DialogResult = DialogResult.Cancel,
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Right
@@ -325,7 +334,7 @@ namespace BeatBind.Presentation.Forms
                 Size = new Size(100, 35),
                 Font = new Font("Segoe UI", 9f),
                 FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(40, 167, 69),
+                BackColor = Theme.Success,
                 ForeColor = Color.White,
                 DialogResult = DialogResult.OK,
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Right

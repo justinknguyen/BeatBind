@@ -90,7 +90,7 @@ namespace BeatBind.Presentation.Forms
             }
 
             _lastHotkeyLabel.Text = $"{hotkey.Action}";
-            _lastHotkeyLabel.ForeColor = Color.FromArgb(0, 123, 255);
+            _lastHotkeyLabel.ForeColor = Theme.Info;
         }
 
         private void InitializeComponent()
@@ -103,7 +103,7 @@ namespace BeatBind.Presentation.Forms
             StartPosition = FormStartPosition.CenterScreen;
             FormBorderStyle = FormBorderStyle.Sizable;
             MinimumSize = new Size(600, 500);
-            BackColor = Color.FromArgb(248, 249, 250);
+            BackColor = Theme.FormBackground;
 
             // Create modern tab control
             _mainTabControl = new TabControl
@@ -127,7 +127,7 @@ namespace BeatBind.Presentation.Forms
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
                 RowCount = 2,
-                BackColor = Color.FromArgb(248, 249, 250),
+                BackColor = Theme.FormBackground,
                 Padding = new Padding(15)
             };
 
@@ -139,7 +139,7 @@ namespace BeatBind.Presentation.Forms
             var tabContainer = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.FromArgb(248, 249, 250)
+                BackColor = Theme.FormBackground
             };
             tabContainer.Controls.Add(_mainTabControl);
 
@@ -147,7 +147,7 @@ namespace BeatBind.Presentation.Forms
             var saveButtonContainer = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.FromArgb(248, 249, 250),
+                BackColor = Theme.FormBackground,
                 Padding = new Padding(0, 10, 0, 0)
             };
 
@@ -157,7 +157,7 @@ namespace BeatBind.Presentation.Forms
                 Size = new Size(200, 40),
                 Font = new Font("Segoe UI", 10f),
                 FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(40, 167, 69),
+                BackColor = Theme.Success,
                 ForeColor = Color.White,
                 Cursor = Cursors.Hand,
                 Anchor = AnchorStyles.None
@@ -187,7 +187,7 @@ namespace BeatBind.Presentation.Forms
         {
             var authTab = new TabPage("🔐 Authentication")
             {
-                BackColor = Color.White,
+                BackColor = Theme.CardBackground,
                 Padding = new Padding(15)
             };
 
@@ -196,7 +196,7 @@ namespace BeatBind.Presentation.Forms
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
                 RowCount = 2,
-                BackColor = Color.White
+                BackColor = Theme.CardBackground
             };
 
             // Set row styles to fit the available space
@@ -219,7 +219,7 @@ namespace BeatBind.Presentation.Forms
         {
             var hotkeysTab = new TabPage("⌨️ Hotkeys")
             {
-                BackColor = Color.White,
+                BackColor = Theme.CardBackground,
                 Padding = new Padding(20)
             };
 
@@ -227,7 +227,7 @@ namespace BeatBind.Presentation.Forms
             {
                 Dock = DockStyle.Fill,
                 AutoScroll = true,
-                BackColor = Color.White
+                BackColor = Theme.CardBackground
             };
 
             var mainLayout = new TableLayoutPanel
@@ -236,7 +236,7 @@ namespace BeatBind.Presentation.Forms
                 ColumnCount = 1,
                 RowCount = 2,
                 AutoSize = true,
-                BackColor = Color.White
+                BackColor = Theme.CardBackground
             };
 
             // Last Hotkey Status Card
@@ -256,7 +256,7 @@ namespace BeatBind.Presentation.Forms
         {
             var settingsTab = new TabPage("⚙️ Settings")
             {
-                BackColor = Color.White,
+                BackColor = Theme.CardBackground,
                 Padding = new Padding(15)
             };
 
@@ -265,7 +265,7 @@ namespace BeatBind.Presentation.Forms
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
                 RowCount = 2,
-                BackColor = Color.White
+                BackColor = Theme.CardBackground
             };
 
             // Set row styles to fit the available space
@@ -400,7 +400,7 @@ namespace BeatBind.Presentation.Forms
                 Text = "Client ID",
                 Dock = DockStyle.Top,
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(73, 80, 87),
+                ForeColor = Theme.LabelText,
                 Margin = new Padding(0, 0, 0, 5),
                 AutoSize = true
             };
@@ -411,7 +411,9 @@ namespace BeatBind.Presentation.Forms
                 Font = new Font("Segoe UI", 10f),
                 BorderStyle = BorderStyle.FixedSingle,
                 Height = 30,
-                Margin = new Padding(0, 0, 0, 15)
+                Margin = new Padding(0, 0, 0, 15),
+                BackColor = Theme.InputBackground,
+                ForeColor = Theme.PrimaryText
             };
 
             var clientSecretLabel = new Label
@@ -419,7 +421,7 @@ namespace BeatBind.Presentation.Forms
                 Text = "Client Secret",
                 Dock = DockStyle.Top,
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(73, 80, 87),
+                ForeColor = Theme.LabelText,
                 Margin = new Padding(0, 0, 0, 5),
                 AutoSize = true
             };
@@ -431,7 +433,9 @@ namespace BeatBind.Presentation.Forms
                 Font = new Font("Segoe UI", 10f),
                 BorderStyle = BorderStyle.FixedSingle,
                 Height = 30,
-                Margin = new Padding(0, 0, 0, 0)
+                Margin = new Padding(0, 0, 0, 0),
+                BackColor = Theme.InputBackground,
+                ForeColor = Theme.PrimaryText
             };
 
             layout.Controls.Add(clientIdLabel, 0, 0);
@@ -491,7 +495,7 @@ namespace BeatBind.Presentation.Forms
             {
                 Dock = DockStyle.Top,
                 Height = 60,
-                BackColor = Color.FromArgb(248, 249, 250),
+                BackColor = Theme.HeaderBackground,
                 Padding = new Padding(15)
             };
 
@@ -500,7 +504,7 @@ namespace BeatBind.Presentation.Forms
                 Text = "Not authenticated",
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleCenter,
-                ForeColor = Color.FromArgb(220, 53, 69),
+                ForeColor = Theme.Error,
                 Font = new Font("Segoe UI", 11f, FontStyle.Bold)
             };
 
@@ -512,8 +516,8 @@ namespace BeatBind.Presentation.Forms
                 Height = 40,
                 Font = new Font("Segoe UI", 10f),
                 FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
+                BackColor = Theme.PrimaryButton,
+                ForeColor = Theme.PrimaryButtonText,
                 Cursor = Cursors.Hand,
                 Dock = DockStyle.Top,
                 Margin = new Padding(0, 10, 0, 0)
@@ -537,7 +541,7 @@ namespace BeatBind.Presentation.Forms
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Font = new Font("Segoe UI", 10f),
-                ForeColor = Color.FromArgb(108, 117, 125)
+                ForeColor = Theme.SecondaryText
             };
 
             panel.Controls.Add(_lastHotkeyLabel);
@@ -554,8 +558,8 @@ namespace BeatBind.Presentation.Forms
                 Size = new Size(150, 35),
                 Font = new Font("Segoe UI", 9f),
                 FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(0, 123, 255),
-                ForeColor = Color.White,
+                BackColor = Theme.PrimaryButton,
+                ForeColor = Theme.PrimaryButtonText,
                 Cursor = Cursors.Hand,
                 Location = new Point(0, 8),
                 Dock = DockStyle.Top,
@@ -570,7 +574,7 @@ namespace BeatBind.Presentation.Forms
                 FlowDirection = FlowDirection.TopDown,
                 WrapContents = false,
                 AutoScroll = true,
-                BackColor = Color.White,
+                BackColor = Theme.CardBackground,
                 Padding = new Padding(0, 5, 5, 5)
             };
 
@@ -736,7 +740,7 @@ namespace BeatBind.Presentation.Forms
                 Text = "BeatBind v1.0\nGlobal hotkeys for Spotify\n\nDeveloped with ❤️",
                 Dock = DockStyle.Fill,
                 Font = new Font("Segoe UI", 9f),
-                ForeColor = Color.FromArgb(108, 117, 125),
+                ForeColor = Theme.SecondaryText,
                 TextAlign = ContentAlignment.TopLeft
             };
 
@@ -754,7 +758,7 @@ namespace BeatBind.Presentation.Forms
                 ColumnCount = 2,
                 RowCount = 5,
                 Padding = new Padding(5),
-                BackColor = Color.White
+                BackColor = Theme.CardBackground
             };
 
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60));
@@ -770,7 +774,7 @@ namespace BeatBind.Presentation.Forms
             {
                 Text = "General Settings",
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(33, 37, 41),
+                ForeColor = Theme.PrimaryText,
                 AutoSize = true,
                 Margin = new Padding(0, 0, 0, 3)
             };
@@ -791,7 +795,8 @@ namespace BeatBind.Presentation.Forms
                 Text = "Start with Windows",
                 Font = new Font("Segoe UI", 8f),
                 AutoSize = true,
-                Margin = new Padding(0, 0, 20, 0)
+                Margin = new Padding(0, 0, 20, 0),
+                ForeColor = Theme.PrimaryText
             };
 
             _minimizeCheckBox = new CheckBox
@@ -799,14 +804,16 @@ namespace BeatBind.Presentation.Forms
                 Text = "Minimize to tray",
                 Font = new Font("Segoe UI", 8f),
                 AutoSize = true,
-                Margin = new Padding(0, 0, 20, 0)
+                Margin = new Padding(0, 0, 20, 0),
+                ForeColor = Theme.PrimaryText
             };
 
             _darkModeCheckBox = new CheckBox
             {
                 Text = "Dark mode",
                 Font = new Font("Segoe UI", 8f),
-                AutoSize = true
+                AutoSize = true,
+                ForeColor = Theme.PrimaryText
             };
             _darkModeCheckBox.CheckedChanged += DarkModeCheckBox_CheckedChanged;
 
@@ -821,7 +828,7 @@ namespace BeatBind.Presentation.Forms
             {
                 Text = "Audio Control Settings",
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(33, 37, 41),
+                ForeColor = Theme.PrimaryText,
                 AutoSize = true,
                 Margin = new Padding(0, 5, 0, 3)
             };
@@ -834,7 +841,8 @@ namespace BeatBind.Presentation.Forms
                 Font = new Font("Segoe UI", 8f),
                 Checked = true,
                 AutoSize = true,
-                Margin = new Padding(0, 0, 0, 8)
+                Margin = new Padding(0, 0, 0, 8),
+                ForeColor = Theme.PrimaryText
             };
             layout.Controls.Add(_rewindCheckBox, 0, 3);
             layout.SetColumnSpan(_rewindCheckBox, 2);
@@ -858,7 +866,8 @@ namespace BeatBind.Presentation.Forms
                 Font = new Font("Segoe UI", 8f),
                 TextAlign = ContentAlignment.MiddleLeft,
                 AutoSize = true,
-                Margin = new Padding(0, 3, 5, 3)
+                Margin = new Padding(0, 3, 5, 3),
+                ForeColor = Theme.PrimaryText
             };
 
             _volumeStepsNumeric = new NumericUpDown
@@ -868,7 +877,9 @@ namespace BeatBind.Presentation.Forms
                 Value = 10,
                 Font = new Font("Segoe UI", 8f),
                 Width = 60,
-                Margin = new Padding(0, 3, 15, 3)
+                Margin = new Padding(0, 3, 15, 3),
+                BackColor = Theme.InputBackground,
+                ForeColor = Theme.PrimaryText
             };
 
             var seekLabel = new Label
@@ -877,7 +888,8 @@ namespace BeatBind.Presentation.Forms
                 Font = new Font("Segoe UI", 8f),
                 TextAlign = ContentAlignment.MiddleLeft,
                 AutoSize = true,
-                Margin = new Padding(0, 3, 5, 3)
+                Margin = new Padding(0, 3, 5, 3),
+                ForeColor = Theme.PrimaryText
             };
 
             _seekMillisecondsNumeric = new NumericUpDown
@@ -888,7 +900,9 @@ namespace BeatBind.Presentation.Forms
                 Increment = 1000,
                 Font = new Font("Segoe UI", 8f),
                 Width = 80,
-                Margin = new Padding(0, 3, 0, 3)
+                Margin = new Padding(0, 3, 0, 3),
+                BackColor = Theme.InputBackground,
+                ForeColor = Theme.PrimaryText
             };
 
             controlsPanel.Controls.Add(volumeLabel, 0, 0);
@@ -901,177 +915,6 @@ namespace BeatBind.Presentation.Forms
 
             panel.Controls.Add(layout);
             return panel;
-        }
-
-        private GroupBox CreateCredentialsSection()
-        {
-            var credentialsGroup = new GroupBox
-            {
-                Text = "Spotify Client Credentials",
-                Height = 120,
-                Dock = DockStyle.Top
-            };
-
-            var layout = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                ColumnCount = 2,
-                RowCount = 2,
-                Padding = new Padding(10)
-            };
-
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70));
-
-            var clientIdLabel = new Label { Text = "Client ID:", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleRight };
-            _clientIdTextBox = new TextBox { Dock = DockStyle.Fill };
-
-            var clientSecretLabel = new Label { Text = "Client Secret:", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleRight };
-            _clientSecretTextBox = new TextBox { Dock = DockStyle.Fill, UseSystemPasswordChar = true };
-
-            layout.Controls.Add(clientIdLabel, 0, 0);
-            layout.Controls.Add(_clientIdTextBox, 1, 0);
-            layout.Controls.Add(clientSecretLabel, 0, 1);
-            layout.Controls.Add(_clientSecretTextBox, 1, 1);
-
-            credentialsGroup.Controls.Add(layout);
-            return credentialsGroup;
-        }
-
-        private GroupBox CreateAuthenticationSection()
-        {
-            var authGroup = new GroupBox
-            {
-                Text = "Authentication",
-                Height = 70,
-                Dock = DockStyle.Top
-            };
-
-            _authenticateButton = new Button
-            {
-                Text = "Authenticate with Spotify",
-                Size = new Size(200, 30),
-                Dock = DockStyle.Fill
-            };
-            _authenticateButton.Click += AuthenticateButton_Click;
-
-            authGroup.Controls.Add(_authenticateButton);
-            return authGroup;
-        }
-
-        private GroupBox CreateStatusSection()
-        {
-            var statusGroup = new GroupBox
-            {
-                Text = "Status",
-                Height = 60,
-                Dock = DockStyle.Top
-            };
-
-            _statusLabel = new Label
-            {
-                Text = "Not authenticated",
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleCenter,
-                ForeColor = Color.Red
-            };
-            statusGroup.Controls.Add(_statusLabel);
-
-            return statusGroup;
-        }
-
-        private GroupBox CreateLastHotkeySection()
-        {
-            var lastHotkeyGroup = new GroupBox
-            {
-                Text = "Last Hotkey Triggered",
-                Height = 50,
-                Dock = DockStyle.Top
-            };
-
-            _lastHotkeyLabel = new Label
-            {
-                Text = "(none)",
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleCenter,
-                Font = new Font(FontFamily.GenericSansSerif, 10, FontStyle.Bold),
-                ForeColor = Color.Blue
-            };
-            lastHotkeyGroup.Controls.Add(_lastHotkeyLabel);
-
-            return lastHotkeyGroup;
-        }
-
-        private Panel CreateHotkeyConfigurationSection()
-        {
-            var hotkeyPanel = new Panel
-            {
-                Height = 350,
-                Dock = DockStyle.Top
-            };
-
-            var hotkeyGroupBox = new GroupBox
-            {
-                Text = "Hotkey Configuration",
-                Dock = DockStyle.Fill
-            };
-
-            var hotkeyLayout = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                ColumnCount = 1,
-                RowCount = 3,
-                Padding = new Padding(10)
-            };
-
-            hotkeyLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            hotkeyLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            hotkeyLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
-            _addHotkeyButton = new Button
-            {
-                Text = "Add New Hotkey",
-                Height = 30,
-                Dock = DockStyle.Fill
-            };
-            _addHotkeyButton.Click += AddHotkeyButton_Click;
-
-            _hotkeyFlowPanel = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.TopDown,
-                WrapContents = false,
-                AutoScroll = true
-            };
-
-            hotkeyLayout.Controls.Add(_addHotkeyButton, 0, 0);
-            hotkeyLayout.Controls.Add(_hotkeyFlowPanel, 0, 1);
-
-            hotkeyGroupBox.Controls.Add(hotkeyLayout);
-            hotkeyPanel.Controls.Add(hotkeyGroupBox);
-
-            return hotkeyPanel;
-        }
-
-        private GroupBox CreateSaveConfigurationSection()
-        {
-            var saveGroup = new GroupBox
-            {
-                Text = "Configuration",
-                Height = 70,
-                Dock = DockStyle.Top
-            };
-
-            _saveConfigButton = new Button
-            {
-                Text = "Save Configuration",
-                Size = new Size(50, 30),
-                Dock = DockStyle.Fill
-            };
-            _saveConfigButton.Click += SaveConfigButton_Click;
-
-            saveGroup.Controls.Add(_saveConfigButton);
-            return saveGroup;
         }
 
         private void SetupNotifyIcon()
@@ -1263,8 +1106,8 @@ namespace BeatBind.Presentation.Forms
                     // Handle header labels specially
                     if (label.Tag?.ToString() == "header")
                     {
-                        label.ForeColor = Theme.IsDarkMode ? Color.FromArgb(189, 193, 198) : Color.FromArgb(33, 37, 41);
-                        label.BackColor = Theme.IsDarkMode ? Color.FromArgb(50, 51, 54) : Color.FromArgb(248, 249, 250);
+                        label.ForeColor = Theme.PrimaryText;
+                        label.BackColor = Theme.HeaderBackground;
                     }
                     else
                     {
@@ -1308,7 +1151,11 @@ namespace BeatBind.Presentation.Forms
                 else if (child is Button button && button != _saveConfigButton && button != _authenticateButton && button != _addHotkeyButton)
                 {
                     // Don't change primary action buttons
-                    if (button.BackColor == Color.FromArgb(108, 117, 125) || button.BackColor == Color.FromArgb(95, 99, 104))
+                    // Check if it's a secondary button (by checking against known secondary colors or just default)
+                    // This is a bit heuristic, but we can check if it matches the "other" theme's secondary color
+                    var otherThemeSecondary = Theme.IsDarkMode ? Color.FromArgb(108, 117, 125) : Color.FromArgb(95, 99, 104);
+                    
+                    if (button.BackColor == otherThemeSecondary || button.BackColor == Theme.SecondaryButton)
                     {
                         button.BackColor = Theme.SecondaryButton;
                         button.ForeColor = Color.White;
@@ -1412,13 +1259,13 @@ namespace BeatBind.Presentation.Forms
             if (_isAuthenticated)
             {
                 _statusLabel.Text = "Authenticated ✓";
-                _statusLabel.ForeColor = Color.FromArgb(40, 167, 69);
+                _statusLabel.ForeColor = Theme.Success;
                 _authenticateButton.Text = "🔗 Re-authenticate";
             }
             else
             {
                 _statusLabel.Text = "Not authenticated";
-                _statusLabel.ForeColor = Color.FromArgb(220, 53, 69);
+                _statusLabel.ForeColor = Theme.Error;
                 _authenticateButton.Text = "🔗 Authenticate with Spotify";
             }
         }

@@ -33,7 +33,7 @@ namespace BeatBind.Presentation.Forms
         private void InitializeComponent()
         {
             Size = new Size(540, 60);
-            BackColor = Color.White;
+            BackColor = Theme.CardBackground;
             BorderStyle = BorderStyle.None;
             Margin = new Padding(0, 0, 0, 8);
 
@@ -41,7 +41,7 @@ namespace BeatBind.Presentation.Forms
             var cardPanel = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.White,
+                BackColor = Theme.CardBackground,
                 Padding = new Padding(1)
             };
 
@@ -51,7 +51,7 @@ namespace BeatBind.Presentation.Forms
                 var rect = cardPanel.ClientRectangle;
                 rect.Width -= 1;
                 rect.Height -= 1;
-                using (var shadowPen = new Pen(Color.FromArgb(220, 220, 220)))
+                using (var shadowPen = new Pen(Theme.Border))
                 {
                     e.Graphics.DrawRectangle(shadowPen, rect);
                 }
@@ -60,7 +60,7 @@ namespace BeatBind.Presentation.Forms
             var contentPanel = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.White,
+                BackColor = Theme.CardBackground,
                 Padding = new Padding(12, 8, 12, 8)
             };
 
@@ -69,7 +69,7 @@ namespace BeatBind.Presentation.Forms
                 Dock = DockStyle.Fill,
                 ColumnCount = 4,
                 RowCount = 1,
-                BackColor = Color.White
+                BackColor = Theme.CardBackground
             };
 
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));
@@ -82,7 +82,7 @@ namespace BeatBind.Presentation.Forms
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(33, 37, 41),
+                ForeColor = Theme.PrimaryText,
                 BackColor = Color.Transparent
             };
 
@@ -91,8 +91,8 @@ namespace BeatBind.Presentation.Forms
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleCenter,
                 Font = new Font("Consolas", 8.5f),
-                ForeColor = Color.FromArgb(108, 117, 125),
-                BackColor = Color.FromArgb(248, 249, 250),
+                ForeColor = Theme.SecondaryText,
+                BackColor = Theme.HeaderBackground,
                 BorderStyle = BorderStyle.FixedSingle,
                 Margin = new Padding(0, 5, 8, 5),
                 Padding = new Padding(8, 5, 8, 5)
@@ -104,8 +104,8 @@ namespace BeatBind.Presentation.Forms
                 Size = new Size(40, 32),
                 Font = new Font("Segoe UI", 10f),
                 FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(255, 193, 7),
-                ForeColor = Color.FromArgb(33, 37, 41),
+                BackColor = Theme.Warning,
+                ForeColor = Theme.PrimaryText,
                 Cursor = Cursors.Hand,
                 Margin = new Padding(4, 5, 4, 5)
             };
@@ -118,7 +118,7 @@ namespace BeatBind.Presentation.Forms
                 Size = new Size(40, 32),
                 Font = new Font("Segoe UI", 10f),
                 FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(220, 53, 69),
+                BackColor = Theme.DangerButton,
                 ForeColor = Color.White,
                 Cursor = Cursors.Hand,
                 Margin = new Padding(4, 5, 0, 5)
