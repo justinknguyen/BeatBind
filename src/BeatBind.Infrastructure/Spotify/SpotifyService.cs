@@ -130,7 +130,9 @@ namespace BeatBind.Infrastructure.Spotify
             {
                 if (!await EnsureValidTokenAsync()) return null;
 
-                var request = new HttpRequestMessage(HttpMethod.Get, "https://api.spotify.com/v1/me/player");
+                var url = "https://api.spotify.com/v1/me/player";
+                _logger.LogInformation("GET {Url}", url);
+                var request = new HttpRequestMessage(HttpMethod.Get, url);
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _currentAuth!.AccessToken);
 
                 var response = await _httpClient.SendAsync(request);
@@ -186,6 +188,7 @@ namespace BeatBind.Infrastructure.Spotify
 
                 volume = Math.Clamp(volume, 0, 100);
                 var url = $"https://api.spotify.com/v1/me/player/volume?volume_percent={volume}";
+                _logger.LogInformation("PUT {Url}", url);
                 
                 var request = new HttpRequestMessage(HttpMethod.Put, url);
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _currentAuth!.AccessToken);
@@ -290,6 +293,7 @@ namespace BeatBind.Infrastructure.Spotify
 
                 positionMs = Math.Max(0, positionMs);
                 var url = $"https://api.spotify.com/v1/me/player/seek?position_ms={positionMs}";
+                _logger.LogInformation("PUT {Url}", url);
                 
                 var request = new HttpRequestMessage(HttpMethod.Put, url);
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _currentAuth!.AccessToken);
@@ -326,6 +330,7 @@ namespace BeatBind.Infrastructure.Spotify
                 if (!await EnsureValidTokenAsync()) return false;
 
                 var url = useFullUrl ? endpoint : $"https://api.spotify.com/v1/me/player/{endpoint}";
+                _logger.LogInformation("{Method} {Url}", method.Method, url);
                 var request = new HttpRequestMessage(method, url);
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _currentAuth!.AccessToken);
 
