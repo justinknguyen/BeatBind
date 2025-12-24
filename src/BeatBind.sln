@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -11,6 +11,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeatBind.Infrastructure", "BeatBind.Infrastructure\BeatBind.Infrastructure.csproj", "{44444444-4444-4444-4444-444444444444}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeatBind.Presentation", "BeatBind.Presentation\BeatBind.Presentation.csproj", "{55555555-5555-5555-5555-555555555555}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeatBind.Tests", "BeatBind.Tests\BeatBind.Tests.csproj", "{BC9A5D5C-3819-4D49-9A4F-99AC971052CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,5 +40,9 @@ Global
 		{55555555-5555-5555-5555-555555555555}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55555555-5555-5555-5555-555555555555}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55555555-5555-5555-5555-555555555555}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC9A5D5C-3819-4D49-9A4F-99AC971052CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC9A5D5C-3819-4D49-9A4F-99AC971052CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC9A5D5C-3819-4D49-9A4F-99AC971052CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC9A5D5C-3819-4D49-9A4F-99AC971052CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
