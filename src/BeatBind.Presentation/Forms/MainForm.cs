@@ -10,11 +10,14 @@ using BeatBind.Domain.Interfaces;
 using BeatBind.Presentation.Themes;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using MaterialSkin;
+using MaterialSkin.Controls;
 
 namespace BeatBind.Presentation.Forms
 {
-    public partial class MainForm : Form
+    public partial class MainForm : MaterialForm
     {
+        private readonly MaterialSkinManager _materialSkinManager;
         private readonly MusicControlService _musicControlService;
         private HotkeyManagementService _hotkeyManagementService = null!;
         private readonly IMediator _mediator;
@@ -25,22 +28,22 @@ namespace BeatBind.Presentation.Forms
         private bool _isAuthenticated;
 
         // UI Controls
-        private TabControl _mainTabControl = null!;
-        private TextBox _clientIdTextBox = null!;
-        private TextBox _clientSecretTextBox = null!;
-        private Button _authenticateButton = null!;
-        private Label _statusLabel = null!;
+        private MaterialTabControl _mainTabControl = null!;
+        private MaterialTextBox _clientIdTextBox = null!;
+        private MaterialTextBox _clientSecretTextBox = null!;
+        private MaterialButton _authenticateButton = null!;
+        private MaterialLabel _statusLabel = null!;
         private Panel _hotkeyPanel = null!;
-        private Label _lastHotkeyLabel = null!;
+        private MaterialLabel _lastHotkeyLabel = null!;
         private FlowLayoutPanel _hotkeyFlowPanel = null!;
-        private Button _addHotkeyButton = null!;
-        private Button _saveConfigButton = null!;
+        private MaterialButton _addHotkeyButton = null!;
+        private MaterialButton _saveConfigButton = null!;
         private Dictionary<string, HotkeyEntry> _hotkeyEntries = new();
         
         // Settings controls
-        private CheckBox _startupCheckBox = null!;
-        private CheckBox _minimizeCheckBox = null!;
-        private CheckBox _rewindCheckBox = null!;
+        private MaterialCheckbox _startupCheckBox = null!;
+        private MaterialCheckbox _minimizeCheckBox = null!;
+        private MaterialCheckbox _rewindCheckBox = null!;
         private NumericUpDown _volumeStepsNumeric = null!;
         private NumericUpDown _seekMillisecondsNumeric = null!;
 
@@ -54,6 +57,16 @@ namespace BeatBind.Presentation.Forms
             _mediator = mediator;
             _configurationService = configurationService;
             _logger = logger;
+
+            // Initialize MaterialSkinManager
+            _materialSkinManager = MaterialSkinManager.Instance;
+            _materialSkinManager.AddFormToManage(this);
+            _materialSkinManager.Theme = MaterialSkinManager.Themes.DARK;
+            _materialSkinManager.ColorScheme = new ColorScheme(
+                Primary.Green700, Primary.Green900,
+                Primary.Green500, Accent.LightGreen200,
+                TextShade.WHITE
+            );
 
             InitializeComponent();
             SetupNotifyIcon();
@@ -105,14 +118,12 @@ namespace BeatBind.Presentation.Forms
             BackColor = Theme.FormBackground;
 
             // Create modern tab control
-            _mainTabControl = new TabControl
+            _mainTabControl = new MaterialTabControl
             {
                 Dock = DockStyle.Fill,
                 Margin = new Padding(10),
-                Font = new Font("Segoe UI", 10f),
-                Appearance = TabAppearance.Normal,
-                SizeMode = TabSizeMode.Fixed,
-                ItemSize = new Size(120, 35)
+                Depth = 0,
+                MouseState = MaterialSkin.MouseState.HOVER
             };
 
             // Create tabs
@@ -150,18 +161,16 @@ namespace BeatBind.Presentation.Forms
                 Padding = new Padding(0, 10, 0, 0)
             };
 
-            _saveConfigButton = new Button
+            _saveConfigButton = new MaterialButton
             {
-                Text = "💾 Save Configuration",
-                Size = new Size(200, 40),
-                Font = new Font("Segoe UI", 10f),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Theme.Success,
-                ForeColor = Color.White,
-                Cursor = Cursors.Hand,
-                Anchor = AnchorStyles.None
+                Text = "SAVE CONFIGURATION",
+                Size = new Size(220, 40),
+                Type = MaterialButton.MaterialButtonType.Contained,
+                Depth = 0,
+                Anchor = AnchorStyles.None,
+                UseAccentColor = false,
+                AutoSize = false
             };
-            _saveConfigButton.FlatAppearance.BorderSize = 0;
             _saveConfigButton.Click += SaveConfigButton_Click;
 
             // Center the button
@@ -404,15 +413,13 @@ namespace BeatBind.Presentation.Forms
                 AutoSize = true
             };
 
-            _clientIdTextBox = new TextBox
+            _clientIdTextBox = new MaterialTextBox
             {
                 Dock = DockStyle.Top,
                 Font = new Font("Segoe UI", 10f),
-                BorderStyle = BorderStyle.FixedSingle,
-                Height = 30,
+                Height = 48,
                 Margin = new Padding(0, 0, 0, 15),
-                BackColor = Theme.InputBackground,
-                ForeColor = Theme.PrimaryText
+                Hint = "Enter your Spotify Client ID"
             };
 
             var clientSecretLabel = new Label
@@ -425,16 +432,14 @@ namespace BeatBind.Presentation.Forms
                 AutoSize = true
             };
 
-            _clientSecretTextBox = new TextBox
+            _clientSecretTextBox = new MaterialTextBox
             {
                 Dock = DockStyle.Top,
-                UseSystemPasswordChar = true,
+                Password = true,
                 Font = new Font("Segoe UI", 10f),
-                BorderStyle = BorderStyle.FixedSingle,
-                Height = 30,
+                Height = 48,
                 Margin = new Padding(0, 0, 0, 0),
-                BackColor = Theme.InputBackground,
-                ForeColor = Theme.PrimaryText
+                Hint = "Enter your Spotify Client Secret"
             };
 
             layout.Controls.Add(clientIdLabel, 0, 0);
@@ -458,30 +463,28 @@ namespace BeatBind.Presentation.Forms
                 Padding = new Padding(15)
             };
 
-            _statusLabel = new Label
+            _statusLabel = new MaterialLabel
             {
                 Text = "Not authenticated",
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleCenter,
-                ForeColor = Theme.Error,
-                Font = new Font("Segoe UI", 11f, FontStyle.Bold)
+                Font = new Font("Segoe UI", 11f, FontStyle.Bold),
+                HighEmphasis = true
             };
 
             statusContainer.Controls.Add(_statusLabel);
 
-            _authenticateButton = new Button
+            _authenticateButton = new MaterialButton
             {
-                Text = "🔗 Authenticate with Spotify",
-                Height = 40,
-                Font = new Font("Segoe UI", 10f),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Theme.PrimaryButton,
-                ForeColor = Theme.PrimaryButtonText,
-                Cursor = Cursors.Hand,
+                Text = "AUTHENTICATE WITH SPOTIFY",
+                Height = 45,
+                Type = MaterialButton.MaterialButtonType.Contained,
+                Depth = 0,
                 Dock = DockStyle.Top,
-                Margin = new Padding(0, 10, 0, 0)
+                Margin = new Padding(0, 10, 0, 0),
+                UseAccentColor = true,
+                AutoSize = false
             };
-            _authenticateButton.FlatAppearance.BorderSize = 0;
             _authenticateButton.Click += AuthenticateButton_Click;
 
             panel.Controls.Add(_authenticateButton);
@@ -494,13 +497,13 @@ namespace BeatBind.Presentation.Forms
         {
             var panel = new Panel { Height = 40, Dock = DockStyle.Top };
 
-            _lastHotkeyLabel = new Label
+            _lastHotkeyLabel = new MaterialLabel
             {
                 Text = "No hotkey triggered yet",
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Font = new Font("Segoe UI", 10f),
-                ForeColor = Theme.SecondaryText
+                HighEmphasis = false
             };
 
             panel.Controls.Add(_lastHotkeyLabel);
@@ -511,20 +514,18 @@ namespace BeatBind.Presentation.Forms
         {
             var panel = new Panel { Height = 400, Dock = DockStyle.Top };
 
-            _addHotkeyButton = new Button
+            _addHotkeyButton = new MaterialButton
             {
-                Text = "➕ Add New Hotkey",
-                Size = new Size(150, 35),
-                Font = new Font("Segoe UI", 9f),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Theme.PrimaryButton,
-                ForeColor = Theme.PrimaryButtonText,
-                Cursor = Cursors.Hand,
+                Text = "ADD NEW HOTKEY",
+                Size = new Size(180, 40),
+                Type = MaterialButton.MaterialButtonType.Contained,
+                Depth = 0,
                 Location = new Point(0, 8),
                 Dock = DockStyle.Top,
-                Margin = new Padding(0, 0, 0, 10)
+                Margin = new Padding(0, 0, 0, 10),
+                UseAccentColor = false,
+                AutoSize = false
             };
-            _addHotkeyButton.FlatAppearance.BorderSize = 0;
             _addHotkeyButton.Click += AddHotkeyButton_Click;
 
             _hotkeyFlowPanel = new FlowLayoutPanel
@@ -622,22 +623,20 @@ namespace BeatBind.Presentation.Forms
                 Margin = new Padding(0, 0, 0, 8)
             };
 
-            _startupCheckBox = new CheckBox
+            _startupCheckBox = new MaterialCheckbox
             {
                 Text = "Start with Windows",
-                Font = new Font("Segoe UI", 8f),
                 AutoSize = true,
-                Margin = new Padding(0, 0, 20, 0),
-                ForeColor = Theme.PrimaryText
+                Depth = 0,
+                Margin = new Padding(0, 0, 20, 0)
             };
 
-            _minimizeCheckBox = new CheckBox
+            _minimizeCheckBox = new MaterialCheckbox
             {
                 Text = "Minimize to tray",
-                Font = new Font("Segoe UI", 8f),
                 AutoSize = true,
-                Margin = new Padding(0, 0, 20, 0),
-                ForeColor = Theme.PrimaryText
+                Depth = 0,
+                Margin = new Padding(0, 0, 20, 0)
             };
 
             checkboxPanel1.Controls.Add(_startupCheckBox);
@@ -657,14 +656,13 @@ namespace BeatBind.Presentation.Forms
             layout.Controls.Add(audioLabel, 0, 2);
             layout.SetColumnSpan(audioLabel, 2);
 
-            _rewindCheckBox = new CheckBox
+            _rewindCheckBox = new MaterialCheckbox
             {
                 Text = "Previous Track: rewind to start",
-                Font = new Font("Segoe UI", 8f),
                 Checked = true,
                 AutoSize = true,
-                Margin = new Padding(0, 0, 0, 8),
-                ForeColor = Theme.PrimaryText
+                Depth = 0,
+                Margin = new Padding(0, 0, 0, 8)
             };
             layout.Controls.Add(_rewindCheckBox, 0, 3);
             layout.SetColumnSpan(_rewindCheckBox, 2);
