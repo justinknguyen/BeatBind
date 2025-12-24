@@ -37,11 +37,17 @@ namespace BeatBind
 
                 var host = CreateHostBuilder().Build();
                 
+                // Start the host to initialize services (like MainFormInitializerService)
+                host.Start();
+
                 using (host)
                 {
                     var mainForm = host.Services.GetRequiredService<MainForm>();
                     System.Windows.Forms.Application.Run(mainForm);
                 }
+                
+                // Stop the host when application exits
+                host.StopAsync().GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {

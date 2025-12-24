@@ -13,7 +13,7 @@ namespace BeatBind.Presentation.Forms
     public partial class MainForm : Form
     {
         private readonly MusicControlService _musicControlService;
-        private HotkeyManagementService _hotkeyManagementService;
+        private HotkeyManagementService _hotkeyManagementService = null!;
         private readonly AuthenticateUserUseCase _authenticateUserUseCase;
         private readonly SaveConfigurationUseCase _saveConfigurationUseCase;
         private readonly IConfigurationService _configurationService;

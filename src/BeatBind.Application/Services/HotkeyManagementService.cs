@@ -95,7 +95,7 @@ namespace BeatBind.Application.Services
             }
         }
 
-        private async void OnHotkeyPressed(object? sender, Hotkey hotkey)
+        private void OnHotkeyPressed(object? sender, Hotkey hotkey)
         {
             try
             {
@@ -104,11 +104,11 @@ namespace BeatBind.Application.Services
                 // Notify subscribers that a hotkey was triggered
                 HotkeyTriggered?.Invoke(this, hotkey);
 
-                await ExecuteHotkeyAction(hotkey.Action);
+                // Action is already executed by the hotkey service via the registered callback
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to execute hotkey action {Action}", hotkey.Action);
+                _logger.LogError(ex, "Failed to handle hotkey press for {Action}", hotkey.Action);
             }
         }
 
