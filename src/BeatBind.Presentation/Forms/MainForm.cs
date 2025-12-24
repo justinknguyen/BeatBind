@@ -2,10 +2,13 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using BeatBind.Application.Services;
-using BeatBind.Application.UseCases;
+using BeatBind.Application.Authentication.Commands.AuthenticateUser;
+using BeatBind.Application.Configuration.Commands.SaveConfiguration;
+using BeatBind.Application.Configuration.Commands.UpdateClientCredentials;
 using BeatBind.Domain.Entities;
 using BeatBind.Domain.Interfaces;
 using BeatBind.Presentation.Themes;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace BeatBind.Presentation.Forms
@@ -14,8 +17,7 @@ namespace BeatBind.Presentation.Forms
     {
         private readonly MusicControlService _musicControlService;
         private HotkeyManagementService _hotkeyManagementService = null!;
-        private readonly AuthenticateUserUseCase _authenticateUserUseCase;
-        private readonly SaveConfigurationUseCase _saveConfigurationUseCase;
+        private readonly IMediator _mediator;
         private readonly IConfigurationService _configurationService;
         private readonly ILogger<MainForm> _logger;
         
@@ -45,14 +47,12 @@ namespace BeatBind.Presentation.Forms
 
         public MainForm(
             MusicControlService musicControlService,
-            AuthenticateUserUseCase authenticateUserUseCase,
-            SaveConfigurationUseCase saveConfigurationUseCase,
+            IMediator mediator,
             IConfigurationService configurationService,
             ILogger<MainForm> logger)
         {
             _musicControlService = musicControlService;
-            _authenticateUserUseCase = authenticateUserUseCase;
-            _saveConfigurationUseCase = saveConfigurationUseCase;
+            _mediator = mediator;
             _configurationService = configurationService;
             _logger = logger;
 
@@ -826,13 +826,14 @@ namespace BeatBind.Presentation.Forms
                 // Save credentials first
                 if (!string.IsNullOrEmpty(_clientIdTextBox.Text) && !string.IsNullOrEmpty(_clientSecretTextBox.Text))
                 {
-                    _saveConfigurationUseCase.Execute(_clientIdTextBox.Text, _clientSecretTextBox.Text);
+                    await _mediator.Send(new UpdateClientCredentialsCommand(_clientIdTextBox.Text, _clientSecretTextBox.Text));
                 }
 
                 _authenticateButton.Enabled = false;
                 _authenticateButton.Text = "Authenticating...";
 
-                var success = await _authenticateUserUseCase.ExecuteAsync();
+                var result = await _mediator.Send(new AuthenticateUserCommand());
+                var success = result.IsSuccess;
                 
                 _isAuthenticated = success;
                 UpdateAuthenticationStatus();
@@ -859,7 +860,7 @@ namespace BeatBind.Presentation.Forms
             }
         }
 
-        private void SaveConfigButton_Click(object? sender, EventArgs e)
+        private async void SaveConfigButton_Click(object? sender, EventArgs e)
         {
             try
             {
@@ -876,7 +877,7 @@ namespace BeatBind.Presentation.Forms
                 config.SeekMilliseconds = (int)_seekMillisecondsNumeric.Value;
                 config.DarkMode = _darkModeCheckBox.Checked;
 
-                _saveConfigurationUseCase.Execute(config);
+                await _mediator.Send(new SaveConfigurationCommand(config));
 
                 MessageBox.Show("Configuration saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }

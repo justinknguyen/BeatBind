@@ -1,26 +1,28 @@
-using BeatBind.Domain.Entities;
+using BeatBind.Application.Abstractions.Messaging;
+using BeatBind.Domain.Common;
 using BeatBind.Domain.Interfaces;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace BeatBind.Application.UseCases
+namespace BeatBind.Application.Authentication.Commands.AuthenticateUser
 {
-    public class AuthenticateUserUseCase
+    public sealed class AuthenticateUserCommandHandler : IRequestHandler<AuthenticateUserCommand, Result>
     {
         private readonly ISpotifyService _spotifyService;
         private readonly IConfigurationService _configurationService;
-        private readonly ILogger<AuthenticateUserUseCase> _logger;
+        private readonly ILogger<AuthenticateUserCommandHandler> _logger;
 
-        public AuthenticateUserUseCase(
+        public AuthenticateUserCommandHandler(
             ISpotifyService spotifyService,
             IConfigurationService configurationService,
-            ILogger<AuthenticateUserUseCase> logger)
+            ILogger<AuthenticateUserCommandHandler> logger)
         {
             _spotifyService = spotifyService;
             _configurationService = configurationService;
             _logger = logger;
         }
 
-        public async Task<bool> ExecuteAsync()
+        public async Task<Result> Handle(AuthenticateUserCommand request, CancellationToken cancellationToken)
         {
             try
             {
@@ -29,7 +31,7 @@ namespace BeatBind.Application.UseCases
                 if (string.IsNullOrEmpty(config.ClientId) || string.IsNullOrEmpty(config.ClientSecret))
                 {
                     _logger.LogWarning("Client credentials are not configured");
-                    return false;
+                    return Result.Failure("Client credentials are not configured");
                 }
 
                 _logger.LogInformation("Starting Spotify authentication...");
@@ -38,18 +40,18 @@ namespace BeatBind.Application.UseCases
                 if (result)
                 {
                     _logger.LogInformation("Authentication successful");
+                    return Result.Success();
                 }
                 else
                 {
                     _logger.LogError("Authentication failed");
+                    return Result.Failure("Authentication failed");
                 }
-
-                return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Authentication process failed");
-                return false;
+                _logger.LogError(ex, "Error during authentication");
+                return Result.Failure(ex.Message);
             }
         }
     }

@@ -1,12 +1,14 @@
 using System.Diagnostics;
 using System.Windows.Forms;
+using BeatBind.Application.Behaviors;
 using BeatBind.Application.Services;
-using BeatBind.Application.UseCases;
 using BeatBind.Domain.Interfaces;
 using BeatBind.Infrastructure.Configuration;
 using BeatBind.Infrastructure.Hotkeys;
 using BeatBind.Infrastructure.Spotify;
 using BeatBind.Presentation.Forms;
+using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -73,8 +75,16 @@ namespace BeatBind
 
                     // Application services
                     services.AddTransient<MusicControlService>();
-                    services.AddTransient<AuthenticateUserUseCase>();
-                    services.AddTransient<SaveConfigurationUseCase>();
+                    
+                    // Register MediatR
+                    services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(BeatBind.Application.Abstractions.Messaging.ICommand).Assembly));
+                    
+                    // Register Validators
+                    services.AddValidatorsFromAssembly(typeof(BeatBind.Application.Abstractions.Messaging.ICommand).Assembly);
+
+                    // Register Pipeline Behavior
+                    services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+                    services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
                     // Register MainForm first without HotkeyManagementService
                     services.AddSingleton<MainForm>();
