@@ -117,8 +117,8 @@ namespace BeatBind.Presentation.Forms
             };
 
             // Create tabs
-            CreateAuthenticationTab();
             CreateHotkeysTab();
+            CreateAuthenticationTab();
             CreateSettingsTab();
 
             // Create main layout for form
@@ -537,6 +537,8 @@ namespace BeatBind.Presentation.Forms
                 BackColor = Theme.CardBackground,
                 Padding = new Padding(0, 5, 5, 5)
             };
+            _hotkeyFlowPanel.HorizontalScroll.Enabled = false;
+            _hotkeyFlowPanel.HorizontalScroll.Visible = false;
 
             // Resize hotkey entries when the panel resizes
             _hotkeyFlowPanel.ClientSizeChanged += (s, e) =>
