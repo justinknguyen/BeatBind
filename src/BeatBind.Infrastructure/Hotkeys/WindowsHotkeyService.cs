@@ -12,20 +12,32 @@ namespace BeatBind.Infrastructure.Hotkeys
         private readonly Dictionary<int, (Hotkey Hotkey, Action Action)> _registeredHotkeys;
         private readonly Form _parentForm;
         private bool _disposed;
+        private IntPtr _hookId = IntPtr.Zero;
+        private readonly HashSet<int> _pressedKeys = new();
+        private readonly LowLevelKeyboardProc _hookCallback;
 
         // Windows API constants
-        private const int WM_HOTKEY = 0x0312;
-        private const uint MOD_ALT = 0x0001;
-        private const uint MOD_CONTROL = 0x0002;
-        private const uint MOD_SHIFT = 0x0004;
-        private const uint MOD_WIN = 0x0008;
+        private const int WH_KEYBOARD_LL = 13;
+        private const int WM_KEYDOWN = 0x0100;
+        private const int WM_SYSKEYDOWN = 0x0104;
+        private const int WM_KEYUP = 0x0101;
+        private const int WM_SYSKEYUP = 0x0105;
 
         // Windows API functions
-        [DllImport("user32.dll")]
-        private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
 
-        [DllImport("user32.dll")]
-        private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
         public event EventHandler<Hotkey>? HotkeyPressed;
 
@@ -34,16 +46,11 @@ namespace BeatBind.Infrastructure.Hotkeys
             _parentForm = parentForm;
             _logger = logger;
             _registeredHotkeys = new Dictionary<int, (Hotkey, Action)>();
+            _hookCallback = HookCallback;
 
-            // Hook into the form's message processing
-            if (_parentForm.IsHandleCreated)
-            {
-                SetupMessageFilter();
-            }
-            else
-            {
-                _parentForm.HandleCreated += OnFormHandleCreated;
-            }
+            // Set up low-level keyboard hook
+            _hookId = SetHook(_hookCallback);
+            _logger.LogInformation("Keyboard hook installed");
         }
 
         public bool RegisterHotkey(Hotkey hotkey, Action action)
@@ -56,23 +63,11 @@ namespace BeatBind.Infrastructure.Hotkeys
                     return false;
                 }
 
-                var modifiers = ConvertModifiers(hotkey.Modifiers);
-                var virtualKey = (uint)hotkey.KeyCode; // Use KeyCode instead of Key
-
-                var success = RegisterHotKey(_parentForm.Handle, hotkey.Id, modifiers, virtualKey);
+                _registeredHotkeys[hotkey.Id] = (hotkey, action);
+                _logger.LogInformation("Registered hotkey: {Action} (ID: {HotkeyId}, Key: {Key}, Modifiers: {Modifiers})", 
+                    hotkey.Action, hotkey.Id, (Keys)hotkey.KeyCode, hotkey.Modifiers);
                 
-                if (success)
-                {
-                    _registeredHotkeys[hotkey.Id] = (hotkey, action);
-                    _logger.LogInformation("Registered hotkey: {Action} (ID: {HotkeyId})", hotkey.Action, hotkey.Id);
-                }
-                else
-                {
-                    var error = Marshal.GetLastWin32Error();
-                    _logger.LogError("Failed to register hotkey {HotkeyId}. Win32 Error: {Error}", hotkey.Id, error);
-                }
-
-                return success;
+                return true;
             }
             catch (Exception ex)
             {
@@ -91,21 +86,11 @@ namespace BeatBind.Infrastructure.Hotkeys
                     return false;
                 }
 
-                var success = UnregisterHotKey(_parentForm.Handle, hotkeyId);
+                var hotkey = _registeredHotkeys[hotkeyId].Hotkey;
+                _registeredHotkeys.Remove(hotkeyId);
+                _logger.LogInformation("Unregistered hotkey: {Action} (ID: {HotkeyId})", hotkey.Action, hotkeyId);
                 
-                if (success)
-                {
-                    var hotkey = _registeredHotkeys[hotkeyId].Hotkey;
-                    _registeredHotkeys.Remove(hotkeyId);
-                    _logger.LogInformation("Unregistered hotkey: {Action} (ID: {HotkeyId})", hotkey.Action, hotkeyId);
-                }
-                else
-                {
-                    var error = Marshal.GetLastWin32Error();
-                    _logger.LogError("Failed to unregister hotkey {HotkeyId}. Win32 Error: {Error}", hotkeyId, error);
-                }
-
-                return success;
+                return true;
             }
             catch (Exception ex)
             {
@@ -128,52 +113,91 @@ namespace BeatBind.Infrastructure.Hotkeys
             return _registeredHotkeys.ContainsKey(hotkeyId);
         }
 
-        private void OnFormHandleCreated(object? sender, EventArgs e)
+        private IntPtr SetHook(LowLevelKeyboardProc proc)
         {
-            SetupMessageFilter();
+            using var curProcess = System.Diagnostics.Process.GetCurrentProcess();
+            using var curModule = curProcess.MainModule;
+            return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule?.ModuleName ?? ""), 0);
         }
 
-        private void SetupMessageFilter()
+        private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            // Add a message filter to capture WM_HOTKEY messages
-            Application.AddMessageFilter(new HotkeyMessageFilter(this));
-        }
-
-        private void OnHotkeyMessage(int hotkeyId)
-        {
-            if (_registeredHotkeys.TryGetValue(hotkeyId, out var hotkeyInfo))
+            if (nCode >= 0)
             {
+                int vkCode = Marshal.ReadInt32(lParam);
+                
+                if (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN)
+                {
+                    _pressedKeys.Add(vkCode);
+                    CheckHotkeys();
+                }
+                else if (wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)WM_SYSKEYUP)
+                {
+                    _pressedKeys.Remove(vkCode);
+                }
+            }
+            
+            // IMPORTANT: Always call next hook to NOT block the key event
+            return CallNextHookEx(_hookId, nCode, wParam, lParam);
+        }
+
+        private void CheckHotkeys()
+        {
+            var currentModifiers = GetCurrentModifiers();
+            
+            foreach (var (hotkeyId, hotkeyInfo) in _registeredHotkeys)
+            {
+                if (!hotkeyInfo.Hotkey.IsEnabled)
+                    continue;
+
+                // Check if the main key is pressed
+                if (!_pressedKeys.Contains(hotkeyInfo.Hotkey.KeyCode))
+                    continue;
+
+                // Check if modifiers match
+                if (hotkeyInfo.Hotkey.Modifiers != currentModifiers)
+                    continue;
+
+                // Hotkey matched! Execute action
                 try
                 {
                     _logger.LogDebug("Hotkey triggered: {Action} (ID: {HotkeyId})", hotkeyInfo.Hotkey.Action, hotkeyId);
                     
-                    // Invoke the action
-                    hotkeyInfo.Action?.Invoke();
-                    
-                    // Fire the event
-                    HotkeyPressed?.Invoke(this, hotkeyInfo.Hotkey);
+                    // Invoke action on UI thread
+                    _parentForm.BeginInvoke(new Action(() =>
+                    {
+                        try
+                        {
+                            hotkeyInfo.Action?.Invoke();
+                            HotkeyPressed?.Invoke(this, hotkeyInfo.Hotkey);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error executing hotkey action for {HotkeyId}", hotkeyId);
+                        }
+                    }));
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error executing hotkey action for {HotkeyId}", hotkeyId);
+                    _logger.LogError(ex, "Error invoking hotkey action for {HotkeyId}", hotkeyId);
                 }
             }
         }
 
-        private static uint ConvertModifiers(ModifierKeys modifiers)
+        private ModifierKeys GetCurrentModifiers()
         {
-            uint result = 0;
-            
-            if (modifiers.HasFlag(ModifierKeys.Alt))
-                result |= MOD_ALT;
-            if (modifiers.HasFlag(ModifierKeys.Control))
-                result |= MOD_CONTROL;
-            if (modifiers.HasFlag(ModifierKeys.Shift))
-                result |= MOD_SHIFT;
-            if (modifiers.HasFlag(ModifierKeys.Windows))
-                result |= MOD_WIN;
+            var modifiers = ModifierKeys.None;
 
-            return result;
+            if (_pressedKeys.Contains((int)Keys.LControlKey) || _pressedKeys.Contains((int)Keys.RControlKey) || _pressedKeys.Contains((int)Keys.ControlKey))
+                modifiers |= ModifierKeys.Control;
+            if (_pressedKeys.Contains((int)Keys.LMenu) || _pressedKeys.Contains((int)Keys.RMenu) || _pressedKeys.Contains((int)Keys.Menu))
+                modifiers |= ModifierKeys.Alt;
+            if (_pressedKeys.Contains((int)Keys.LShiftKey) || _pressedKeys.Contains((int)Keys.RShiftKey) || _pressedKeys.Contains((int)Keys.ShiftKey))
+                modifiers |= ModifierKeys.Shift;
+            if (_pressedKeys.Contains((int)Keys.LWin) || _pressedKeys.Contains((int)Keys.RWin))
+                modifiers |= ModifierKeys.Windows;
+
+            return modifiers;
         }
 
         public void Dispose()
@@ -181,28 +205,15 @@ namespace BeatBind.Infrastructure.Hotkeys
             if (!_disposed)
             {
                 UnregisterAllHotkeys();
-                _disposed = true;
-            }
-        }
-
-        private class HotkeyMessageFilter : IMessageFilter
-        {
-            private readonly WindowsHotkeyService _hotkeyService;
-
-            public HotkeyMessageFilter(WindowsHotkeyService hotkeyService)
-            {
-                _hotkeyService = hotkeyService;
-            }
-
-            public bool PreFilterMessage(ref Message m)
-            {
-                if (m.Msg == WM_HOTKEY)
+                
+                if (_hookId != IntPtr.Zero)
                 {
-                    var hotkeyId = m.WParam.ToInt32();
-                    _hotkeyService.OnHotkeyMessage(hotkeyId);
-                    return true; // Message handled
+                    UnhookWindowsHookEx(_hookId);
+                    _hookId = IntPtr.Zero;
+                    _logger.LogInformation("Keyboard hook uninstalled");
                 }
-                return false; // Message not handled
+                
+                _disposed = true;
             }
         }
     }
