@@ -123,7 +123,7 @@ namespace BeatBind.Presentation.Forms
                 Size = new Size(40, 32),
                 Font = new Font("Segoe UI", 10f),
                 FlatStyle = FlatStyle.Flat,
-                BackColor = Theme.Warning,
+                BackColor = Theme.EditButton,
                 ForeColor = Theme.PrimaryText,
                 Cursor = Cursors.Hand,
                 Margin = new Padding(4, 5, 4, 5)
