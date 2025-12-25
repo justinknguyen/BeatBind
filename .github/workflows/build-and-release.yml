@@ -1,0 +1,88 @@
+name: Build and Release Beta
+
+on:
+  push:
+    branches:
+      - dev # Trigger on pushes to dev branch
+    paths-ignore:
+      - "**.md"
+      - "LICENSE"
+      - ".gitignore"
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore src/BeatBind.sln
+
+      - name: Build
+        run: dotnet build src/BeatBind.sln --configuration Release --no-restore
+
+      - name: Publish
+        run: |
+          dotnet publish src/BeatBind/BeatBind.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            --output ./publish `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true
+
+      - name: Get commit info
+        id: commit_info
+        run: |
+          $shortSha = "${{ github.sha }}".Substring(0, 7)
+          $commitMsg = git log -1 --pretty=%B | Select-Object -First 1
+          echo "short_sha=$shortSha" >> $env:GITHUB_OUTPUT
+          echo "commit_msg=$commitMsg" >> $env:GITHUB_OUTPUT
+
+      - name: Create ZIP archive
+        run: |
+          Compress-Archive -Path ./publish/* -DestinationPath BeatBind-Beta-win-x64.zip
+
+      - name: Delete existing beta release
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete beta --yes
+          git push origin :refs/tags/beta
+
+      - name: Create/Update Beta Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: beta
+          name: "BeatBind Beta Build"
+          body: |
+            🚧 **Beta Release** - Latest Development Build
+
+            **Commit:** ${{ steps.commit_info.outputs.short_sha }}
+            **Message:** ${{ steps.commit_info.outputs.commit_msg }}
+            **Date:** ${{ github.event.head_commit.timestamp }}
+
+            ⚠️ This is an automated beta build from the dev branch. Use at your own risk.
+
+            ### Installation
+            1. Download `BeatBind-Beta-win-x64.zip`
+            2. Extract the archive
+            3. Run `BeatBind.exe`
+
+            ### Changes
+            See commit history for recent changes: [View Commits](https://github.com/${{ github.repository }}/commits/dev)
+          files: |
+            BeatBind-Beta-win-x64.zip
+          prerelease: true
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

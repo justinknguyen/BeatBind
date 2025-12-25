@@ -591,13 +591,42 @@ namespace BeatBind.Presentation.Forms
         {
             var panel = new Panel { Dock = DockStyle.Fill };
 
-            var aboutLabel = new Label
+            var aboutLabel = new LinkLabel
             {
-                Text = "BeatBind v1.0\nGlobal hotkeys for Spotify\n\nDeveloped with ❤️",
+                Text = "BeatBind v2.0\nGlobal hotkeys for Spotify\n\nhttps://github.com/justinknguyen/BeatBind",
                 Dock = DockStyle.Fill,
                 Font = new Font("Segoe UI", 9f),
+                LinkColor = Color.LightBlue,
+                ActiveLinkColor = Color.DeepSkyBlue,
+                VisitedLinkColor = Color.CornflowerBlue,
                 ForeColor = Theme.SecondaryText,
                 TextAlign = ContentAlignment.TopLeft
+            };
+
+            // Define the clickable link region
+            int linkStart = aboutLabel.Text.IndexOf("https://");
+            int linkLength = aboutLabel.Text.Length - linkStart;
+            aboutLabel.Links.Add(linkStart, linkLength, "https://github.com/justinknguyen/BeatBind");
+
+            // Handle link click
+            aboutLabel.LinkClicked += (s, e) =>
+            {
+                if (e.Link?.LinkData is string url)
+                {
+                    try
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = url,
+                            UseShellExecute = true
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Failed to open link: {ex.Message}", "Error", 
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
             };
 
             panel.Controls.Add(aboutLabel);
