@@ -280,7 +280,8 @@ namespace BeatBind.Presentation.Forms
                 BackColor = Theme.SecondaryButton,
                 ForeColor = Color.White,
                 DialogResult = DialogResult.Cancel,
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Right
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
+                Cursor = Cursors.Hand
             };
             _cancelButton.FlatAppearance.BorderSize = 0;
 
@@ -293,7 +294,8 @@ namespace BeatBind.Presentation.Forms
                 BackColor = Theme.Success,
                 ForeColor = Color.White,
                 DialogResult = DialogResult.OK,
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Right
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
+                Cursor = Cursors.Hand
             };
             _okButton.FlatAppearance.BorderSize = 0;
             _okButton.Click += OkButton_Click;

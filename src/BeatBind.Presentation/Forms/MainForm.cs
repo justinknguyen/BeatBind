@@ -199,7 +199,8 @@ namespace BeatBind.Presentation.Forms
                 Depth = 0,
                 Anchor = AnchorStyles.None,
                 UseAccentColor = false,
-                AutoSize = false
+                AutoSize = false,
+                Cursor = Cursors.Hand
             };
             _saveConfigButton.Click += SaveConfigButton_Click;
 
@@ -546,7 +547,8 @@ namespace BeatBind.Presentation.Forms
                 Dock = DockStyle.Top,
                 Margin = new Padding(0, 10, 0, 10),
                 UseAccentColor = false,
-                AutoSize = false
+                AutoSize = false,
+                Cursor = Cursors.Hand
             };
             _authenticateButton.Click += AuthenticateButton_Click;
 
@@ -587,7 +589,8 @@ namespace BeatBind.Presentation.Forms
                 Dock = DockStyle.Top,
                 Margin = new Padding(0, 0, 0, 10),
                 UseAccentColor = false,
-                AutoSize = false
+                AutoSize = false,
+                Cursor = Cursors.Hand
             };
             _addHotkeyButton.Click += AddHotkeyButton_Click;
 
