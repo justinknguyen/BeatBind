@@ -8,10 +8,16 @@
     <Nullable>enable</Nullable>
     <StartupObject>BeatBind.Program</StartupObject>
     
+    <!-- Publish configuration -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    
     <!-- Release optimizations -->
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
-    <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>

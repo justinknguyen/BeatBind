@@ -23,8 +23,7 @@ Control Spotify from anywhere on Windows using global hotkeys. No more alt-tabbi
 
 ## Requirements
 
-- Windows 10/11
-- [.NET 8.0 Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) (automatically prompted on first run)
+- Windows 10/11 (64-bit)
 - Spotify Premium account
 - Internet connection
 
@@ -43,8 +42,8 @@ Control Spotify from anywhere on Windows using global hotkeys. No more alt-tabbi
 
 ```bash
 git clone https://github.com/justinknguyen/BeatBind.git
-cd BeatBind
-dotnet build src/BeatBind.sln -c Release
+cd BeatBind/src/BeatBind
+dotnet publish -c Release
 ```
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for development details.
