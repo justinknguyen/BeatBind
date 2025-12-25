@@ -1,4 +1,4 @@
-using BeatBind.Application.Abstractions.Messaging;
+using BeatBind.Application.Abstractions;
 
 namespace BeatBind.Application.Commands.AuthenticateUser
 {

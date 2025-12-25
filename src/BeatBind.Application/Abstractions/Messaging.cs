@@ -1,7 +1,7 @@
 using BeatBind.Core.Common;
 using MediatR;
 
-namespace BeatBind.Application.Abstractions.Messaging
+namespace BeatBind.Application.Abstractions
 {
     public interface ICommand : IRequest<Result>
     {

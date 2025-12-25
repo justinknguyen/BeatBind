@@ -2,9 +2,9 @@ using BeatBind.Application.Behaviors;
 using BeatBind.Application.Services;
 using BeatBind.Core.Interfaces;
 using BeatBind.Hosting;
-using BeatBind.Infrastructure.Services.Configuration;
-using BeatBind.Infrastructure.Services.Hotkeys;
-using BeatBind.Infrastructure.Services.Spotify;
+using BeatBind.Infrastructure.Services;
+using BeatBind.Infrastructure.Services;
+using BeatBind.Infrastructure.Services;
 using BeatBind.Presentation.Forms;
 using FluentValidation;
 using MediatR;
@@ -92,10 +92,10 @@ namespace BeatBind
             
             // MediatR
             services.AddMediatR(cfg => 
-                cfg.RegisterServicesFromAssembly(typeof(Application.Abstractions.Messaging.ICommand).Assembly));
+                cfg.RegisterServicesFromAssembly(typeof(Application.Abstractions.ICommand).Assembly));
             
             // Validators
-            services.AddValidatorsFromAssembly(typeof(Application.Abstractions.Messaging.ICommand).Assembly);
+            services.AddValidatorsFromAssembly(typeof(Application.Abstractions.ICommand).Assembly);
 
             // Pipeline Behaviors
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));

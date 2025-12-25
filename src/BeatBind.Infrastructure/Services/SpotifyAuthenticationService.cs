@@ -8,7 +8,7 @@ using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace BeatBind.Infrastructure.Services.Spotify
+namespace BeatBind.Infrastructure.Services
 {
     public class SpotifyAuthenticationService : IAuthenticationService
     {

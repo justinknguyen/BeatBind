@@ -3,7 +3,7 @@ using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace BeatBind.Infrastructure.Services.Configuration
+namespace BeatBind.Infrastructure.Services
 {
     public class JsonConfigurationService : IConfigurationService
     {
