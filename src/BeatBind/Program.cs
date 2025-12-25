@@ -90,7 +90,11 @@ namespace BeatBind
                 {
                     logging.ClearProviders();
                     logging.AddConsole();
+#if DEBUG
                     logging.SetMinimumLevel(LogLevel.Information);
+#else
+                    logging.SetMinimumLevel(LogLevel.Warning);
+#endif
                 });
         }
 

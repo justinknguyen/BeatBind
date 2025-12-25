@@ -104,19 +104,18 @@ src/
 To create a standalone executable that doesn't require .NET installation:
 
 ```bash
-# Self-contained single-file executable (no .NET required for users)
-cd src/BeatBind
-dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+# Trimmed, single-file, framework-dependent (smallest download; uses host .NET runtime)
+dotnet publish src/BeatBind/BeatBind.csproj -c Release -p:PublishProfile=WinX64Trimmed
 
-# Output: src/BeatBind/bin/Release/net8.0-windows/win-x64/publish/BeatBind.exe
+# Output: src/BeatBind/bin/Release/net8.0-windows/publish/win-x64-trimmed/BeatBind.exe
 ```
 
-**Or** for smaller file size (requires .NET 8.0 Runtime on user's machine):
+**Self-contained (no runtime required, larger download):**
 
 ```bash
-# Framework-dependent deployment
-cd src/BeatBind
-dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
+dotnet publish src/BeatBind/BeatBind.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+
+# Output: src/BeatBind/bin/Release/net8.0-windows/win-x64/publish/BeatBind.exe
 ```
 
 ## 🏗️ Architecture Benefits
