@@ -9,7 +9,7 @@
 Control Spotify from anywhere on Windows using global hotkeys. No more alt-tabbing while gaming or working—adjust volume, skip tracks, and manage playback without switching windows.
 
 <p align="center">
-    <img src="./images/view.png" width="90%" height="90%">
+    <img src="./images/view.png" width="50%" height="50%">
 </p>
 
 ## Features
