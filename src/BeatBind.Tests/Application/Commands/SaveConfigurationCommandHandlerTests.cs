@@ -1,4 +1,4 @@
-using BeatBind.Application.Commands.SaveConfiguration;
+using BeatBind.Application.Commands;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
 using FluentAssertions;
@@ -24,8 +24,7 @@ namespace BeatBind.Tests.Application.Commands
             var config = new ApplicationConfiguration
             {
                 ClientId = "test-id",
-                ClientSecret = "test-secret",
-                DarkMode = true
+                ClientSecret = "test-secret"
             };
 
             var command = new SaveConfigurationCommand(config);

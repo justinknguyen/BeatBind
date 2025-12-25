@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace BeatBind.Application.Commands.UpdateClientCredentials
+namespace BeatBind.Application.Commands
 {
     public class UpdateClientCredentialsCommandValidator : AbstractValidator<UpdateClientCredentialsCommand>
     {

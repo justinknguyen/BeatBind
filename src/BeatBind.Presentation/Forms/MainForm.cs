@@ -1,7 +1,5 @@
 using BeatBind.Application.Services;
-using BeatBind.Application.Commands.AuthenticateUser;
-using BeatBind.Application.Commands.SaveConfiguration;
-using BeatBind.Application.Commands.UpdateClientCredentials;
+using BeatBind.Application.Commands;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
 using BeatBind.Presentation.Themes;
@@ -773,7 +771,7 @@ namespace BeatBind.Presentation.Forms
                 _volumeStepsNumeric.Value = config.VolumeSteps;
                 _seekMillisecondsNumeric.Value = config.SeekMilliseconds;
 
-                // Always use dark mode
+                // Apply current theme
                 ApplyTheme();
 
                 LoadHotkeysFromConfiguration(config.Hotkeys);
@@ -862,7 +860,6 @@ namespace BeatBind.Presentation.Forms
                 config.PreviousTrackRewindToStart = _rewindCheckBox.Checked;
                 config.VolumeSteps = (int)_volumeStepsNumeric.Value;
                 config.SeekMilliseconds = (int)_seekMillisecondsNumeric.Value;
-                config.DarkMode = true;  // Always dark mode
 
                 var result = await _mediator.Send(new SaveConfigurationCommand(config));
 

@@ -2,7 +2,7 @@ using BeatBind.Core.Common;
 using BeatBind.Core.Interfaces;
 using MediatR;
 
-namespace BeatBind.Application.Commands.AuthenticateUser
+namespace BeatBind.Application.Commands
 {
     public sealed class AuthenticateUserCommandHandler : IRequestHandler<AuthenticateUserCommand, Result>
     {

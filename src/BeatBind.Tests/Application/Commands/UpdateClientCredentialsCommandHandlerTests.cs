@@ -1,4 +1,4 @@
-using BeatBind.Application.Commands.UpdateClientCredentials;
+using BeatBind.Application.Commands;
 using BeatBind.Core.Interfaces;
 using FluentAssertions;
 using Moq;

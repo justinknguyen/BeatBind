@@ -65,10 +65,6 @@ BeatBind follows the Clean Architecture pattern by Robert C. Martin, organized i
 - `JsonConfigurationService`: Implements `IConfigurationService` with file persistence
 - `WindowsHotkeyService`: Implements `IHotkeyService` using Windows APIs
 
-#### Hosting
-
-- `MainFormInitializerService`: IHostedService that initializes the MainForm with required services
-
 ### 4. Presentation Layer (`src/BeatBind.Presentation/`)
 
 **Purpose**: User interface and interaction
@@ -91,7 +87,7 @@ BeatBind follows the Clean Architecture pattern by Robert C. Martin, organized i
 
 #### Hosting
 
-- `MainFormInitializerService`: IHostedService that initializes the MainForm with required services at startup
+- `Startup` (in Program.cs): IHostedService that initializes the MainForm at startup
 
 ## 🔄 Dependency Flow
 
@@ -159,8 +155,6 @@ The main application configures all dependencies in `Program.cs`:
 ```csharp
 // Infrastructure Layer
 services.AddSingleton<IConfigurationService, JsonConfigurationService>();
-services.AddTransient<IAuthenticationService, SpotifyAuthenticationService>();
-services.AddTransient<ISpotifyService, SpotifyService>();
 services.AddHttpClient<ISpotifyService, SpotifyService>();
 services.AddHttpClient<IAuthenticationService, SpotifyAuthenticationService>();
 
@@ -175,7 +169,7 @@ services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>
 services.AddSingleton<MainForm>();
 services.AddSingleton<IHotkeyService, WindowsHotkeyService>(/* factory for MainForm dependency */);
 services.AddSingleton<HotkeyManagementService>();
-services.AddSingleton<IHostedService, MainFormInitializerService>();
+services.AddSingleton<IHostedService, Startup>();
 ```
 
 ## 🧪 Testing Strategy

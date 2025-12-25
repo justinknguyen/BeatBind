@@ -65,7 +65,6 @@ namespace BeatBind.Tests.Core.Entities
             config.RedirectUri.Should().Be("http://127.0.0.1:8888/callback");
             config.StartMinimized.Should().BeFalse();
             config.MinimizeToTray.Should().BeTrue();
-            config.DarkMode.Should().BeFalse();
             config.VolumeSteps.Should().Be(10);
             config.SeekMilliseconds.Should().Be(10000);
             config.Hotkeys.Should().NotBeNull();
@@ -80,13 +79,11 @@ namespace BeatBind.Tests.Core.Entities
             // Act
             config.ClientId = "test-id";
             config.ClientSecret = "test-secret";
-            config.DarkMode = false;
             config.VolumeSteps = 10;
 
             // Assert
             config.ClientId.Should().Be("test-id");
             config.ClientSecret.Should().Be("test-secret");
-            config.DarkMode.Should().BeFalse();
             config.VolumeSteps.Should().Be(10);
         }
     }

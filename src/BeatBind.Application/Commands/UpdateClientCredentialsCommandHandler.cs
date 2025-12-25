@@ -2,7 +2,7 @@ using BeatBind.Core.Common;
 using BeatBind.Core.Interfaces;
 using MediatR;
 
-namespace BeatBind.Application.Commands.UpdateClientCredentials
+namespace BeatBind.Application.Commands
 {
     public sealed class UpdateClientCredentialsCommandHandler : IRequestHandler<UpdateClientCredentialsCommand, Result>
     {

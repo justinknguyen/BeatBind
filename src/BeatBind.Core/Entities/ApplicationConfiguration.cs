@@ -16,9 +16,6 @@ namespace BeatBind.Core.Entities
         public int VolumeSteps { get; set; } = 10;
         public int SeekMilliseconds { get; set; } = 10000;
 
-        // UI Settings
-        public bool DarkMode { get; set; } = false;
-
         // Authentication Storage
         public string AccessToken { get; set; } = string.Empty;
         public string RefreshToken { get; set; } = string.Empty;

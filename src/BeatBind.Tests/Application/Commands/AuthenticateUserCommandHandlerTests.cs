@@ -1,4 +1,4 @@
-using BeatBind.Application.Commands.AuthenticateUser;
+using BeatBind.Application.Commands;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
 using FluentAssertions;
