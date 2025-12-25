@@ -323,12 +323,12 @@ namespace BeatBind.Presentation.Forms
             {
                 Text = title,
                 Font = new Font("Segoe UI", 12f, FontStyle.Bold),
-                ForeColor = Color.White,
+                ForeColor = Theme.PrimaryText,
                 Dock = DockStyle.Top,
                 Height = 35,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(15, 10, 15, 0),
-                BackColor = Color.FromArgb(56, 142, 60),
+                BackColor = Theme.Success,
                 Tag = "header" // Tag to identify header labels
             };
 
@@ -369,12 +369,12 @@ namespace BeatBind.Presentation.Forms
             {
                 Text = title,
                 Font = new Font("Segoe UI", 10f, FontStyle.Bold),
-                ForeColor = Color.White,
+                ForeColor = Theme.PrimaryText,
                 Dock = DockStyle.Top,
                 Height = 25,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(10, 5, 10, 0),
-                BackColor = Color.FromArgb(56, 142, 60),
+                BackColor = Theme.Success,
                 Tag = "header" // Tag to identify header labels
             };
 
