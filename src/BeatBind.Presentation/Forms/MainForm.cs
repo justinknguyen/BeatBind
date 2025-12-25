@@ -26,6 +26,7 @@ namespace BeatBind.Presentation.Forms
         private NotifyIcon? _notifyIcon;
         private bool _isAuthenticated;
         private Panel? _updateNotificationPanel;
+        private bool _isExiting;
 
         // UI Controls
         private MaterialTabControl _mainTabControl = null!;
@@ -843,7 +844,11 @@ namespace BeatBind.Presentation.Forms
 
             var contextMenu = new ContextMenuStrip();
             contextMenu.Items.Add("Show", null, (s, e) => { Show(); WindowState = FormWindowState.Normal; });
-            contextMenu.Items.Add("Exit", null, (s, e) => Close());
+            contextMenu.Items.Add("Exit", null, (s, e) => 
+            {
+                _isExiting = true;
+                Application.Exit();
+            });
 
             _notifyIcon.ContextMenuStrip = contextMenu;
             _notifyIcon.DoubleClick += (s, e) => { Show(); WindowState = FormWindowState.Normal; };
@@ -1176,7 +1181,7 @@ namespace BeatBind.Presentation.Forms
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            if (e.CloseReason == CloseReason.UserClosing)
+            if (e.CloseReason == CloseReason.UserClosing && !_isExiting)
             {
                 e.Cancel = true;
                 Hide();
