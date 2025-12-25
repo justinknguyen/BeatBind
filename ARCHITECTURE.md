@@ -6,7 +6,7 @@ BeatBind follows the Clean Architecture pattern by Robert C. Martin, organized i
 
 ## 🏗️ Layer Structure
 
-### 1. Domain Layer (`src/BeatBind.Domain/`)
+### 1. Core Layer (`src/BeatBind.Core/`)
 
 **Purpose**: Core business logic and entities
 **Dependencies**: None (innermost layer)
@@ -32,9 +32,12 @@ BeatBind follows the Clean Architecture pattern by Robert C. Martin, organized i
 **Purpose**: Business logic orchestration and use cases
 **Dependencies**: Domain only
 
-#### Messaging (CQRS)
+#### Abstractions
 
 - `ICommand` / `IQuery`: Interfaces for CQRS pattern built on MediatR
+
+#### Commands
+
 - `AuthenticateUserCommand` / `AuthenticateUserCommandHandler`: Handles user authentication flow
 - `SaveConfigurationCommand` / `SaveConfigurationCommandHandler`: Persists user configuration
 - `UpdateClientCredentialsCommand` / `UpdateClientCredentialsCommandHandler`: Updates API credentials
@@ -53,24 +56,18 @@ BeatBind follows the Clean Architecture pattern by Robert C. Martin, organized i
 ### 3. Infrastructure Layer (`src/BeatBind.Infrastructure/`)
 
 **Purpose**: External integrations and technical implementations
-**Dependencies**: Domain interfaces
+**Dependencies**: Core interfaces
 
-#### Spotify Integration
+#### Services
 
 - `SpotifyService`: Implements `ISpotifyService` using Spotify Web API
 - `SpotifyAuthenticationService`: Implements `IAuthenticationService` with OAuth
-
-#### Configuration
-
 - `JsonConfigurationService`: Implements `IConfigurationService` with file persistence
-
-#### System Integration
-
 - `WindowsHotkeyService`: Implements `IHotkeyService` using Windows APIs
 
 #### Hosting
 
-- Integration infrastructure components (currently empty)
+- `MainFormInitializerService`: IHostedService that initializes the MainForm with required services
 
 ### 4. Presentation Layer (`src/BeatBind.Presentation/`)
 
@@ -124,7 +121,7 @@ BeatBind follows the Clean Architecture pattern by Robert C. Martin, organized i
           │
           ▼
 ┌─────────────────┐
-│    Domain       │ ← Core entities, interfaces
+│      Core       │ ← Core entities, interfaces
 │     Layer       │   (No dependencies)
 └─────────────────┘
 ```
@@ -135,7 +132,7 @@ BeatBind follows the Clean Architecture pattern by Robert C. Martin, organized i
 
 - High-level modules don't depend on low-level modules
 - Both depend on abstractions (interfaces)
-- Domain defines contracts, Infrastructure implements them
+- Core defines contracts, Infrastructure implements them
 
 ### 2. Single Responsibility
 
@@ -185,8 +182,8 @@ services.AddSingleton<IHostedService, MainFormInitializerService>();
 
 ### Unit Testing
 
-- **Domain**: Test entities and value objects in isolation
-- **Application**: Mock domain interfaces, test business logic
+- **Core**: Test entities and value objects in isolation
+- **Application**: Mock core interfaces, test business logic
 - **Infrastructure**: Test implementations against real external systems
 - **Presentation**: Test UI logic with mocked services
 
@@ -200,7 +197,7 @@ services.AddSingleton<IHostedService, MainFormInitializerService>();
 
 ```
 src/BeatBind.Tests/
-├── Domain/
+├── Core/
 │   ├── Entities/
 │   │   └── EntityTests.cs
 │   └── ResultTests.cs

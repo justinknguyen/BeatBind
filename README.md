@@ -9,7 +9,7 @@ This project follows **Clean Architecture** principles with clear separation of 
 ```
 src/
 ├── BeatBind/                     # 🚀 Main Application Entry Point
-├── BeatBind.Domain/             # 🎯 Core Business Logic & Entities
+├── BeatBind.Core/               # 🎯 Core Business Logic & Entities
 ├── BeatBind.Application/        # ⚙️ Use Cases & Application Services
 ├── BeatBind.Infrastructure/     # 🔌 External Integrations & Services
 └── BeatBind.Presentation/       # 🖥️ User Interface & Forms
@@ -17,10 +17,10 @@ src/
 
 ### Layer Dependencies
 
-- **Domain**: No dependencies (pure business logic)
-- **Application**: Depends only on Domain
-- **Infrastructure**: Depends on Domain
-- **Presentation**: Depends on Domain & Application
+- **Core**: No dependencies (pure business logic)
+- **Application**: Depends only on Core
+- **Infrastructure**: Depends on Core
+- **Presentation**: Depends on Core & Application
 - **Main App**: Orchestrates all layers with Dependency Injection
 
 ## ✨ Features
@@ -47,9 +47,18 @@ src/
 
 ### Prerequisites
 
+**For Development:**
+
 - Windows 10/11
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - Spotify Premium Account (required for Web API control)
+
+**For Running (end users):**
+
+- Windows 10/11
+- Spotify Premium Account
+- No .NET installation required (if using self-contained build)
+- _OR_ [.NET 8.0 Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) (if using framework-dependent build)
 
 ### Setup
 
@@ -90,6 +99,26 @@ src/
    - Configure your preferred hotkeys
    - Save configuration
 
+### Publishing for Distribution
+
+To create a standalone executable that doesn't require .NET installation:
+
+```bash
+# Self-contained single-file executable (no .NET required for users)
+cd src/BeatBind
+dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+
+# Output: src/BeatBind/bin/Release/net8.0-windows/win-x64/publish/BeatBind.exe
+```
+
+**Or** for smaller file size (requires .NET 8.0 Runtime on user's machine):
+
+```bash
+# Framework-dependent deployment
+cd src/BeatBind
+dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
+```
+
 ## 🏗️ Architecture Benefits
 
 ### ✅ **Separation of Concerns**
@@ -126,7 +155,7 @@ dotnet test --logger "console;verbosity=detailed"
 
 # Run specific test categories
 dotnet test --filter FullyQualifiedName~BeatBind.Tests.Application
-dotnet test --filter FullyQualifiedName~BeatBind.Tests.Domain
+dotnet test --filter FullyQualifiedName~BeatBind.Tests.Core
 ```
 
 ## 🛠️ Development
@@ -137,37 +166,34 @@ dotnet test --filter FullyQualifiedName~BeatBind.Tests.Domain
 src/
 ├── BeatBind/                     # Program.cs, DI setup, entry point
 │   └── Hosting/                 # Hosted services for initialization
-├── BeatBind.Domain/
+├── BeatBind.Core/
 │   ├── Common/                  # Shared types (Result pattern)
 │   ├── Entities/                # Core entities (Track, Hotkey, etc.)
 │   └── Interfaces/              # Service contracts
 ├── BeatBind.Application/
 │   ├── Abstractions/            # CQRS abstractions (ICommand, IQuery)
-│   ├── Authentication/          # Authentication commands
 │   ├── Behaviors/               # MediatR pipeline behaviors
-│   ├── Configuration/           # Configuration commands
+│   ├── Commands/                # Commands (AuthenticateUser, SaveConfiguration, etc.)
 │   └── Services/                # Business logic services
 ├── BeatBind.Infrastructure/
-│   ├── Spotify/                 # Spotify Web API integration
-│   ├── Configuration/           # Settings management
-│   ├── Hotkeys/                 # Windows hotkey registration
-│   └── Hosting/                 # Infrastructure hosting components
+│   ├── Hosting/                 # Infrastructure hosting components
+│   └── Services/                # All service implementations (Spotify, Configuration, Hotkeys)
 ├── BeatBind.Presentation/
 │   ├── Forms/                   # Windows Forms UI
 │   └── Themes/                  # UI theming
 └── BeatBind.Tests/
     ├── Application/             # Application layer tests
-    └── Domain/                  # Domain layer tests
+    └── Core/                    # Core layer tests
 ```
 
 ### Adding New Features
 
-1. **Define entities** in `Domain/Entities`
-2. **Create interfaces** in `Domain/Interfaces`
-3. **Create commands/queries** in `Application` (Authentication, Configuration, etc.)
+1. **Define entities** in `Core/Entities`
+2. **Create interfaces** in `Core/Interfaces`
+3. **Create commands/queries** in `Application/Commands`
 4. **Add command handlers** using MediatR pattern
 5. **Implement validators** using FluentValidation
-6. **Add external integrations** in `Infrastructure`
+6. **Add external integrations** in `Infrastructure/Services`
 7. **Create UI components** in `Presentation/Forms`
 8. **Wire up dependencies** in main `Program.cs`
 
