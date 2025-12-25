@@ -1,289 +1,152 @@
-# BeatBind - Spotify Global Hotkeys (Clean Architecture)
+# BeatBind
 
-A C# Windows Forms application that provides global hotkey controls for Spotify using Clean Architecture principles.
+[![build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/justinknguyen/BeatBind)
+[![version](https://img.shields.io/badge/version-2.0.0-blue)](https://github.com/justinknguyen/BeatBind/releases)
+[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/justinknguyen/BeatBind/issues)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-## 🏗️ Architecture
+Control Spotify from anywhere on Windows using global hotkeys. No more alt-tabbing while gaming or working—adjust volume, skip tracks, and manage playback without switching windows.
 
-This project follows **Clean Architecture** principles with clear separation of concerns:
+<p align="center">
+    <img src="./images/view.png" width="90%" height="90%">
+</p>
 
-```
-src/
-├── BeatBind/                     # 🚀 Main Application Entry Point
-├── BeatBind.Core/               # 🎯 Core Business Logic & Entities
-├── BeatBind.Application/        # ⚙️ Use Cases & Application Services
-├── BeatBind.Infrastructure/     # 🔌 External Integrations & Services
-└── BeatBind.Presentation/       # 🖥️ User Interface & Forms
-```
+## Features
 
-### Layer Dependencies
+- 🎹 **Global Hotkeys** - Control Spotify from any application
+- 🔊 **Volume Control** - Adjust Spotify volume independently from system volume
+- ⏯️ **Playback Control** - Play, pause, skip, seek, and shuffle
+- 💾 **Track Management** - Save and remove tracks from your library
+- 🌙 **System Tray** - Runs quietly in the background
+- ⚙️ **Easy Setup** - Simple configuration wizard
 
-- **Core**: No dependencies (pure business logic)
-- **Application**: Depends only on Core
-- **Infrastructure**: Depends on Core
-- **Presentation**: Depends on Core & Application
-- **Main App**: Orchestrates all layers with Dependency Injection
-
-## ✨ Features
-
-- **Global Hotkeys**: Control Spotify from anywhere on your system
-- **OAuth Integration**: Secure authentication with Spotify Web API
-- **System Tray**: Minimize to tray for background operation
-- **Configurable Hotkeys**: Customize key combinations for different actions
-- **Clean Architecture**: Maintainable, testable, and scalable codebase
-- **CQRS Pattern**: Command/Query separation using MediatR
-- **Validation**: FluentValidation for input validation
-- **Pipeline Behaviors**: Logging and validation behaviors
-
-### Supported Actions
-
-- Play/Pause
-- Next/Previous Track
-- Volume Up/Down
-- Mute/Unmute
-- Save/Remove Track
-- Toggle Shuffle/Repeat
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-**For Development:**
+## Requirements
 
 - Windows 10/11
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- Spotify Premium Account (required for Web API control)
+- [.NET 8.0 Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) (automatically prompted on first run)
+- Spotify Premium account
+- Internet connection
 
-**For Running (end users):**
+> **Note:** This app uses Spotify's Web API, which requires Premium. It sends commands over the internet, so expect a slight delay based on your connection speed.
 
-- Windows 10/11
-- Spotify Premium Account
-- No .NET installation required (if using self-contained build)
-- _OR_ [.NET 8.0 Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) (if using framework-dependent build)
+## Installation
 
-### Setup
+### Option 1: Download Release (Recommended)
 
-1. **Clone the repository**
+1. Download the latest version from [Releases](https://github.com/justinknguyen/BeatBind/releases)
+2. Extract the ZIP file to any location (avoid `Program Files` to prevent permission issues)
+3. Run `BeatBind.exe`
+4. Follow the [Setup Guide](#setup-guide) below
 
-   ```bash
-   git clone https://github.com/justinknguyen/BeatBind.git
-   cd BeatBind
-   ```
-
-2. **Build the application**
-
-   ```bash
-   # Option 1: Use the build script
-   build.bat
-
-   # Option 2: Manual build
-   cd src
-   dotnet build BeatBind.sln --configuration Release
-   ```
-
-3. **Configure Spotify API**
-
-   - Create a Spotify App at [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
-   - Add `http://127.0.0.1:8888/callback` as a redirect URI
-   - Note your Client ID and Client Secret
-
-4. **Run the application**
-
-   ```bash
-   cd src/BeatBind
-   dotnet run
-   ```
-
-5. **First-time setup**
-   - Enter your Spotify Client ID and Client Secret
-   - Click "Authenticate with Spotify"
-   - Configure your preferred hotkeys
-   - Save configuration
-
-### Publishing for Distribution
-
-To create a standalone executable that doesn't require .NET installation:
+### Option 2: Build From Source
 
 ```bash
-# Trimmed, single-file, framework-dependent (smallest download; uses host .NET runtime)
-dotnet publish src/BeatBind/BeatBind.csproj -c Release -p:PublishProfile=WinX64Trimmed
-
-# Output: src/BeatBind/bin/Release/net8.0-windows/publish/win-x64-trimmed/BeatBind.exe
+git clone https://github.com/justinknguyen/BeatBind.git
+cd BeatBind
+dotnet build src/BeatBind.sln -c Release
 ```
 
-**Self-contained (no runtime required, larger download):**
+See [ARCHITECTURE.md](ARCHITECTURE.md) for development details.
 
-```bash
-dotnet publish src/BeatBind/BeatBind.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+## Setup Guide
 
-# Output: src/BeatBind/bin/Release/net8.0-windows/win-x64/publish/BeatBind.exe
-```
+BeatBind needs Spotify API credentials to control your music. This takes about 5 minutes.
 
-## 🏗️ Architecture Benefits
+### Step 1: Create Spotify App
 
-### ✅ **Separation of Concerns**
+1. Go to [Spotify for Developers](https://developer.spotify.com/dashboard)
+2. Log in with your Spotify account
+3. Click **Create App**
+4. Fill in the form:
+   - **App name:** BeatBind (or any name)
+   - **App description:** Personal hotkey control
+   - **Redirect URI:** `http://127.0.0.1:8888/callback` (change port if needed)
+   - Check the Terms of Service box
+5. Click **Save**
 
-Each layer has a single, well-defined responsibility
+<p align="center">
+    <img src="./images/create-app.png" width="70%">
+</p>
 
-### ✅ **Dependency Inversion**
+### Step 2: Get Your Credentials
 
-Core business logic doesn't depend on external frameworks
+1. Click **Settings** in your newly created app
+2. Copy your **Client ID**
+3. Click **View client secret** and copy your **Client Secret**
 
-### ✅ **Testability**
+<p align="center">
+    <img src="./images/id-and-secret.png" width="70%">
+</p>
 
-Easy to unit test each layer independently
+### Step 3: Configure BeatBind
 
-### ✅ **Maintainability**
+1. Open BeatBind and paste your **Client ID** and **Client Secret**
+2. Click **Get Devices** to see your available Spotify devices
+3. Select the device you want to control from the dropdown
+   - **Tip:** If you don't see your device, open Spotify on that device and play something, then click **Get Devices** again
+4. Click **Save** to save your settings
+5. Click **Start & Close** to minimize to system tray
 
-Changes in one layer don't affect others
+### Step 4: Customize Hotkeys (Optional)
 
-### ✅ **Flexibility**
+1. Right-click the BeatBind icon in your system tray
+2. Click **Settings**
+3. Configure your preferred hotkeys for each action
+4. Click **Save**
 
-Easy to swap implementations (different UI frameworks, APIs, etc.)
+**To disable a hotkey:** Uncheck all modifiers and press Backspace in the key field.
 
-## 🧪 Testing
+## Usage
 
-The Clean Architecture makes testing straightforward:
+Once configured, BeatBind runs in the background. Use your hotkeys from any application:
 
-```bash
-# Run all tests
-cd src
-dotnet test
+- **Play/Pause** - Toggle playback
+- **Next/Previous** - Skip tracks
+- **Volume Up/Down** - Adjust Spotify volume
+- **Seek Forward/Backward** - Jump within tracks
+- **Save/Remove Track** - Manage your library
+- **Shuffle** - Toggle shuffle mode
 
-# Run with detailed output
-dotnet test --logger "console;verbosity=detailed"
+Access settings anytime by right-clicking the system tray icon.
 
-# Run specific test categories
-dotnet test --filter FullyQualifiedName~BeatBind.Tests.Application
-dotnet test --filter FullyQualifiedName~BeatBind.Tests.Core
-```
+## Updating
 
-## 🛠️ Development
+1. Copy and save your `BeatBind/beatbind-config.json` file somewhere
+1. Replace your `BeatBind` folder with the updated version
+1. Paste inside the `BeatBind` folder your saved `beatbind-config.json` file
 
-### Project Structure
+## Contributing
 
-```
-src/
-├── BeatBind/                     # Program.cs, DI setup, entry point
-│   └── Hosting/                 # Hosted services for initialization
-├── BeatBind.Core/
-│   ├── Common/                  # Shared types (Result pattern)
-│   ├── Entities/                # Core entities (Track, Hotkey, etc.)
-│   └── Interfaces/              # Service contracts
-├── BeatBind.Application/
-│   ├── Abstractions/            # CQRS abstractions (ICommand, IQuery)
-│   ├── Behaviors/               # MediatR pipeline behaviors
-│   ├── Commands/                # Commands (AuthenticateUser, SaveConfiguration, etc.)
-│   └── Services/                # Business logic services
-├── BeatBind.Infrastructure/
-│   ├── Hosting/                 # Infrastructure hosting components
-│   └── Services/                # All service implementations (Spotify, Configuration, Hotkeys)
-├── BeatBind.Presentation/
-│   ├── Forms/                   # Windows Forms UI
-│   └── Themes/                  # UI theming
-└── BeatBind.Tests/
-    ├── Application/             # Application layer tests
-    └── Core/                    # Core layer tests
-```
-
-### Adding New Features
-
-1. **Define entities** in `Core/Entities`
-2. **Create interfaces** in `Core/Interfaces`
-3. **Create commands/queries** in `Application/Commands`
-4. **Add command handlers** using MediatR pattern
-5. **Implement validators** using FluentValidation
-6. **Add external integrations** in `Infrastructure/Services`
-7. **Create UI components** in `Presentation/Forms`
-8. **Wire up dependencies** in main `Program.cs`
-
-## 📋 Default Hotkeys
-
-| Action         | Default Hotkey   |
-| -------------- | ---------------- |
-| Play/Pause     | `Ctrl+Alt+Space` |
-| Next Track     | `Ctrl+Alt+Right` |
-| Previous Track | `Ctrl+Alt+Left`  |
-| Volume Up      | `Ctrl+Alt+Up`    |
-| Volume Down    | `Ctrl+Alt+Down`  |
-| Mute/Unmute    | `Ctrl+Alt+M`     |
-| Seek Forward   | `Ctrl+Alt+F`     |
-| Seek Backward  | `Ctrl+Alt+B`     |
-| Save Track     | `Ctrl+Alt+S`     |
-| Remove Track   | `Ctrl+Alt+R`     |
-
-## 📁 Configuration
-
-Settings are stored in: `%APPDATA%\BeatBind\config.json`
-
-```json
-{
-  "ClientId": "your-spotify-client-id",
-  "ClientSecret": "your-spotify-client-secret",
-  "RedirectUri": "http://127.0.0.1:8888/callback",
-  "Hotkeys": {
-    "PlayPause": "Ctrl+Alt+Space",
-    "NextTrack": "Ctrl+Alt+Right"
-    // ... other hotkeys
-  },
-  "StartWithWindows": false,
-  "MinimizeToTray": true,
-  "VolumeStep": 5,
-  "SeekStep": 10000
-}
-```
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-**"Authentication failed"**
-
-- Verify Client ID and Client Secret are correct
-- Ensure redirect URI is exactly `http://127.0.0.1:8888/callback`
-- Check that your Spotify app has the correct scopes
-
-**"Global hotkeys not working"**
-
-- Run as Administrator if necessary
-- Check that hotkey combinations aren't already in use
-- Verify Windows allows the application to register global hotkeys
-
-**"No active device found"**
-
-- Open Spotify and start playing music
-- Ensure you have a Spotify Premium account
-- Check that Spotify is not in private session mode
-
-## 📝 Migration Notes
-
-This project was migrated from a monolithic structure to Clean Architecture:
-
-- **Original files** → Refactored into layered structure
-- **New structure** → `src/` (Clean Architecture)
-- **All functionality preserved** ✅
-- **Dependencies properly inverted** ✅
-- **Dependency injection implemented** ✅
-
-## 🤝 Contributing
+Contributions are welcome! This project follows Clean Architecture principles.
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Follow Clean Architecture principles
-4. Add tests for new functionality
-5. Commit changes (`git commit -m 'Add amazing feature'`)
-6. Push to branch (`git push origin feature/amazing-feature`)
+3. Make your changes
+4. Run tests (`dotnet test`)
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
 7. Open a Pull Request
 
-## 📄 License
+See [ARCHITECTURE.md](ARCHITECTURE.md) for project structure and [src/README.md](src/README.md) for development setup.
+
+## Support
+
+- 🐛 [Report a bug](https://github.com/justinknguyen/BeatBind/issues/new)
+- 💡 [Request a feature](https://github.com/justinknguyen/BeatBind/issues/new)
+- 📖 [Read the docs](https://github.com/justinknguyen/BeatBind/wiki)
+- ⭐ Star this repo if you find it useful!
+
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
-- Built with .NET 8.0 and Windows Forms
-- Uses Spotify Web API for music control
-- Implements Clean Architecture by Robert C. Martin
-- CQRS pattern with [MediatR](https://github.com/jbogard/MediatR)
-- Input validation with [FluentValidation](https://github.com/FluentValidation/FluentValidation)
-- Dependency Injection with Microsoft.Extensions.DependencyInjection
-- Original Python version inspiration
+- Built with [Spotify Web API](https://developer.spotify.com/documentation/web-api)
+- UI powered by [MaterialSkin](https://github.com/IgnaceMaes/MaterialSkin)
+- Architecture inspired by [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+
+---
+
+<p align="center">Made with ♥ by <a href="https://github.com/justinknguyen">Justin Nguyen</a></p>
