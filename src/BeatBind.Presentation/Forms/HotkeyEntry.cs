@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using BeatBind.Core.Entities;
 using BeatBind.Presentation.Themes;
 using DomainModifierKeys = BeatBind.Core.Entities.ModifierKeys;
@@ -16,6 +17,29 @@ namespace BeatBind.Presentation.Forms
         public event EventHandler? DeleteRequested;
 
         public Hotkey Hotkey => _hotkey;
+
+        // Parameterless ctor for WinForms designer support
+        public HotkeyEntry()
+        {
+            if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
+            {
+                _hotkey = new Hotkey
+                {
+                    Action = HotkeyAction.PlayPause,
+                    KeyCode = (int)Keys.Space,
+                    Modifiers = DomainModifierKeys.Control | DomainModifierKeys.Alt,
+                    IsEnabled = true
+                };
+
+                InitializeComponent();
+                UpdateDisplay();
+                ApplyTheme();
+            }
+            else
+            {
+                throw new InvalidOperationException("Designer-only constructor; provide a Hotkey at runtime.");
+            }
+        }
 
         public HotkeyEntry(Hotkey hotkey)
         {

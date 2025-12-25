@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using BeatBind.Application.Services;
 using BeatBind.Application.Commands;
 using BeatBind.Core.Entities;
@@ -5,6 +6,7 @@ using BeatBind.Core.Interfaces;
 using BeatBind.Presentation.Themes;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using MaterialSkin;
 using MaterialSkin.Controls;
 
@@ -41,6 +43,25 @@ namespace BeatBind.Presentation.Forms
         private MaterialCheckbox _rewindCheckBox = null!;
         private NumericUpDown _volumeStepsNumeric = null!;
         private NumericUpDown _seekMillisecondsNumeric = null!;
+
+        // Parameterless constructor for WinForms designer support
+        public MainForm()
+        {
+            _materialSkinManager = MaterialSkinManager.Instance;
+            _musicControlService = null!;
+            _mediator = null!;
+            _configurationService = null!;
+            _logger = NullLogger<MainForm>.Instance;
+
+            if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
+            {
+                InitializeComponent();
+            }
+            else
+            {
+                throw new InvalidOperationException("This constructor is for the WinForms designer only. Use DI constructor.");
+            }
+        }
 
         public MainForm(
             MusicControlService musicControlService,
