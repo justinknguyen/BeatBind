@@ -3,7 +3,6 @@ using BeatBind.Domain.Entities;
 using BeatBind.Domain.Interfaces;
 using FluentAssertions;
 using Moq;
-using Xunit;
 
 namespace BeatBind.Tests.Application.Commands
 {

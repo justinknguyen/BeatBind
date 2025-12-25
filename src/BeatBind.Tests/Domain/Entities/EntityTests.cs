@@ -1,6 +1,5 @@
 using BeatBind.Domain.Entities;
 using FluentAssertions;
-using Xunit;
 
 namespace BeatBind.Tests.Domain.Entities
 {

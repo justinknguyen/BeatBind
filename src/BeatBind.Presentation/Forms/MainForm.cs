@@ -1,6 +1,3 @@
-using System.Drawing;
-using System.Linq;
-using System.Windows.Forms;
 using BeatBind.Application.Services;
 using BeatBind.Application.Authentication.Commands.AuthenticateUser;
 using BeatBind.Application.Configuration.Commands.SaveConfiguration;

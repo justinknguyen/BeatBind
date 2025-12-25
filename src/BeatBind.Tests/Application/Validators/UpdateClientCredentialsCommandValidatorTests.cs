@@ -1,7 +1,5 @@
 using BeatBind.Application.Configuration.Commands.UpdateClientCredentials;
-using FluentAssertions;
 using FluentValidation.TestHelper;
-using Xunit;
 
 namespace BeatBind.Tests.Application.Validators
 {

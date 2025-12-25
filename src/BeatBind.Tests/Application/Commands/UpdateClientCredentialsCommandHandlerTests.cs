@@ -2,7 +2,6 @@ using BeatBind.Application.Configuration.Commands.UpdateClientCredentials;
 using BeatBind.Domain.Interfaces;
 using FluentAssertions;
 using Moq;
-using Xunit;
 
 namespace BeatBind.Tests.Application.Commands
 {

@@ -1,4 +1,3 @@
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using BeatBind.Domain.Entities;
@@ -12,20 +11,17 @@ namespace BeatBind.Infrastructure.Spotify
         private readonly HttpClient _httpClient;
         private readonly ILogger<SpotifyService> _logger;
         private readonly IAuthenticationService _authenticationService;
-        private readonly IConfigurationService _configurationService;
         
         private AuthenticationResult? _currentAuth;
 
         public SpotifyService(
             HttpClient httpClient,
             ILogger<SpotifyService> logger,
-            IAuthenticationService authenticationService,
-            IConfigurationService configurationService)
+            IAuthenticationService authenticationService)
         {
             _httpClient = httpClient;
             _logger = logger;
             _authenticationService = authenticationService;
-            _configurationService = configurationService;
             
             // Try to load stored authentication on startup
             LoadStoredAuthentication();

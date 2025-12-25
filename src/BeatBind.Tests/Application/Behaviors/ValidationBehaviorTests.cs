@@ -5,7 +5,6 @@ using FluentValidation;
 using FluentValidation.Results;
 using MediatR;
 using Moq;
-using Xunit;
 
 namespace BeatBind.Tests.Application.Behaviors
 {

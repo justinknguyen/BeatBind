@@ -1,5 +1,3 @@
-using System.Drawing;
-
 namespace BeatBind.Presentation.Themes
 {
     public static class Theme
