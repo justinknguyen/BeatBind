@@ -19,6 +19,7 @@ Control Spotify from anywhere on Windows using global hotkeys. No more alt-tabbi
 - ⏯️ **Playback Control** - Play, pause, skip, seek, and shuffle
 - 💾 **Track Management** - Save and remove tracks from your library
 - 🌙 **System Tray** - Runs quietly in the background
+- 🔄 **Auto-Update Checker** - Get notified when new versions are available
 - ⚙️ **Easy Setup** - Simple configuration wizard
 
 ## Requirements
