@@ -97,8 +97,6 @@ namespace BeatBind
         private static void ConfigureInfrastructure(IServiceCollection services)
         {
             services.AddSingleton<IConfigurationService, JsonConfigurationService>();
-            services.AddTransient<IAuthenticationService, SpotifyAuthenticationService>();
-            services.AddTransient<ISpotifyService, SpotifyService>();
             services.AddHttpClient<ISpotifyService, SpotifyService>();
             services.AddHttpClient<IAuthenticationService, SpotifyAuthenticationService>();
         }

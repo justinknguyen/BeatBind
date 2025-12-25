@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -13,6 +14,8 @@ namespace BeatBind.Infrastructure.Services
         private bool _disposed;
         private IntPtr _hookId = IntPtr.Zero;
         private readonly HashSet<int> _pressedKeys = new();
+        private readonly HashSet<int> _activeHotkeys = new();
+        private readonly object _activeLock = new();
         private readonly LowLevelKeyboardProc _hookCallback;
 
         // Windows API constants
@@ -134,6 +137,11 @@ namespace BeatBind.Infrastructure.Services
                 {
                     _pressedKeys.Remove(vkCode);
                 }
+                else if (wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)WM_SYSKEYUP)
+                {
+                    _pressedKeys.Remove(vkCode);
+                    ClearInactiveHotkeys();
+                }
             }
             
             // IMPORTANT: Always call next hook to NOT block the key event
@@ -157,30 +165,41 @@ namespace BeatBind.Infrastructure.Services
                 if (hotkeyInfo.Hotkey.Modifiers != currentModifiers)
                     continue;
 
-                // Hotkey matched! Execute action
-                try
+                // Prevent flooding while the key is held down
+                lock (_activeLock)
                 {
-                    _logger.LogDebug("Hotkey triggered: {Action} (ID: {HotkeyId})", hotkeyInfo.Hotkey.Action, hotkeyId);
-                    
-                    // Invoke action on UI thread
-                    _parentForm.BeginInvoke(new Action(() =>
-                    {
-                        try
-                        {
-                            hotkeyInfo.Action?.Invoke();
-                            HotkeyPressed?.Invoke(this, hotkeyInfo.Hotkey);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error executing hotkey action for {HotkeyId}", hotkeyId);
-                        }
-                    }));
+                    if (_activeHotkeys.Contains(hotkeyId))
+                        continue;
+
+                    _activeHotkeys.Add(hotkeyId);
                 }
-                catch (Exception ex)
+
+                // Hotkey matched! Execute action off the UI thread for responsiveness
+                _ = Task.Run(() => ExecuteHotkeyAsync(hotkeyId, hotkeyInfo));
+            }
+        }
+
+        private Task ExecuteHotkeyAsync(int hotkeyId, (Hotkey Hotkey, Action Action) hotkeyInfo)
+        {
+            try
+            {
+                _logger.LogDebug("Hotkey triggered: {Action} (ID: {HotkeyId})", hotkeyInfo.Hotkey.Action, hotkeyId);
+                hotkeyInfo.Action?.Invoke();
+                HotkeyPressed?.Invoke(this, hotkeyInfo.Hotkey);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error executing hotkey action for {HotkeyId}", hotkeyId);
+            }
+            finally
+            {
+                lock (_activeLock)
                 {
-                    _logger.LogError(ex, "Error invoking hotkey action for {HotkeyId}", hotkeyId);
+                    _activeHotkeys.Remove(hotkeyId);
                 }
             }
+
+            return Task.CompletedTask;
         }
 
         private ModifierKeys GetCurrentModifiers()
@@ -197,6 +216,40 @@ namespace BeatBind.Infrastructure.Services
                 modifiers |= ModifierKeys.Windows;
 
             return modifiers;
+        }
+
+        private void ClearInactiveHotkeys()
+        {
+            lock (_activeLock)
+            {
+                if (_activeHotkeys.Count == 0)
+                    return;
+
+                var currentModifiers = GetCurrentModifiers();
+                var toRemove = new List<int>();
+
+                foreach (var hotkeyId in _activeHotkeys)
+                {
+                    if (!_registeredHotkeys.TryGetValue(hotkeyId, out var info))
+                    {
+                        toRemove.Add(hotkeyId);
+                        continue;
+                    }
+
+                    var mainKeyStillDown = _pressedKeys.Contains(info.Hotkey.KeyCode);
+                    var modifiersMatch = info.Hotkey.Modifiers == currentModifiers;
+
+                    if (!mainKeyStillDown || !modifiersMatch)
+                    {
+                        toRemove.Add(hotkeyId);
+                    }
+                }
+
+                foreach (var id in toRemove)
+                {
+                    _activeHotkeys.Remove(id);
+                }
+            }
         }
 
         public void Dispose()
