@@ -127,11 +127,13 @@ namespace BeatBind.Application.Services
                 {
                     if (playbackState.Volume > 0)
                     {
+                        // Muting: save current volume before muting
                         _lastVolume = playbackState.Volume;
                         return await _spotifyService.SetVolumeAsync(0);
                     }
                     else
                     {
+                        // Unmuting: restore saved volume (don't update _lastVolume)
                         return await _spotifyService.SetVolumeAsync(_lastVolume);
                     }
                 }
