@@ -11,10 +11,7 @@
     <!-- Release optimizations -->
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
-    <PublishTrimmed>true</PublishTrimmed>
-    <TrimMode>link</TrimMode>
-    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+    <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>
