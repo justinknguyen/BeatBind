@@ -36,6 +36,7 @@ namespace BeatBind.Presentation.Themes
         // Greens
         public static readonly Argb Green500 = new(52, 168, 83);
         public static readonly Argb Green600 = new(46, 125, 50);
+        public static readonly Argb Green800 = new(27, 94, 32);
 
         // Reds
         public static readonly Argb Red600 = new(217, 48, 37);
@@ -51,8 +52,8 @@ namespace BeatBind.Presentation.Themes
         public static Color CardBackground => Colors.DarkGray800.ToColor();
         public static Color PanelBackground => Colors.DarkGray900.ToColor();
         public static Color InputBackground => Colors.DarkGray700.ToColor();
-        public static Color HeaderBackground => Colors.Green600.ToColor();
-        public static Color InputFieldBackground => Colors.Blue500.ToColor();
+        public static Color HeaderBackground => Colors.Green800.ToColor();
+        public static Color InputFieldBackground => Colors.DarkGray600.ToColor();
 
         // Text Colors
         public static Color PrimaryText => Colors.LightGray100.ToColor();

@@ -173,7 +173,7 @@ namespace BeatBind.Presentation.Forms
             BackColor = Theme.CardBackground;
             _descriptionLabel.ForeColor = Theme.PrimaryText;
             _keysLabel.ForeColor = Theme.SecondaryText;
-            _keysLabel.BackColor = Theme.HeaderBackground;
+            _keysLabel.BackColor = Theme.InputFieldBackground;
         }
 
         private static string FormatHotkeyString(Hotkey hotkey)

@@ -335,29 +335,49 @@ namespace BeatBind.Presentation.Forms
                 e.Graphics.DrawRectangle(new Pen(Theme.Border), rect);
             };
 
+            var headerPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 40,
+                BackColor = Theme.HeaderBackground,
+                Tag = "headerPanel",
+                Padding = new Padding(15, 0, 15, 0)
+            };
+
             var titleLabel = new Label
             {
                 Text = title,
                 Font = new Font("Segoe UI", 12f, FontStyle.Bold),
                 ForeColor = Theme.PrimaryText,
-                Dock = DockStyle.Top,
-                Height = 35,
+                Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(15, 10, 15, 0),
-                BackColor = Theme.Success,
-                Tag = "header" // Tag to identify header labels
+                BackColor = Color.Transparent,
+                Tag = "headerLabel"
             };
+            headerPanel.Controls.Add(titleLabel);
 
             var contentPanel = new Panel
             {
                 Dock = DockStyle.Fill,
-                Padding = new Padding(15),
+                Padding = new Padding(15, 15, 15, 15),
                 BackColor = Theme.CardBackground
             };
             contentPanel.Controls.Add(content);
 
+            // WinForms Docking Order:
+            // Controls are docked in reverse Z-order. The control at the bottom of the Z-order (highest index) is docked first.
+            // We want Header (Top) to be docked first, so it takes the top slice.
+            // We want Content (Fill) to be docked last, so it fills the remaining space.
+            
+            // Add controls to the collection
             card.Controls.Add(contentPanel);
-            card.Controls.Add(titleLabel);
+            card.Controls.Add(headerPanel);
+
+            // Ensure correct Z-order for docking
+            // Header needs to be at the bottom of Z-order (docked first) -> SendToBack()
+            // Content needs to be at the top of Z-order (docked last) -> BringToFront()
+            headerPanel.SendToBack();
+            contentPanel.BringToFront();
 
             return card;
         }
@@ -381,18 +401,26 @@ namespace BeatBind.Presentation.Forms
                 e.Graphics.DrawRectangle(new Pen(Theme.Border), rect);
             };
 
+            var headerPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 30,
+                BackColor = Theme.HeaderBackground,
+                Tag = "headerPanel",
+                Padding = new Padding(10, 0, 10, 0)
+            };
+
             var titleLabel = new Label
             {
                 Text = title,
                 Font = new Font("Segoe UI", 10f, FontStyle.Bold),
                 ForeColor = Theme.PrimaryText,
-                Dock = DockStyle.Top,
-                Height = 25,
+                Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(10, 5, 10, 0),
-                BackColor = Theme.Success,
-                Tag = "header" // Tag to identify header labels
+                BackColor = Color.Transparent,
+                Tag = "headerLabel"
             };
+            headerPanel.Controls.Add(titleLabel);
 
             var contentPanel = new Panel
             {
@@ -403,7 +431,11 @@ namespace BeatBind.Presentation.Forms
             contentPanel.Controls.Add(content);
 
             card.Controls.Add(contentPanel);
-            card.Controls.Add(titleLabel);
+            card.Controls.Add(headerPanel);
+
+            // Ensure correct Z-order for docking
+            headerPanel.SendToBack();
+            contentPanel.BringToFront();
 
             return card;
         }
@@ -481,15 +513,15 @@ namespace BeatBind.Presentation.Forms
             var statusContainer = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 60,
+                Height = 40,
                 BackColor = Theme.HeaderBackground,
-                Padding = new Padding(15)
+                Padding = new Padding(5)
             };
 
             _statusLabel = new MaterialLabel
             {
                 Text = "Not authenticated",
-                Dock = DockStyle.Fill,
+                Dock = DockStyle.Top,
                 TextAlign = ContentAlignment.MiddleCenter,
                 Font = new Font("Segoe UI", 11f, FontStyle.Bold),
                 HighEmphasis = true
@@ -941,7 +973,7 @@ namespace BeatBind.Presentation.Forms
                 tab.BackColor = Theme.CardBackground;
             }
 
-            // Update all colors
+            // Ensure headers use the correct color
             UpdateControlColors(this);
         }
 
@@ -949,109 +981,48 @@ namespace BeatBind.Presentation.Forms
         {
             foreach (Control child in control.Controls)
             {
-                if (child is Panel panel) UpdatePanelColors(panel);
-                else if (child is Label label) UpdateLabelColors(label);
-                else if (child is TextBox textBox) UpdateTextBoxColors(textBox);
-                else if (child is NumericUpDown numericUpDown) UpdateNumericUpDownColors(numericUpDown);
-                else if (child is CheckBox checkBox) UpdateCheckBoxColors(checkBox);
-                else if (child is Button button) UpdateButtonColors(button);
-                else if (child is TableLayoutPanel || child is FlowLayoutPanel) UpdateLayoutColors(child);
+                if (child is Panel panel)
+                {
+                    if (panel.Tag?.ToString() == "headerPanel")
+                    {
+                        panel.BackColor = Theme.HeaderBackground;
+                    }
+                    // Ensure panels that are not the main background are card background
+                    // This mimics the old behavior of fixing up "light" panels
+                    else if (panel.BackColor.R > 200 && panel.BackColor.G > 200 && panel.BackColor.B > 200)
+                    {
+                        panel.BackColor = Theme.CardBackground;
+                    }
+                }
+                else if (child is Label label)
+                {
+                    if (label.Tag?.ToString() == "headerLabel")
+                    {
+                        label.ForeColor = Theme.PrimaryText;
+                        label.BackColor = Color.Transparent;
+                    }
+                    else if (label.Tag?.ToString() == "header")
+                    {
+                        label.BackColor = Theme.HeaderBackground;
+                        label.ForeColor = Theme.PrimaryText;
+                    }
+                    else
+                    {
+                        // Ensure other labels are visible against the dark background
+                        // Only update if they are not explicitly set to a specific color (like success/error)
+                        // This is a heuristic to match the old behavior but safer
+                        if (label.ForeColor.R < 100 && label.ForeColor.G < 100 && label.ForeColor.B < 100)
+                        {
+                            label.ForeColor = Theme.PrimaryText;
+                        }
+                    }
+                }
 
-                UpdateControlColors(child);
+                if (child.HasChildren)
+                {
+                    UpdateControlColors(child);
+                }
             }
-        }
-
-        private void UpdatePanelColors(Panel panel)
-        {
-            // Check if it's a light background (white or light gray)
-            bool isLightBg = panel.BackColor.R > 200 && panel.BackColor.G > 200 && panel.BackColor.B > 200;
-            // Check if it's a medium gray background
-            bool isMediumBg = panel.BackColor.R >= 240 && panel.BackColor.G >= 240 && panel.BackColor.B >= 240;
-            // Check if it's already dark
-            bool isDarkBg = panel.BackColor.R < 100 && panel.BackColor.G < 100 && panel.BackColor.B < 100;
-
-            if (isLightBg && !isDarkBg)
-            {
-                // If it's pure white or very light, make it card background
-                if (panel.BackColor.R >= 250)
-                    panel.BackColor = Theme.CardBackground;
-                // If it's light gray, make it header background
-                else if (isMediumBg)
-                    panel.BackColor = Theme.HeaderBackground;
-            }
-        }
-
-        private void UpdateLabelColors(Label label)
-        {
-            // Handle header labels specially
-            if (label.Tag?.ToString() == "header")
-            {
-                label.ForeColor = Theme.PrimaryText;
-                label.BackColor = Theme.HeaderBackground;
-                return;
-            }
-
-            // Update based on current color brightness
-            bool isDark = label.ForeColor.R < 128;
-
-            if (!isDark) // If it's currently a light-mode color
-            {
-                if (label.ForeColor.R < 80) // Very dark = primary
-                    label.ForeColor = Theme.PrimaryText;
-                else if (label.ForeColor.R < 150) // Medium = label
-                    label.ForeColor = Theme.LabelText;
-                else // Light gray = secondary
-                    label.ForeColor = Theme.SecondaryText;
-            }
-            else // Already dark mode color
-            {
-                if (label.ForeColor.R > 200) // Very light = primary
-                    label.ForeColor = Theme.PrimaryText;
-                else if (label.ForeColor.R > 170) // Medium = label
-                    label.ForeColor = Theme.LabelText;
-                else // Dimmer = secondary
-                    label.ForeColor = Theme.SecondaryText;
-            }
-        }
-
-        private void UpdateTextBoxColors(TextBox textBox)
-        {
-            textBox.BackColor = Theme.InputBackground;
-            textBox.ForeColor = Theme.PrimaryText;
-        }
-
-        private void UpdateNumericUpDownColors(NumericUpDown numericUpDown)
-        {
-            numericUpDown.BackColor = Theme.InputBackground;
-            numericUpDown.ForeColor = Theme.PrimaryText;
-        }
-
-        private void UpdateCheckBoxColors(CheckBox checkBox)
-        {
-            checkBox.ForeColor = Theme.PrimaryText;
-        }
-
-        private void UpdateButtonColors(Button button)
-        {
-            if (button == _saveConfigButton || button == _authenticateButton || button == _addHotkeyButton)
-                return;
-
-            // Don't change primary action buttons
-            // Check if it's a secondary button (by checking against known secondary colors or just default)
-            var otherThemeSecondary = Color.FromArgb(95, 99, 104);
-            
-            if (button.BackColor == otherThemeSecondary || button.BackColor == Theme.SecondaryButton)
-            {
-                button.BackColor = Theme.SecondaryButton;
-                button.ForeColor = Color.White;
-            }
-        }
-
-        private void UpdateLayoutColors(Control layout)
-        {
-            bool isLightBg = layout.BackColor.R > 200 && layout.BackColor.G > 200 && layout.BackColor.B > 200;
-            if (isLightBg)
-                layout.BackColor = Theme.CardBackground;
         }
 
         private void AddHotkeyButton_Click(object? sender, EventArgs e)

@@ -41,48 +41,6 @@ namespace BeatBind.Presentation.Forms
         private void ApplyTheme()
         {
             BackColor = Theme.FormBackground;
-
-            // Update all controls recursively
-            UpdateControlColors(this);
-        }
-
-        private void UpdateControlColors(Control control)
-        {
-            foreach (Control child in control.Controls)
-            {
-                if (child is Panel panel)
-                {
-                    if (panel.BackColor == Color.White || panel.BackColor == Color.FromArgb(41, 42, 45))
-                        panel.BackColor = Theme.CardBackground;
-                    else if (panel.BackColor == Color.FromArgb(248, 249, 250) || panel.BackColor == Color.FromArgb(32, 33, 36))
-                        panel.BackColor = Theme.HeaderBackground;
-                }
-                else if (child is Label label)
-                {
-                    if (label.ForeColor == Color.FromArgb(33, 37, 41) || label.ForeColor == Color.FromArgb(232, 234, 237))
-                        label.ForeColor = Theme.PrimaryText;
-                    else if (label.ForeColor == Color.FromArgb(108, 117, 125) || label.ForeColor == Color.FromArgb(154, 160, 166))
-                        label.ForeColor = Theme.SecondaryText;
-                    else if (label.ForeColor == Color.FromArgb(73, 80, 87))
-                        label.ForeColor = Theme.LabelText;
-                }
-                else if (child is ComboBox comboBox)
-                {
-                    comboBox.BackColor = Theme.InputBackground;
-                    comboBox.ForeColor = Theme.PrimaryText;
-                }
-                else if (child is CheckBox checkBox)
-                {
-                    checkBox.ForeColor = Theme.PrimaryText;
-                }
-                else if (child is TableLayoutPanel || child is FlowLayoutPanel)
-                {
-                    if (child.BackColor == Color.White || child.BackColor == Color.FromArgb(41, 42, 45))
-                        child.BackColor = Theme.CardBackground;
-                }
-
-                UpdateControlColors(child);
-            }
         }
 
         private void InitializeComponent()
