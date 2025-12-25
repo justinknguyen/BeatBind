@@ -1,17 +1,17 @@
 name: Build and Release Beta
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
     branches:
-      - dev # Trigger on pushes to dev branch
-    paths-ignore:
-      - "**.md"
-      - "LICENSE"
-      - ".gitignore"
+      - dev
 
 jobs:
   build-and-release:
     runs-on: windows-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout code
