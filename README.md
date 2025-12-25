@@ -9,16 +9,17 @@ This project follows **Clean Architecture** principles with clear separation of 
 ```
 src/
 ├── BeatBind/                     # 🚀 Main Application Entry Point
-├── BeatBind.Domain/             # 🎯 Core Business Logic & Entities  
+├── BeatBind.Domain/             # 🎯 Core Business Logic & Entities
 ├── BeatBind.Application/        # ⚙️ Use Cases & Application Services
 ├── BeatBind.Infrastructure/     # 🔌 External Integrations & Services
 └── BeatBind.Presentation/       # 🖥️ User Interface & Forms
 ```
 
 ### Layer Dependencies
+
 - **Domain**: No dependencies (pure business logic)
 - **Application**: Depends only on Domain
-- **Infrastructure**: Depends on Domain 
+- **Infrastructure**: Depends on Domain
 - **Presentation**: Depends on Domain & Application
 - **Main App**: Orchestrates all layers with Dependency Injection
 
@@ -29,10 +30,14 @@ src/
 - **System Tray**: Minimize to tray for background operation
 - **Configurable Hotkeys**: Customize key combinations for different actions
 - **Clean Architecture**: Maintainable, testable, and scalable codebase
+- **CQRS Pattern**: Command/Query separation using MediatR
+- **Validation**: FluentValidation for input validation
+- **Pipeline Behaviors**: Logging and validation behaviors
 
 ### Supported Actions
+
 - Play/Pause
-- Next/Previous Track  
+- Next/Previous Track
 - Volume Up/Down
 - Mute/Unmute
 - Save/Remove Track
@@ -41,33 +46,39 @@ src/
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Windows 10/11
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - Spotify Premium Account (required for Web API control)
 
 ### Setup
+
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/justinknguyen/BeatBind.git
    cd BeatBind
    ```
 
 2. **Build the application**
+
    ```bash
    # Option 1: Use the build script
    build.bat
-   
+
    # Option 2: Manual build
    cd src
    dotnet build BeatBind.sln --configuration Release
    ```
 
 3. **Configure Spotify API**
+
    - Create a Spotify App at [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
    - Add `http://127.0.0.1:8888/callback` as a redirect URI
    - Note your Client ID and Client Secret
 
 4. **Run the application**
+
    ```bash
    cd src/BeatBind
    dotnet run
@@ -75,25 +86,30 @@ src/
 
 5. **First-time setup**
    - Enter your Spotify Client ID and Client Secret
-   - Click "Authenticate with Spotify" 
+   - Click "Authenticate with Spotify"
    - Configure your preferred hotkeys
    - Save configuration
 
 ## 🏗️ Architecture Benefits
 
 ### ✅ **Separation of Concerns**
+
 Each layer has a single, well-defined responsibility
 
-### ✅ **Dependency Inversion** 
+### ✅ **Dependency Inversion**
+
 Core business logic doesn't depend on external frameworks
 
 ### ✅ **Testability**
+
 Easy to unit test each layer independently
 
-### ✅ **Maintainability** 
+### ✅ **Maintainability**
+
 Changes in one layer don't affect others
 
 ### ✅ **Flexibility**
+
 Easy to swap implementations (different UI frameworks, APIs, etc.)
 
 ## 🧪 Testing
@@ -101,57 +117,74 @@ Easy to swap implementations (different UI frameworks, APIs, etc.)
 The Clean Architecture makes testing straightforward:
 
 ```bash
-# Run all tests (when test projects are added)
+# Run all tests
+cd src
 dotnet test
 
-# Test specific layers
-dotnet test BeatBind.Domain.Tests
-dotnet test BeatBind.Application.Tests
-dotnet test BeatBind.Infrastructure.Tests
+# Run with detailed output
+dotnet test --logger "console;verbosity=detailed"
+
+# Run specific test categories
+dotnet test --filter FullyQualifiedName~BeatBind.Tests.Application
+dotnet test --filter FullyQualifiedName~BeatBind.Tests.Domain
 ```
 
 ## 🛠️ Development
 
 ### Project Structure
+
 ```
 src/
 ├── BeatBind/                     # Program.cs, DI setup, entry point
-├── BeatBind.Domain/             
+│   └── Hosting/                 # Hosted services for initialization
+├── BeatBind.Domain/
+│   ├── Common/                  # Shared types (Result pattern)
 │   ├── Entities/                # Core entities (Track, Hotkey, etc.)
 │   └── Interfaces/              # Service contracts
-├── BeatBind.Application/        
-│   ├── Services/                # Business logic services
-│   └── UseCases/                # Application use cases
-├── BeatBind.Infrastructure/     
+├── BeatBind.Application/
+│   ├── Abstractions/            # CQRS abstractions (ICommand, IQuery)
+│   ├── Authentication/          # Authentication commands
+│   ├── Behaviors/               # MediatR pipeline behaviors
+│   ├── Configuration/           # Configuration commands
+│   └── Services/                # Business logic services
+├── BeatBind.Infrastructure/
 │   ├── Spotify/                 # Spotify Web API integration
 │   ├── Configuration/           # Settings management
-│   └── Hotkeys/                 # Windows hotkey registration
-└── BeatBind.Presentation/       
-    └── Forms/                   # Windows Forms UI
+│   ├── Hotkeys/                 # Windows hotkey registration
+│   └── Hosting/                 # Infrastructure hosting components
+├── BeatBind.Presentation/
+│   ├── Forms/                   # Windows Forms UI
+│   └── Themes/                  # UI theming
+└── BeatBind.Tests/
+    ├── Application/             # Application layer tests
+    └── Domain/                  # Domain layer tests
 ```
 
 ### Adding New Features
+
 1. **Define entities** in `Domain/Entities`
 2. **Create interfaces** in `Domain/Interfaces`
-3. **Implement business logic** in `Application/Services`
-4. **Add external integrations** in `Infrastructure`
-5. **Create UI components** in `Presentation`
-6. **Wire up dependencies** in main `Program.cs`
+3. **Create commands/queries** in `Application` (Authentication, Configuration, etc.)
+4. **Add command handlers** using MediatR pattern
+5. **Implement validators** using FluentValidation
+6. **Add external integrations** in `Infrastructure`
+7. **Create UI components** in `Presentation/Forms`
+8. **Wire up dependencies** in main `Program.cs`
 
 ## 📋 Default Hotkeys
 
-| Action | Default Hotkey |
-|--------|----------------|
-| Play/Pause | `Ctrl+Alt+Space` |
-| Next Track | `Ctrl+Alt+Right` |
-| Previous Track | `Ctrl+Alt+Left` |
-| Volume Up | `Ctrl+Alt+Up` |
-| Volume Down | `Ctrl+Alt+Down` |
-| Mute/Unmute | `Ctrl+Alt+M` |
-| Seek Forward | `Ctrl+Alt+F` |
-| Seek Backward | `Ctrl+Alt+B` |
-| Save Track | `Ctrl+Alt+S` |
-| Remove Track | `Ctrl+Alt+R` |
+| Action         | Default Hotkey   |
+| -------------- | ---------------- |
+| Play/Pause     | `Ctrl+Alt+Space` |
+| Next Track     | `Ctrl+Alt+Right` |
+| Previous Track | `Ctrl+Alt+Left`  |
+| Volume Up      | `Ctrl+Alt+Up`    |
+| Volume Down    | `Ctrl+Alt+Down`  |
+| Mute/Unmute    | `Ctrl+Alt+M`     |
+| Seek Forward   | `Ctrl+Alt+F`     |
+| Seek Backward  | `Ctrl+Alt+B`     |
+| Save Track     | `Ctrl+Alt+S`     |
+| Remove Track   | `Ctrl+Alt+R`     |
 
 ## 📁 Configuration
 
@@ -164,7 +197,7 @@ Settings are stored in: `%APPDATA%\BeatBind\config.json`
   "RedirectUri": "http://127.0.0.1:8888/callback",
   "Hotkeys": {
     "PlayPause": "Ctrl+Alt+Space",
-    "NextTrack": "Ctrl+Alt+Right",
+    "NextTrack": "Ctrl+Alt+Right"
     // ... other hotkeys
   },
   "StartWithWindows": false,
@@ -179,16 +212,19 @@ Settings are stored in: `%APPDATA%\BeatBind\config.json`
 ### Common Issues
 
 **"Authentication failed"**
+
 - Verify Client ID and Client Secret are correct
 - Ensure redirect URI is exactly `http://127.0.0.1:8888/callback`
 - Check that your Spotify app has the correct scopes
 
-**"Global hotkeys not working"**  
+**"Global hotkeys not working"**
+
 - Run as Administrator if necessary
 - Check that hotkey combinations aren't already in use
 - Verify Windows allows the application to register global hotkeys
 
 **"No active device found"**
+
 - Open Spotify and start playing music
 - Ensure you have a Spotify Premium account
 - Check that Spotify is not in private session mode
@@ -222,4 +258,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with .NET 8.0 and Windows Forms
 - Uses Spotify Web API for music control
 - Implements Clean Architecture by Robert C. Martin
+- CQRS pattern with [MediatR](https://github.com/jbogard/MediatR)
+- Input validation with [FluentValidation](https://github.com/FluentValidation/FluentValidation)
+- Dependency Injection with Microsoft.Extensions.DependencyInjection
 - Original Python version inspiration

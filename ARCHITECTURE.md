@@ -27,10 +27,6 @@ BeatBind follows the Clean Architecture pattern by Robert C. Martin, organized i
 - `IHotkeyService`: Global hotkey registration contract
 - `IAuthenticationService`: OAuth authentication contract
 
-#### Value Objects
-
-- `KeyCode`: Abstraction for keyboard input (removes Windows Forms dependency)
-
 ### 2. Application Layer (`src/BeatBind.Application/`)
 
 **Purpose**: Business logic orchestration and use cases
@@ -38,10 +34,11 @@ BeatBind follows the Clean Architecture pattern by Robert C. Martin, organized i
 
 #### Messaging (CQRS)
 
-- `ICommand` / `IQuery`: Interfaces for CQRS pattern
-- `AuthenticateUserCommand`: Handles user authentication flow
-- `SaveConfigurationCommand`: Persists user configuration
-- `UpdateClientCredentialsCommand`: Updates API credentials
+- `ICommand` / `IQuery`: Interfaces for CQRS pattern built on MediatR
+- `AuthenticateUserCommand` / `AuthenticateUserCommandHandler`: Handles user authentication flow
+- `SaveConfigurationCommand` / `SaveConfigurationCommandHandler`: Persists user configuration
+- `UpdateClientCredentialsCommand` / `UpdateClientCredentialsCommandHandler`: Updates API credentials
+- `UpdateClientCredentialsCommandValidator`: FluentValidation validator for client credentials
 
 #### Behaviors (Pipeline)
 
@@ -71,6 +68,10 @@ BeatBind follows the Clean Architecture pattern by Robert C. Martin, organized i
 
 - `WindowsHotkeyService`: Implements `IHotkeyService` using Windows APIs
 
+#### Hosting
+
+- Integration infrastructure components (currently empty)
+
 ### 4. Presentation Layer (`src/BeatBind.Presentation/`)
 
 **Purpose**: User interface and interaction
@@ -89,7 +90,11 @@ BeatBind follows the Clean Architecture pattern by Robert C. Martin, organized i
 
 #### Entry Point
 
-- `Program.cs`: Application startup and DI container configuration
+- `Program.cs`: Application startup and DI container configuration using Microsoft.Extensions.Hosting
+
+#### Hosting
+
+- `MainFormInitializerService`: IHostedService that initializes the MainForm with required services at startup
 
 ## 🔄 Dependency Flow
 
@@ -155,20 +160,25 @@ BeatBind follows the Clean Architecture pattern by Robert C. Martin, organized i
 The main application configures all dependencies in `Program.cs`:
 
 ```csharp
-// Domain services have no dependencies
+// Infrastructure Layer
 services.AddSingleton<IConfigurationService, JsonConfigurationService>();
-services.AddSingleton<IHotkeyService, WindowsHotkeyService>();
+services.AddTransient<IAuthenticationService, SpotifyAuthenticationService>();
+services.AddTransient<ISpotifyService, SpotifyService>();
 services.AddHttpClient<ISpotifyService, SpotifyService>();
-services.AddSingleton<IAuthenticationService, SpotifyAuthenticationService>();
+services.AddHttpClient<IAuthenticationService, SpotifyAuthenticationService>();
 
-// Application services depend on domain interfaces
-services.AddSingleton<MusicControlService>();
+// Application Layer
+services.AddTransient<MusicControlService>();
+services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(ICommand).Assembly));
+services.AddValidatorsFromAssembly(typeof(ICommand).Assembly);
+services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+// Presentation Layer
+services.AddSingleton<MainForm>();
+services.AddSingleton<IHotkeyService, WindowsHotkeyService>(/* factory for MainForm dependency */);
 services.AddSingleton<HotkeyManagementService>();
-services.AddTransient<AuthenticateUserUseCase>();
-services.AddTransient<SaveConfigurationUseCase>();
-
-// Presentation depends on application services
-services.AddTransient<MainForm>();
+services.AddSingleton<IHostedService, MainFormInitializerService>();
 ```
 
 ## 🧪 Testing Strategy
@@ -189,12 +199,22 @@ services.AddTransient<MainForm>();
 ### Test Project Structure
 
 ```
-tests/
-├── BeatBind.Domain.Tests/
-├── BeatBind.Application.Tests/
-├── BeatBind.Infrastructure.Tests/
-├── BeatBind.Presentation.Tests/
-└── BeatBind.IntegrationTests/
+src/BeatBind.Tests/
+├── Domain/
+│   ├── Entities/
+│   │   └── EntityTests.cs
+│   └── ResultTests.cs
+├── Application/
+│   ├── Behaviors/
+│   │   ├── LoggingBehaviorTests.cs
+│   │   └── ValidationBehaviorTests.cs
+│   ├── Commands/
+│   │   ├── AuthenticateUserCommandHandlerTests.cs
+│   │   ├── SaveConfigurationCommandHandlerTests.cs
+│   │   └── UpdateClientCredentialsCommandHandlerTests.cs
+│   └── Validators/
+│       └── UpdateClientCredentialsCommandValidatorTests.cs
+└── BeatBind.Tests.csproj
 ```
 
 ## 📦 Benefits Achieved
