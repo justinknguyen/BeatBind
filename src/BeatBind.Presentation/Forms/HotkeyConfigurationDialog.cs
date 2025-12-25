@@ -1,6 +1,6 @@
-using BeatBind.Domain.Entities;
+using BeatBind.Core.Entities;
 using BeatBind.Presentation.Themes;
-using DomainModifierKeys = BeatBind.Domain.Entities.ModifierKeys;
+using DomainModifierKeys = BeatBind.Core.Entities.ModifierKeys;
 
 namespace BeatBind.Presentation.Forms
 {

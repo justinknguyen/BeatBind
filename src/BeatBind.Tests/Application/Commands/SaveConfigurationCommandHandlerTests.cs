@@ -1,6 +1,6 @@
-using BeatBind.Application.Configuration.Commands.SaveConfiguration;
-using BeatBind.Domain.Entities;
-using BeatBind.Domain.Interfaces;
+using BeatBind.Application.Commands.SaveConfiguration;
+using BeatBind.Core.Entities;
+using BeatBind.Core.Interfaces;
 using FluentAssertions;
 using Moq;
 

@@ -4,7 +4,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeatBind", "BeatBind\BeatBind.csproj", "{11111111-1111-1111-1111-111111111111}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeatBind.Domain", "BeatBind.Domain\BeatBind.Domain.csproj", "{22222222-2222-2222-2222-222222222222}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeatBind.Core", "BeatBind.Core\BeatBind.Core.csproj", "{22222222-2222-2222-2222-222222222222}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeatBind.Application", "BeatBind.Application\BeatBind.Application.csproj", "{33333333-3333-3333-3333-333333333333}"
 EndProject

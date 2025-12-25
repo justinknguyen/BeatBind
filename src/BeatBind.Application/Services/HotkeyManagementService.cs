@@ -1,5 +1,5 @@
-using BeatBind.Domain.Entities;
-using BeatBind.Domain.Interfaces;
+using BeatBind.Core.Entities;
+using BeatBind.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace BeatBind.Application.Services

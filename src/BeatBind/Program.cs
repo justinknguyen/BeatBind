@@ -1,10 +1,10 @@
 using BeatBind.Application.Behaviors;
 using BeatBind.Application.Services;
-using BeatBind.Domain.Interfaces;
+using BeatBind.Core.Interfaces;
 using BeatBind.Hosting;
-using BeatBind.Infrastructure.Configuration;
-using BeatBind.Infrastructure.Hotkeys;
-using BeatBind.Infrastructure.Spotify;
+using BeatBind.Infrastructure.Services.Configuration;
+using BeatBind.Infrastructure.Services.Hotkeys;
+using BeatBind.Infrastructure.Services.Spotify;
 using BeatBind.Presentation.Forms;
 using FluentValidation;
 using MediatR;

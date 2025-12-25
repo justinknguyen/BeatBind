@@ -1,6 +1,6 @@
-using BeatBind.Application.Authentication.Commands.AuthenticateUser;
-using BeatBind.Domain.Entities;
-using BeatBind.Domain.Interfaces;
+using BeatBind.Application.Commands.AuthenticateUser;
+using BeatBind.Core.Entities;
+using BeatBind.Core.Interfaces;
 using FluentAssertions;
 using Moq;
 

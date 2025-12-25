@@ -1,9 +1,9 @@
 using BeatBind.Application.Services;
-using BeatBind.Application.Authentication.Commands.AuthenticateUser;
-using BeatBind.Application.Configuration.Commands.SaveConfiguration;
-using BeatBind.Application.Configuration.Commands.UpdateClientCredentials;
-using BeatBind.Domain.Entities;
-using BeatBind.Domain.Interfaces;
+using BeatBind.Application.Commands.AuthenticateUser;
+using BeatBind.Application.Commands.SaveConfiguration;
+using BeatBind.Application.Commands.UpdateClientCredentials;
+using BeatBind.Core.Entities;
+using BeatBind.Core.Interfaces;
 using BeatBind.Presentation.Themes;
 using MediatR;
 using Microsoft.Extensions.Logging;

@@ -1,4 +1,4 @@
-using BeatBind.Application.Configuration.Commands.UpdateClientCredentials;
+using BeatBind.Application.Commands.UpdateClientCredentials;
 using FluentValidation.TestHelper;
 
 namespace BeatBind.Tests.Application.Validators

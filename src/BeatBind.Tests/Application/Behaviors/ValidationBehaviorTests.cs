@@ -1,5 +1,5 @@
 using BeatBind.Application.Behaviors;
-using BeatBind.Domain.Common;
+using BeatBind.Core.Common;
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;

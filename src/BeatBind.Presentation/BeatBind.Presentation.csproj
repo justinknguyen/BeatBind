@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BeatBind.Domain\BeatBind.Domain.csproj" />
+    <ProjectReference Include="..\BeatBind.Core\BeatBind.Core.csproj" />
     <ProjectReference Include="..\BeatBind.Application\BeatBind.Application.csproj" />
   </ItemGroup>
 

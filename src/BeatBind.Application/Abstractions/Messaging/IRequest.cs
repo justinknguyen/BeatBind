@@ -1,4 +1,4 @@
-using BeatBind.Domain.Common;
+using BeatBind.Core.Common;
 using MediatR;
 
 namespace BeatBind.Application.Abstractions.Messaging
