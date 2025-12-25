@@ -168,7 +168,7 @@ namespace BeatBind.Tests.Application.Services
             _service.HotkeyTriggered += (sender, h) => triggeredHotkey = h;
 
             // Act
-            _mockHotkeyService.Raise(x => x.HotkeyPressed += null, null, hotkey);
+            _mockHotkeyService.Raise(x => x.HotkeyPressed += null, _mockHotkeyService.Object, hotkey);
 
             // Assert
             triggeredHotkey.Should().Be(hotkey);
