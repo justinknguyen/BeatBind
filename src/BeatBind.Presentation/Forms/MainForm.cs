@@ -847,7 +847,7 @@ namespace BeatBind.Presentation.Forms
             contextMenu.Items.Add("Exit", null, (s, e) => 
             {
                 _isExiting = true;
-                Application.Exit();
+                System.Windows.Forms.Application.Exit();
             });
 
             _notifyIcon.ContextMenuStrip = contextMenu;
