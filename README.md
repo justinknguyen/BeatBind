@@ -9,7 +9,7 @@
 Control Spotify from anywhere on Windows using global hotkeys. No more alt-tabbing while gaming or working—adjust volume, skip tracks, and manage playback without switching windows.
 
 <p align="center">
-    <img src="./images/view.png" width="90%" height="90%">
+    <img src="./images/view.png" width="50%" height="50%">
 </p>
 
 ## Features
@@ -19,12 +19,12 @@ Control Spotify from anywhere on Windows using global hotkeys. No more alt-tabbi
 - ⏯️ **Playback Control** - Play, pause, skip, seek, and shuffle
 - 💾 **Track Management** - Save and remove tracks from your library
 - 🌙 **System Tray** - Runs quietly in the background
+- 🔄 **Auto-Update Checker** - Get notified when new versions are available
 - ⚙️ **Easy Setup** - Simple configuration wizard
 
 ## Requirements
 
-- Windows 10/11
-- [.NET 8.0 Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) (automatically prompted on first run)
+- Windows 10/11 (64-bit)
 - Spotify Premium account
 - Internet connection
 
@@ -43,8 +43,8 @@ Control Spotify from anywhere on Windows using global hotkeys. No more alt-tabbi
 
 ```bash
 git clone https://github.com/justinknguyen/BeatBind.git
-cd BeatBind
-dotnet build src/BeatBind.sln -c Release
+cd BeatBind/src/BeatBind
+dotnet publish -c Release
 ```
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for development details.

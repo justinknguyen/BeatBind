@@ -19,10 +19,13 @@ namespace BeatBind.Presentation.Forms
         private HotkeyManagementService _hotkeyManagementService = null!;
         private readonly IMediator _mediator;
         private readonly IConfigurationService _configurationService;
+        private readonly IGithubReleaseService _githubReleaseService;
         private readonly ILogger<MainForm> _logger;
+        private const string CURRENT_VERSION = "2.0.0";
         
         private NotifyIcon? _notifyIcon;
         private bool _isAuthenticated;
+        private Panel? _updateNotificationPanel;
 
         // UI Controls
         private MaterialTabControl _mainTabControl = null!;
@@ -51,6 +54,7 @@ namespace BeatBind.Presentation.Forms
             _musicControlService = null!;
             _mediator = null!;
             _configurationService = null!;
+            _githubReleaseService = null!;
             _logger = NullLogger<MainForm>.Instance;
 
             if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
@@ -67,11 +71,13 @@ namespace BeatBind.Presentation.Forms
             MusicControlService musicControlService,
             IMediator mediator,
             IConfigurationService configurationService,
+            IGithubReleaseService githubReleaseService,
             ILogger<MainForm> logger)
         {
             _musicControlService = musicControlService;
             _mediator = mediator;
             _configurationService = configurationService;
+            _githubReleaseService = githubReleaseService;
             _logger = logger;
 
             // Initialize MaterialSkinManager
@@ -95,6 +101,8 @@ namespace BeatBind.Presentation.Forms
             base.OnShown(e);
             // Force a theme refresh after the form is fully loaded
             ApplyTheme();
+            // Check for updates
+            _ = CheckForUpdatesAsync();
         }
 
         public void SetHotkeyManagementService(HotkeyManagementService hotkeyManagementService)
@@ -1180,6 +1188,116 @@ namespace BeatBind.Presentation.Forms
 
             _notifyIcon?.Dispose();
             base.OnFormClosing(e);
+        }
+
+        private async Task CheckForUpdatesAsync()
+        {
+            try
+            {
+                var latestRelease = await _githubReleaseService.GetLatestReleaseAsync();
+                
+                if (latestRelease == null)
+                {
+                    _logger.LogWarning("Could not fetch latest release information");
+                    return;
+                }
+
+                if (_githubReleaseService.IsNewerVersion(CURRENT_VERSION, latestRelease.Version))
+                {
+                    ShowUpdateNotification(latestRelease);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking for updates");
+            }
+        }
+
+        private void ShowUpdateNotification(GithubRelease release)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(() => ShowUpdateNotification(release));
+                return;
+            }
+
+            // Create update notification panel
+            _updateNotificationPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 50,
+                BackColor = Color.FromArgb(76, 175, 80),
+                Padding = new Padding(15, 10, 15, 10)
+            };
+
+            var messageLabel = new Label
+            {
+                Text = $"🎉 New version available: v{release.Version}",
+                AutoSize = false,
+                Dock = DockStyle.Left,
+                Width = 300,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+
+            var downloadButton = new Button
+            {
+                Text = "Download",
+                AutoSize = true,
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.White,
+                ForeColor = Color.FromArgb(76, 175, 80),
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                Cursor = Cursors.Hand,
+                Dock = DockStyle.Left,
+                Width = 100,
+                Height = 30
+            };
+            downloadButton.FlatAppearance.BorderSize = 0;
+            downloadButton.Click += (s, e) => {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = release.Url,
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to open release URL");
+                    MessageBox.Show("Failed to open the download page. Please visit the GitHub releases page manually.",
+                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            };
+
+            var closeButton = new Button
+            {
+                Text = "✕",
+                AutoSize = false,
+                Width = 30,
+                Height = 30,
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.Transparent,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Cursor = Cursors.Hand,
+                Dock = DockStyle.Right
+            };
+            closeButton.FlatAppearance.BorderSize = 0;
+            closeButton.Click += (s, e) => {
+                Controls.Remove(_updateNotificationPanel);
+                _updateNotificationPanel?.Dispose();
+                _updateNotificationPanel = null;
+            };
+
+            _updateNotificationPanel.Controls.Add(downloadButton);
+            _updateNotificationPanel.Controls.Add(messageLabel);
+            _updateNotificationPanel.Controls.Add(closeButton);
+
+            Controls.Add(_updateNotificationPanel);
+            _updateNotificationPanel.BringToFront();
         }
     }
 }

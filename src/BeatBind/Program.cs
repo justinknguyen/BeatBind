@@ -103,6 +103,7 @@ namespace BeatBind
             services.AddSingleton<IConfigurationService, JsonConfigurationService>();
             services.AddHttpClient<ISpotifyService, SpotifyService>();
             services.AddHttpClient<IAuthenticationService, SpotifyAuthenticationService>();
+            services.AddHttpClient<IGithubReleaseService, GithubReleaseService>();
         }
 
         private static void ConfigureApplication(IServiceCollection services)
