@@ -36,12 +36,16 @@ namespace BeatBind.Presentation.Themes
         // Greens
         public static readonly Argb Green500 = new(52, 168, 83);
         public static readonly Argb Green600 = new(46, 125, 50);
+        public static readonly Argb Green800 = new(27, 94, 32);
 
         // Reds
         public static readonly Argb Red600 = new(217, 48, 37);
 
         // Yellows
         public static readonly Argb Yellow600 = new(251, 188, 4);
+
+        // Oranges
+        public static readonly Argb Orange600 = new(255, 140, 0);
     }
 
     public static class Theme
@@ -51,8 +55,8 @@ namespace BeatBind.Presentation.Themes
         public static Color CardBackground => Colors.DarkGray800.ToColor();
         public static Color PanelBackground => Colors.DarkGray900.ToColor();
         public static Color InputBackground => Colors.DarkGray700.ToColor();
-        public static Color HeaderBackground => Colors.Green600.ToColor();
-        public static Color InputFieldBackground => Colors.Blue500.ToColor();
+        public static Color HeaderBackground => Colors.Green800.ToColor();
+        public static Color InputFieldBackground => Colors.DarkGray600.ToColor();
 
         // Text Colors
         public static Color PrimaryText => Colors.LightGray100.ToColor();
@@ -74,5 +78,6 @@ namespace BeatBind.Presentation.Themes
         public static Color PrimaryButtonText => Colors.DarkGray900.ToColor();
         public static Color SecondaryButton => Colors.Gray600.ToColor();
         public static Color DangerButton => Colors.Red600.ToColor();
+        public static Color EditButton => Colors.Orange600.ToColor();
     }
 }
