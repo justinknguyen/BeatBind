@@ -1,9 +1,6 @@
 using BeatBind.Application.Behaviors;
 using BeatBind.Application.Services;
 using BeatBind.Core.Interfaces;
-using BeatBind.Hosting;
-using BeatBind.Infrastructure.Services;
-using BeatBind.Infrastructure.Services;
 using BeatBind.Infrastructure.Services;
 using BeatBind.Presentation.Forms;
 using FluentValidation;
@@ -14,6 +11,26 @@ using Microsoft.Extensions.Logging;
 
 namespace BeatBind
 {
+    internal sealed class Startup : IHostedService
+    {
+        private readonly MainForm _mainForm;
+        private readonly HotkeyManagementService _hotkeyManagementService;
+
+        public Startup(MainForm mainForm, HotkeyManagementService hotkeyManagementService)
+        {
+            _mainForm = mainForm;
+            _hotkeyManagementService = hotkeyManagementService;
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            _mainForm.SetHotkeyManagementService(_hotkeyManagementService);
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
     internal static class Program
     {
         /// <summary>
@@ -38,7 +55,7 @@ namespace BeatBind
 
                 var host = CreateHostBuilder().Build();
                 
-                // Start the host to initialize services (like MainFormInitializerService)
+                // Start the host to initialize services (like Startup)
                 host.Start();
 
                 using (host)
@@ -114,7 +131,7 @@ namespace BeatBind
             });
 
             services.AddSingleton<HotkeyManagementService>();
-            services.AddSingleton<IHostedService, MainFormInitializerService>();
+            services.AddSingleton<IHostedService, Startup>();
         }
     }
 }
