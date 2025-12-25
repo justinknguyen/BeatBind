@@ -111,7 +111,7 @@ namespace BeatBind.Presentation.Forms
                 TextAlign = ContentAlignment.MiddleCenter,
                 Font = new Font("Consolas", 8.5f),
                 ForeColor = Theme.SecondaryText,
-                BackColor = Theme.HeaderBackground,
+                BackColor = Theme.InputFieldBackground,
                 BorderStyle = BorderStyle.FixedSingle,
                 Margin = new Padding(0, 5, 8, 5),
                 Padding = new Padding(8, 5, 8, 5)
