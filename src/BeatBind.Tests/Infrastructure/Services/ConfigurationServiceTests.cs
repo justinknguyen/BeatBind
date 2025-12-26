@@ -188,12 +188,10 @@ namespace BeatBind.Tests.Infrastructure.Services
         }
 
         [Fact]
-        public void SaveConfiguration_WhenDirectoryCreationFails_ShouldThrow()
+        public void Constructor_WithInvalidPath_ShouldThrow()
         {
-            // Arrange - This test verifies exception handling is present
-            // We'll use a directory with invalid characters to force an exception
+            // Arrange - Use a path with invalid characters to force an exception
             var invalidPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), new string(Path.GetInvalidFileNameChars()));
-            var config = new ApplicationConfiguration { ClientId = "test" };
 
             // Act & Assert
             var act = () => new ConfigurationService(_mockLogger.Object, invalidPath);
@@ -261,16 +259,9 @@ namespace BeatBind.Tests.Infrastructure.Services
         public void Dispose()
         {
             // Cleanup test directory
-            try
+            if (Directory.Exists(_testConfigPath))
             {
-                if (Directory.Exists(_testConfigPath))
-                {
-                    Directory.Delete(_testConfigPath, true);
-                }
-            }
-            catch
-            {
-                // Ignore cleanup errors
+                Directory.Delete(_testConfigPath, true);
             }
         }
     }
