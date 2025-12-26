@@ -177,7 +177,7 @@ public partial class AuthenticationPanel : BasePanelControl
         finally
         {
             _authenticateButton.Enabled = true;
-            _authenticateButton.Text = "Authenticate with Spotify";
+            // Button text is set by UpdateAuthenticationStatus() based on auth state
         }
     }
 

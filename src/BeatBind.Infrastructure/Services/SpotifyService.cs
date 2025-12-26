@@ -405,7 +405,15 @@ namespace BeatBind.Infrastructure.Services
         {
             if (_currentAuth == null)
             {
-                return await AuthenticateAsync();
+                // Try to load stored authentication first before triggering new auth flow
+                LoadStoredAuthentication();
+
+                // If still no auth after loading, authentication is required
+                if (_currentAuth == null)
+                {
+                    _logger.LogWarning("No authentication available. Please authenticate through the UI.");
+                    return false;
+                }
             }
 
             if (!_authenticationService.IsTokenValid(_currentAuth))
