@@ -62,7 +62,6 @@ BeatBind needs Spotify API credentials to control your music. This takes about 5
    - **App name:** BeatBind (or any name)
    - **App description:** Personal hotkey control
    - **Redirect URI:** `http://127.0.0.1:8888/callback` (change port if needed)
-   - Check the Terms of Service box
 5. Click **Save**
 
 <p align="center">
@@ -81,21 +80,9 @@ BeatBind needs Spotify API credentials to control your music. This takes about 5
 
 ### Step 3: Configure BeatBind
 
-1. Open BeatBind and paste your **Client ID** and **Client Secret**
-2. Click **Get Devices** to see your available Spotify devices
-3. Select the device you want to control from the dropdown
-   - **Tip:** If you don't see your device, open Spotify on that device and play something, then click **Get Devices** again
-4. Click **Save** to save your settings
-5. Click **Start & Close** to minimize to system tray
-
-### Step 4: Customize Hotkeys (Optional)
-
-1. Right-click the BeatBind icon in your system tray
-2. Click **Settings**
-3. Configure your preferred hotkeys for each action
-4. Click **Save**
-
-**To disable a hotkey:** Uncheck all modifiers and press Backspace in the key field.
+1. Open BeatBind and go to the `Authentication` tab and paste your **Client ID** and **Client Secret**
+2. Change the **Redirect Port** if needed
+3. Click **Save Configuration** to save your settings
 
 ## Usage
 
@@ -107,14 +94,9 @@ Once configured, BeatBind runs in the background. Use your hotkeys from any appl
 - **Seek Forward/Backward** - Jump within tracks
 - **Save/Remove Track** - Manage your library
 - **Shuffle** - Toggle shuffle mode
+- **Repeat** - Toggle repeat mode
 
 Access settings anytime by right-clicking the system tray icon.
-
-## Updating
-
-1. Copy and save your `BeatBind/beatbind-config.json` file somewhere
-1. Replace your `BeatBind` folder with the updated version
-1. Paste inside the `BeatBind` folder your saved `beatbind-config.json` file
 
 ## Contributing
 
