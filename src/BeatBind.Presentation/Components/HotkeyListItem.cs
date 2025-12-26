@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using BeatBind.Core.Entities;
 using BeatBind.Presentation.Themes;
+using BeatBind.Presentation.Helpers;
 using DomainModifierKeys = BeatBind.Core.Entities.ModifierKeys;
 
 namespace BeatBind.Presentation.Components
@@ -117,32 +118,12 @@ namespace BeatBind.Presentation.Components
                 Padding = new Padding(8, 5, 8, 5)
             };
 
-            _editButton = new Button
-            {
-                Text = "✏️",
-                Size = new Size(40, 32),
-                Font = new Font("Segoe UI", 10f),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Theme.EditButton,
-                ForeColor = Theme.PrimaryText,
-                Cursor = Cursors.Hand,
-                Margin = new Padding(4, 5, 4, 5)
-            };
-            _editButton.FlatAppearance.BorderSize = 0;
+            // Use ControlFactory for consistent button creation
+            _editButton = ControlFactory.CreateActionButton("✏️", Theme.EditButton);
             _editButton.Click += (s, e) => EditRequested?.Invoke(this, EventArgs.Empty);
 
-            _deleteButton = new Button
-            {
-                Text = "🗑️",
-                Size = new Size(40, 32),
-                Font = new Font("Segoe UI", 10f),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Theme.DangerButton,
-                ForeColor = Color.White,
-                Cursor = Cursors.Hand,
-                Margin = new Padding(4, 5, 0, 5)
-            };
-            _deleteButton.FlatAppearance.BorderSize = 0;
+            _deleteButton = ControlFactory.CreateActionButton("🗑️", Theme.DangerButton);
+            _deleteButton.Margin = new Padding(4, 5, 0, 5);
             _deleteButton.Click += (s, e) => DeleteRequested?.Invoke(this, EventArgs.Empty);
 
             layout.Controls.Add(_descriptionLabel, 0, 0);

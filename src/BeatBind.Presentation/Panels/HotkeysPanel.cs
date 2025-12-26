@@ -1,16 +1,16 @@
 using BeatBind.Application.Services;
 using BeatBind.Core.Entities;
 using BeatBind.Presentation.Themes;
+using BeatBind.Presentation.Helpers;
 using BeatBind.Presentation.Components;
 using MaterialSkin.Controls;
 using Microsoft.Extensions.Logging;
 
 namespace BeatBind.Presentation.Panels;
 
-public partial class HotkeysPanel : UserControl
+public partial class HotkeysPanel : BasePanelControl
 {
     private readonly HotkeyApplicationService? _hotkeyApplicationService;
-    private readonly ILogger<HotkeysPanel> _logger;
     
     private MaterialLabel _lastHotkeyLabel = null!;
     private FlowLayoutPanel _hotkeyFlowPanel = null!;
@@ -22,24 +22,18 @@ public partial class HotkeysPanel : UserControl
     public event EventHandler? HotkeyAdded;
 
     public HotkeysPanel(HotkeyApplicationService? hotkeyApplicationService, ILogger<HotkeysPanel> logger)
+        : base(logger)
     {
         _hotkeyApplicationService = hotkeyApplicationService;
-        _logger = logger;
-        
-        InitializeComponent();
-        InitializeUI();
     }
 
     // Parameterless constructor for WinForms designer support
-    public HotkeysPanel()
+    public HotkeysPanel() : base()
     {
         _hotkeyApplicationService = null;
-        _logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<HotkeysPanel>.Instance;
-        
-        InitializeComponent();
     }
 
-    private void InitializeComponent()
+    protected override void InitializeComponent()
     {
         SuspendLayout();
         
@@ -50,7 +44,7 @@ public partial class HotkeysPanel : UserControl
         ResumeLayout(false);
     }
 
-    private void InitializeUI()
+    protected override void InitializeUI()
     {
         var scrollPanel = new Panel
         {
@@ -68,87 +62,23 @@ public partial class HotkeysPanel : UserControl
             BackColor = Theme.CardBackground
         };
 
-        // Last Hotkey Status Card
-        var lastHotkeyCard = CreateModernCard("Last Triggered Hotkey", CreateLastHotkeyContent());
+        // Use CardFactory for consistent card creation
+        var lastHotkeyCard = CardFactory.CreateModernCard("Last Triggered Hotkey", CreateLastHotkeyContent());
         mainLayout.Controls.Add(lastHotkeyCard);
 
-        // Hotkey Management Card
-        var hotkeyCard = CreateModernCard("Hotkey Management", CreateHotkeyManagementContent());
+        var hotkeyCard = CardFactory.CreateModernCard("Hotkey Management", CreateHotkeyManagementContent(), fixedHeight: 460);
         mainLayout.Controls.Add(hotkeyCard);
 
         scrollPanel.Controls.Add(mainLayout);
         Controls.Add(scrollPanel);
     }
 
-    private Panel CreateModernCard(string title, Control content)
-    {
-        var card = new Panel
-        {
-            Dock = DockStyle.Top,
-            Height = content.Height + 60,
-            Margin = new Padding(0, 0, 0, 15),
-            BackColor = Theme.CardBackground,
-            BorderStyle = BorderStyle.None
-        };
-
-        card.Paint += (s, e) =>
-        {
-            var rect = card.ClientRectangle;
-            rect.Width -= 1;
-            rect.Height -= 1;
-            e.Graphics.DrawRectangle(new Pen(Theme.Border), rect);
-        };
-
-        var headerPanel = new Panel
-        {
-            Dock = DockStyle.Top,
-            Height = 40,
-            BackColor = Theme.HeaderBackground,
-            Tag = "headerPanel",
-            Padding = new Padding(15, 0, 15, 0)
-        };
-
-        var titleLabel = new Label
-        {
-            Text = title,
-            Font = new Font("Segoe UI", 12f, FontStyle.Bold),
-            ForeColor = Theme.PrimaryText,
-            Dock = DockStyle.Fill,
-            TextAlign = ContentAlignment.MiddleLeft,
-            BackColor = Color.Transparent,
-            Tag = "headerLabel"
-        };
-        headerPanel.Controls.Add(titleLabel);
-
-        var contentPanel = new Panel
-        {
-            Dock = DockStyle.Fill,
-            Padding = new Padding(15, 15, 15, 15),
-            BackColor = Theme.CardBackground
-        };
-        contentPanel.Controls.Add(content);
-
-        card.Controls.Add(contentPanel);
-        card.Controls.Add(headerPanel);
-
-        headerPanel.SendToBack();
-        contentPanel.BringToFront();
-
-        return card;
-    }
-
     private Control CreateLastHotkeyContent()
     {
         var panel = new Panel { Height = 40, Dock = DockStyle.Top };
 
-        _lastHotkeyLabel = new MaterialLabel
-        {
-            Text = "No hotkey triggered yet",
-            Dock = DockStyle.Fill,
-            TextAlign = ContentAlignment.MiddleLeft,
-            Font = new Font("Segoe UI", 10f),
-            HighEmphasis = false
-        };
+        // Use ControlFactory for consistent control creation
+        _lastHotkeyLabel = ControlFactory.CreateMaterialLabel("No hotkey triggered yet", highEmphasis: false);
 
         panel.Controls.Add(_lastHotkeyLabel);
         return panel;
@@ -158,19 +88,11 @@ public partial class HotkeysPanel : UserControl
     {
         var panel = new Panel { Height = 400, Dock = DockStyle.Top };
 
-        _addHotkeyButton = new MaterialButton
-        {
-            Text = "ADD NEW HOTKEY",
-            Size = new Size(180, 40),
-            Type = MaterialButton.MaterialButtonType.Contained,
-            Depth = 0,
-            Location = new Point(0, 8),
-            Dock = DockStyle.Top,
-            Margin = new Padding(0, 0, 0, 10),
-            UseAccentColor = false,
-            AutoSize = false,
-            Cursor = Cursors.Hand
-        };
+        // Use ControlFactory for consistent button creation
+        _addHotkeyButton = ControlFactory.CreateMaterialButton("ADD NEW HOTKEY", 180, 40);
+        _addHotkeyButton.Dock = DockStyle.Top;
+        _addHotkeyButton.Margin = new Padding(0, 0, 0, 10);
+        _addHotkeyButton.Location = new Point(0, 8);
         _addHotkeyButton.Click += AddHotkeyButton_Click;
 
         _hotkeyFlowPanel = new FlowLayoutPanel
@@ -217,8 +139,10 @@ public partial class HotkeysPanel : UserControl
             var existingHotkey = GetHotkeysFromUI().FirstOrDefault(h => h.Action == hotkey.Action);
             if (existingHotkey != null)
             {
-                MessageBox.Show($"A hotkey for '{hotkey.Action}' already exists. Please edit or delete the existing hotkey first.",
-                    "Duplicate Action", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBoxHelper.ShowWarning(
+                    $"A hotkey for '{hotkey.Action}' already exists. Please edit or delete the existing hotkey first.",
+                    "Duplicate Action"
+                );
                 return;
             }
 
@@ -232,7 +156,7 @@ public partial class HotkeysPanel : UserControl
     {
         if (_hotkeyFlowPanel == null)
         {
-            _logger.LogWarning("_hotkeyFlowPanel is null in LoadHotkeys");
+            LogWarning("_hotkeyFlowPanel is null in LoadHotkeys");
             return;
         }
 
@@ -240,7 +164,7 @@ public partial class HotkeysPanel : UserControl
         _hotkeyFlowPanel.Controls.Clear();
         _hotkeyEntries.Clear();
 
-        _logger.LogInformation($"Loading {hotkeys.Count} hotkeys");
+        LogInfo($"Loading {hotkeys.Count} hotkeys");
 
         foreach (var hotkey in hotkeys)
         {
@@ -248,7 +172,7 @@ public partial class HotkeysPanel : UserControl
         }
 
         _hotkeyFlowPanel.ResumeLayout(true);
-        _logger.LogInformation($"Total controls in _hotkeyFlowPanel: {_hotkeyFlowPanel.Controls.Count}");
+        LogInfo($"Total controls in _hotkeyFlowPanel: {_hotkeyFlowPanel.Controls.Count}");
     }
 
     public void AddHotkeyEntryToUI(Hotkey hotkey)
@@ -262,7 +186,7 @@ public partial class HotkeysPanel : UserControl
 
         _hotkeyFlowPanel.Controls.Add(entry);
 
-        _logger.LogInformation($"Added hotkey to UI: {hotkey.Action} with ID {hotkey.Id}");
+        LogInfo($"Added hotkey to UI: {hotkey.Action} with ID {hotkey.Id}");
     }
 
     public void UpdateHotkeyEntry(Hotkey hotkey)
