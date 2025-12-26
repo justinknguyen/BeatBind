@@ -22,10 +22,10 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Restore dependencies
-        run: dotnet restore src/BeatBind.sln
+        run: dotnet restore src/BeatBind/BeatBind.csproj
 
       - name: Build
-        run: dotnet build src/BeatBind.sln --configuration Release --no-restore
+        run: dotnet build src/BeatBind/BeatBind.csproj --configuration Release --no-restore
 
       - name: Publish
         run: |
