@@ -1,11 +1,11 @@
 using System.ComponentModel;
 using BeatBind.Application.Services;
-using BeatBind.Application.Commands;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
 using BeatBind.Presentation.Themes;
 using BeatBind.Presentation.Panels;
 using BeatBind.Presentation.Components;
+using BeatBind.Presentation.Helpers;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -17,8 +17,9 @@ namespace BeatBind.Presentation
     public partial class MainForm : MaterialForm
     {
         private readonly MaterialSkinManager _materialSkinManager;
-        private readonly MusicControlService _musicControlService;
-        private HotkeyManagementService _hotkeyManagementService = null!;
+        private readonly MusicControlApplicationService _musicControlService;
+        private readonly AuthenticationApplicationService _authenticationService;
+        private HotkeyApplicationService _hotkeyApplicationService = null!;
         private readonly IMediator _mediator;
         private readonly IConfigurationService _configurationService;
         private readonly IGithubReleaseService _githubReleaseService;
@@ -43,6 +44,7 @@ namespace BeatBind.Presentation
         {
             _materialSkinManager = MaterialSkinManager.Instance;
             _musicControlService = null!;
+            _authenticationService = null!;
             _mediator = null!;
             _configurationService = null!;
             _githubReleaseService = null!;
@@ -59,13 +61,15 @@ namespace BeatBind.Presentation
         }
 
         public MainForm(
-            MusicControlService musicControlService,
+            MusicControlApplicationService musicControlService,
+            AuthenticationApplicationService authenticationService,
             IMediator mediator,
             IConfigurationService configurationService,
             IGithubReleaseService githubReleaseService,
             ILogger<MainForm> logger)
         {
             _musicControlService = musicControlService;
+            _authenticationService = authenticationService;
             _mediator = mediator;
             _configurationService = configurationService;
             _githubReleaseService = githubReleaseService;
@@ -95,15 +99,15 @@ namespace BeatBind.Presentation
             _ = CheckForUpdatesAsync();
         }
 
-        public void SetHotkeyManagementService(HotkeyManagementService hotkeyManagementService)
+        public void SetHotkeyApplicationService(HotkeyApplicationService hotkeyApplicationService)
         {
-            _hotkeyManagementService = hotkeyManagementService;
+            _hotkeyApplicationService = hotkeyApplicationService;
 
             // Subscribe to hotkey triggered events
-            _hotkeyManagementService.HotkeyTriggered += OnHotkeyTriggered;
+            _hotkeyApplicationService.HotkeyTriggered += OnHotkeyTriggered;
 
             // Initialize hotkeys from configuration once the service is set
-            _hotkeyManagementService.InitializeHotkeys();
+            _hotkeyApplicationService.InitializeHotkeys();
         }
 
         private void OnHotkeyTriggered(object? sender, Hotkey hotkey)
@@ -131,7 +135,7 @@ namespace BeatBind.Presentation
             };
 
             // Create panels
-            _authenticationPanel = new AuthenticationPanel(_mediator, _configurationService, NullLogger<AuthenticationPanel>.Instance);
+            _authenticationPanel = new AuthenticationPanel(_authenticationService, _configurationService, NullLogger<AuthenticationPanel>.Instance);
             _hotkeysPanel = new HotkeysPanel(null, NullLogger<HotkeysPanel>.Instance);
             _settingsPanel = new SettingsPanel(_configurationService, NullLogger<SettingsPanel>.Instance);
 
@@ -214,12 +218,10 @@ namespace BeatBind.Presentation
             };
             _saveConfigButton.Click += SaveConfigButton_Click;
 
-            // Center the button
-            saveButtonContainer.Resize += (s, e) => {
-                _saveConfigButton.Location = new Point(
-                    (saveButtonContainer.Width - _saveConfigButton.Width) / 2,
-                    (saveButtonContainer.Height - _saveConfigButton.Height) / 2
-                );
+            // Center the button using ThemeHelper
+            saveButtonContainer.Resize += (s, e) => 
+            {
+                ThemeHelper.CenterControl(_saveConfigButton, saveButtonContainer);
             };
 
             saveButtonContainer.Controls.Add(_saveConfigButton);
@@ -239,19 +241,16 @@ namespace BeatBind.Presentation
             if (hotkeyDialog.ShowDialog() == DialogResult.OK)
             {
                 var updatedHotkey = hotkeyDialog.Hotkey;
-                _hotkeyManagementService?.UpdateHotkey(updatedHotkey);
+                _hotkeyApplicationService?.UpdateHotkey(updatedHotkey);
                 _hotkeysPanel?.UpdateHotkeyEntry(updatedHotkey);
             }
         }
 
         private void HotkeysPanel_HotkeyDeleteRequested(object? sender, Hotkey hotkey)
         {
-            var result = MessageBox.Show($"Are you sure you want to delete the hotkey '{hotkey.Action}'?", 
-                "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            
-            if (result == DialogResult.Yes)
+            if (MessageBoxHelper.ConfirmDelete(hotkey.Action.ToString(), "hotkey"))
             {
-                _hotkeyManagementService?.RemoveHotkey(hotkey.Id);
+                _hotkeyApplicationService?.RemoveHotkey(hotkey.Id);
                 _hotkeysPanel?.RemoveHotkeyEntry(hotkey.Id);
             }
         }
@@ -299,8 +298,7 @@ namespace BeatBind.Presentation
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to load configuration");
-                MessageBox.Show("Failed to load configuration. Using defaults.", "Configuration Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBoxHelper.ShowWarning("Failed to load configuration. Using defaults.", "Configuration Error");
             }
         }
 
@@ -312,21 +310,14 @@ namespace BeatBind.Presentation
                 _settingsPanel.ApplySettingsToConfiguration(config);
                 config.Hotkeys = _hotkeysPanel.GetHotkeysFromUI();
 
-                var result = await _mediator.Send(new SaveConfigurationCommand(config));
+                _configurationService.SaveConfiguration(config);
 
-                var message = result.IsSuccess
-                    ? "Configuration saved successfully!"
-                    : $"Failed to save configuration: {result.Error}";
-                
-                var icon = result.IsSuccess ? MessageBoxIcon.Information : MessageBoxIcon.Error;
-                var title = result.IsSuccess ? "Success" : "Error";
-                
-                MessageBox.Show(message, title, MessageBoxButtons.OK, icon);
+                MessageBoxHelper.ShowSuccess("Configuration saved successfully!");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to save configuration");
-                MessageBox.Show($"Failed to save configuration: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBoxHelper.ShowException(ex, "saving configuration");
             }
         }
 
@@ -342,56 +333,8 @@ namespace BeatBind.Presentation
                 tab.BackColor = Theme.CardBackground;
             }
 
-            // Ensure headers use the correct color
-            UpdateControlColors(this);
-        }
-
-        private void UpdateControlColors(Control control)
-        {
-            foreach (Control child in control.Controls)
-            {
-                if (child is Panel panel)
-                {
-                    if (panel.Tag?.ToString() == "headerPanel")
-                    {
-                        panel.BackColor = Theme.HeaderBackground;
-                    }
-                    // Ensure panels that are not the main background are card background
-                    // This mimics the old behavior of fixing up "light" panels
-                    else if (panel.BackColor.R > 200 && panel.BackColor.G > 200 && panel.BackColor.B > 200)
-                    {
-                        panel.BackColor = Theme.CardBackground;
-                    }
-                }
-                else if (child is Label label)
-                {
-                    if (label.Tag?.ToString() == "headerLabel")
-                    {
-                        label.ForeColor = Theme.PrimaryText;
-                        label.BackColor = Color.Transparent;
-                    }
-                    else if (label.Tag?.ToString() == "header")
-                    {
-                        label.BackColor = Theme.HeaderBackground;
-                        label.ForeColor = Theme.PrimaryText;
-                    }
-                    else
-                    {
-                        // Ensure other labels are visible against the dark background
-                        // Only update if they are not explicitly set to a specific color (like success/error)
-                        // This is a heuristic to match the old behavior but safer
-                        if (label.ForeColor.R < 100 && label.ForeColor.G < 100 && label.ForeColor.B < 100)
-                        {
-                            label.ForeColor = Theme.PrimaryText;
-                        }
-                    }
-                }
-
-                if (child.HasChildren)
-                {
-                    UpdateControlColors(child);
-                }
-            }
+            // Use ThemeHelper to apply theme consistently
+            ThemeHelper.ApplyThemeToControlHierarchy(this);
         }
 
         protected override void SetVisibleCore(bool value)
@@ -412,10 +355,10 @@ namespace BeatBind.Presentation
                 return;
             }
 
-            if (_hotkeyManagementService != null)
+            if (_hotkeyApplicationService != null)
             {
-                _hotkeyManagementService.HotkeyTriggered -= OnHotkeyTriggered;
-                _hotkeyManagementService.Dispose();
+                _hotkeyApplicationService.HotkeyTriggered -= OnHotkeyTriggered;
+                _hotkeyApplicationService.Dispose();
             }
 
             _notifyIcon?.Dispose();
@@ -487,21 +430,9 @@ namespace BeatBind.Presentation
                 Height = 30
             };
             downloadButton.FlatAppearance.BorderSize = 0;
-            downloadButton.Click += (s, e) => {
-                try
-                {
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = release.Url,
-                        UseShellExecute = true
-                    });
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to open release URL");
-                    MessageBox.Show("Failed to open the download page. Please visit the GitHub releases page manually.",
-                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+            downloadButton.Click += (s, e) => 
+            {
+                MessageBoxHelper.OpenUrl(release.Url, ex => _logger.LogError(ex, "Failed to open release URL"));
             };
 
             var closeButton = new Button
@@ -518,7 +449,8 @@ namespace BeatBind.Presentation
                 Dock = DockStyle.Right
             };
             closeButton.FlatAppearance.BorderSize = 0;
-            closeButton.Click += (s, e) => {
+            closeButton.Click += (s, e) => 
+            {
                 Controls.Remove(_updateNotificationPanel);
                 _updateNotificationPanel?.Dispose();
                 _updateNotificationPanel = null;

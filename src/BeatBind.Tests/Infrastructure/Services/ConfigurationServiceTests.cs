@@ -6,24 +6,22 @@ using Moq;
 
 namespace BeatBind.Tests.Infrastructure.Services
 {
-    public class JsonConfigurationServiceTests : IDisposable
+    public class ConfigurationServiceTests : IDisposable
     {
-        private readonly Mock<ILogger<JsonConfigurationService>> _mockLogger;
+        private readonly Mock<ILogger<ConfigurationService>> _mockLogger;
         private readonly string _testConfigPath;
-        private readonly JsonConfigurationService _service;
+        private readonly ConfigurationService _service;
 
-        public JsonConfigurationServiceTests()
+        public ConfigurationServiceTests()
         {
-            _mockLogger = new Mock<ILogger<JsonConfigurationService>>();
+            _mockLogger = new Mock<ILogger<ConfigurationService>>();
             
             // Use a temporary directory for tests
             _testConfigPath = Path.Combine(Path.GetTempPath(), "BeatBindTests", Guid.NewGuid().ToString());
             Directory.CreateDirectory(_testConfigPath);
             
-            // Set the config path via environment variable
-            Environment.SetEnvironmentVariable("APPDATA", _testConfigPath);
-            
-            _service = new JsonConfigurationService(_mockLogger.Object);
+            var configFilePath = Path.Combine(_testConfigPath, "config.json");
+            _service = new ConfigurationService(_mockLogger.Object, configFilePath);
         }
 
         [Fact]
@@ -158,24 +156,112 @@ namespace BeatBind.Tests.Infrastructure.Services
             var hotkeys = _service.GetHotkeys();
 
             // Assert
-            hotkeys.Should().HaveCountGreaterThanOrEqualTo(2);
+            hotkeys.Should().HaveCount(2);
             hotkeys.Should().Contain(h => h.Action == HotkeyAction.PlayPause);
             hotkeys.Should().Contain(h => h.Action == HotkeyAction.NextTrack);
+        }
+
+        [Fact]
+        public void RemoveHotkey_WithNonExistentId_ShouldNotThrow()
+        {
+            // Arrange
+            var nonExistentId = 9999;
+
+            // Act
+            var act = () => _service.RemoveHotkey(nonExistentId);
+
+            // Assert
+            act.Should().NotThrow();
+        }
+
+        [Fact]
+        public void UpdateHotkey_WithNonExistentId_ShouldNotThrow()
+        {
+            // Arrange
+            var hotkey = new Hotkey { Id = 9999, Action = HotkeyAction.PlayPause, IsEnabled = true, KeyCode = 0xB3 };
+
+            // Act
+            var act = () => _service.UpdateHotkey(hotkey);
+
+            // Assert
+            act.Should().NotThrow();
+        }
+
+        [Fact]
+        public void Constructor_WithInvalidPath_ShouldThrow()
+        {
+            // Arrange - Use a path with invalid characters to force an exception
+            var invalidPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), new string(Path.GetInvalidFileNameChars()));
+
+            // Act & Assert
+            var act = () => new ConfigurationService(_mockLogger.Object, invalidPath);
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [Fact]
+        public void LoadConfiguration_WhenFileDoesNotExist_ShouldCreateDefaultConfig()
+        {
+            // Arrange - Create a new service with non-existent file
+            var newConfigPath = Path.Combine(_testConfigPath, "new_config.json");
+
+            // Act
+            var newService = new ConfigurationService(_mockLogger.Object, newConfigPath);
+            var config = newService.GetConfiguration();
+
+            // Assert
+            config.Should().NotBeNull();
+            File.Exists(newConfigPath).Should().BeTrue();
+        }
+
+        [Fact]
+        public void LoadConfiguration_WithInvalidJson_ShouldUseDefaults()
+        {
+            // Arrange - Create file with invalid JSON
+            var invalidJsonPath = Path.Combine(_testConfigPath, "invalid_config.json");
+            Directory.CreateDirectory(Path.GetDirectoryName(invalidJsonPath)!);
+            File.WriteAllText(invalidJsonPath, "{ invalid json }");
+
+            // Act
+            var newService = new ConfigurationService(_mockLogger.Object, invalidJsonPath);
+            var config = newService.GetConfiguration();
+
+            // Assert
+            config.Should().NotBeNull();
+            config.Should().BeOfType<ApplicationConfiguration>();
+        }
+
+        [Fact]
+        public void AddHotkey_WithExistingId_ShouldUseExistingId()
+        {
+            // Arrange
+            var hotkey = new Hotkey { Id = 42, Action = HotkeyAction.PlayPause, IsEnabled = true, KeyCode = 0xB3 };
+
+            // Act
+            _service.AddHotkey(hotkey);
+            var hotkeys = _service.GetHotkeys();
+
+            // Assert
+            hotkey.Id.Should().Be(42);
+            hotkeys.Should().Contain(h => h.Id == 42);
+        }
+
+        [Fact]
+        public void Constructor_WithDefaultConstructor_ShouldUseAppDataPath()
+        {
+            // Act
+            var service = new ConfigurationService(_mockLogger.Object);
+            var config = service.GetConfiguration();
+
+            // Assert
+            config.Should().NotBeNull();
         }
 
         public void Dispose()
         {
             // Cleanup test directory
-            try
+            if (Directory.Exists(_testConfigPath))
             {
-                if (Directory.Exists(_testConfigPath))
-                {
-                    Directory.Delete(_testConfigPath, true);
-                }
-            }
-            catch
-            {
-                // Ignore cleanup errors
+                Directory.Delete(_testConfigPath, true);
             }
         }
     }

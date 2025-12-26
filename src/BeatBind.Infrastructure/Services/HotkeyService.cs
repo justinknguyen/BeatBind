@@ -6,9 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace BeatBind.Infrastructure.Services
 {
-    public class WindowsHotkeyService : IHotkeyService, IDisposable
+    public class HotkeyService : IHotkeyService, IDisposable
     {
-        private readonly ILogger<WindowsHotkeyService> _logger;
+        private readonly ILogger<HotkeyService> _logger;
         private readonly Dictionary<int, (Hotkey Hotkey, Action Action)> _registeredHotkeys;
         private readonly Form _parentForm;
         private bool _disposed;
@@ -43,7 +43,7 @@ namespace BeatBind.Infrastructure.Services
 
         public event EventHandler<Hotkey>? HotkeyPressed;
 
-        public WindowsHotkeyService(Form parentForm, ILogger<WindowsHotkeyService> logger)
+        public HotkeyService(Form parentForm, ILogger<HotkeyService> logger)
         {
             _parentForm = parentForm;
             _logger = logger;

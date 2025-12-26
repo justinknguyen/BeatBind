@@ -4,20 +4,20 @@ using Microsoft.Extensions.Logging;
 
 namespace BeatBind.Application.Services
 {
-    public class HotkeyManagementService
+    public class HotkeyApplicationService
     {
         private readonly IHotkeyService _hotkeyService;
         private readonly IConfigurationService _configurationService;
-        private readonly MusicControlService _musicControlService;
-        private readonly ILogger<HotkeyManagementService> _logger;
+        private readonly MusicControlApplicationService _musicControlService;
+        private readonly ILogger<HotkeyApplicationService> _logger;
 
         public event EventHandler<Hotkey>? HotkeyTriggered;
 
-        public HotkeyManagementService(
+        public HotkeyApplicationService(
             IHotkeyService hotkeyService,
             IConfigurationService configurationService,
-            MusicControlService musicControlService,
-            ILogger<HotkeyManagementService> logger)
+            MusicControlApplicationService musicControlService,
+            ILogger<HotkeyApplicationService> logger)
         {
             _hotkeyService = hotkeyService;
             _configurationService = configurationService;

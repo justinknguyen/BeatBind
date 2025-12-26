@@ -5,16 +5,21 @@ using Microsoft.Extensions.Logging;
 
 namespace BeatBind.Infrastructure.Services
 {
-    public class JsonConfigurationService : IConfigurationService
+    public class ConfigurationService : IConfigurationService
     {
-        private readonly ILogger<JsonConfigurationService> _logger;
+        private readonly ILogger<ConfigurationService> _logger;
         private readonly string _configPath;
         private ApplicationConfiguration _config;
 
-        public JsonConfigurationService(ILogger<JsonConfigurationService> logger)
+        public ConfigurationService(ILogger<ConfigurationService> logger)
+            : this(logger, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BeatBind", "config.json"))
+        {
+        }
+
+        public ConfigurationService(ILogger<ConfigurationService> logger, string configPath)
         {
             _logger = logger;
-            _configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BeatBind", "config.json");
+            _configPath = configPath;
             _config = new ApplicationConfiguration();
             
             EnsureConfigDirectoryExists();

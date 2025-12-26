@@ -7,19 +7,19 @@ using Moq;
 
 namespace BeatBind.Tests.Application.Services
 {
-    public class MusicControlServiceTests
+    public class MusicControlApplicationServiceTests
     {
         private readonly Mock<ISpotifyService> _mockSpotifyService;
         private readonly Mock<IConfigurationService> _mockConfigService;
-        private readonly Mock<ILogger<MusicControlService>> _mockLogger;
-        private readonly MusicControlService _service;
+        private readonly Mock<ILogger<MusicControlApplicationService>> _mockLogger;
+        private readonly MusicControlApplicationService _service;
 
-        public MusicControlServiceTests()
+        public MusicControlApplicationServiceTests()
         {
             _mockSpotifyService = new Mock<ISpotifyService>();
             _mockConfigService = new Mock<IConfigurationService>();
-            _mockLogger = new Mock<ILogger<MusicControlService>>();
-            _service = new MusicControlService(_mockSpotifyService.Object, _mockConfigService.Object, _mockLogger.Object);
+            _mockLogger = new Mock<ILogger<MusicControlApplicationService>>();
+            _service = new MusicControlApplicationService(_mockSpotifyService.Object, _mockConfigService.Object, _mockLogger.Object);
         }
 
         [Fact]
@@ -337,6 +337,303 @@ namespace BeatBind.Tests.Application.Services
             result.Should().NotBeNull();
             result!.IsPlaying.Should().BeTrue();
             result.Volume.Should().Be(75);
+        }
+
+        [Fact]
+        public async Task PlayPauseAsync_WhenExceptionThrown_ShouldReturnFalse()
+        {
+            // Arrange
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ThrowsAsync(new Exception("API error"));
+
+            // Act
+            var result = await _service.PlayPauseAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task NextTrackAsync_WhenExceptionThrown_ShouldReturnFalse()
+        {
+            // Arrange
+            _mockSpotifyService.Setup(x => x.NextTrackAsync()).ThrowsAsync(new Exception("API error"));
+
+            // Act
+            var result = await _service.NextTrackAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task PreviousTrackAsync_WhenExceptionThrown_ShouldReturnFalse()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration { PreviousTrackRewindToStart = false };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.PreviousTrackAsync()).ThrowsAsync(new Exception("API error"));
+
+            // Act
+            var result = await _service.PreviousTrackAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task VolumeUpAsync_WhenExceptionThrown_ShouldReturnFalse()
+        {
+            // Arrange
+            _mockConfigService.Setup(x => x.GetConfiguration()).Throws(new Exception("Config error"));
+
+            // Act
+            var result = await _service.VolumeUpAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task VolumeDownAsync_WhenExceptionThrown_ShouldReturnFalse()
+        {
+            // Arrange
+            _mockConfigService.Setup(x => x.GetConfiguration()).Throws(new Exception("Config error"));
+
+            // Act
+            var result = await _service.VolumeDownAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task MuteAsync_WhenExceptionThrown_ShouldReturnFalse()
+        {
+            // Arrange
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ThrowsAsync(new Exception("API error"));
+
+            // Act
+            var result = await _service.MuteAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task SaveTrackAsync_WhenExceptionThrown_ShouldReturnFalse()
+        {
+            // Arrange
+            _mockSpotifyService.Setup(x => x.SaveCurrentTrackAsync()).ThrowsAsync(new Exception("API error"));
+
+            // Act
+            var result = await _service.SaveTrackAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task RemoveTrackAsync_WhenExceptionThrown_ShouldReturnFalse()
+        {
+            // Arrange
+            _mockSpotifyService.Setup(x => x.RemoveCurrentTrackAsync()).ThrowsAsync(new Exception("API error"));
+
+            // Act
+            var result = await _service.RemoveTrackAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task ToggleShuffleAsync_WhenExceptionThrown_ShouldReturnFalse()
+        {
+            // Arrange
+            _mockSpotifyService.Setup(x => x.ToggleShuffleAsync()).ThrowsAsync(new Exception("API error"));
+
+            // Act
+            var result = await _service.ToggleShuffleAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task ToggleRepeatAsync_WhenExceptionThrown_ShouldReturnFalse()
+        {
+            // Arrange
+            _mockSpotifyService.Setup(x => x.ToggleRepeatAsync()).ThrowsAsync(new Exception("API error"));
+
+            // Act
+            var result = await _service.ToggleRepeatAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task SeekForwardAsync_WhenExceptionThrown_ShouldReturnFalse()
+        {
+            // Arrange
+            _mockConfigService.Setup(x => x.GetConfiguration()).Throws(new Exception("Config error"));
+
+            // Act
+            var result = await _service.SeekForwardAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task SeekBackwardAsync_WhenExceptionThrown_ShouldReturnFalse()
+        {
+            // Arrange
+            _mockConfigService.Setup(x => x.GetConfiguration()).Throws(new Exception("Config error"));
+
+            // Act
+            var result = await _service.SeekBackwardAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task GetCurrentPlaybackAsync_WhenExceptionThrown_ShouldReturnNull()
+        {
+            // Arrange
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ThrowsAsync(new Exception("API error"));
+
+            // Act
+            var result = await _service.GetCurrentPlaybackAsync();
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task VolumeUpAsync_WhenNoPlaybackState_ShouldReturnFalse()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration { VolumeSteps = 10 };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync((PlaybackState?)null);
+
+            // Act
+            var result = await _service.VolumeUpAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task VolumeDownAsync_WhenNoPlaybackState_ShouldReturnFalse()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration { VolumeSteps = 10 };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync((PlaybackState?)null);
+
+            // Act
+            var result = await _service.VolumeDownAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task MuteAsync_WhenNoPlaybackState_ShouldReturnFalse()
+        {
+            // Arrange
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync((PlaybackState?)null);
+
+            // Act
+            var result = await _service.MuteAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task SeekForwardAsync_WhenNoPlaybackState_ShouldReturnFalse()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration { SeekMilliseconds = 5000 };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync((PlaybackState?)null);
+
+            // Act
+            var result = await _service.SeekForwardAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task SeekBackwardAsync_WhenNoPlaybackState_ShouldReturnFalse()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration { SeekMilliseconds = 5000 };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync((PlaybackState?)null);
+
+            // Act
+            var result = await _service.SeekBackwardAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task SeekForwardAsync_WhenPositionExceedsDuration_ShouldSeekToEnd()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration { SeekMilliseconds = 10000 };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            var playbackState = new PlaybackState { ProgressMs = 195000, DurationMs = 200000, IsPlaying = true };
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+            _mockSpotifyService.Setup(x => x.SeekToPositionAsync(200000)).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.SeekForwardAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.SeekToPositionAsync(200000), Times.Once);
+        }
+
+        [Fact]
+        public async Task SeekBackwardAsync_WhenPositionGoesNegative_ShouldSeekToZero()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration { SeekMilliseconds = 10000 };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            var playbackState = new PlaybackState { ProgressMs = 5000, DurationMs = 200000, IsPlaying = true };
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+            _mockSpotifyService.Setup(x => x.SeekToPositionAsync(0)).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.SeekBackwardAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.SeekToPositionAsync(0), Times.Once);
+        }
+
+        [Fact]
+        public async Task PreviousTrackAsync_WhenRewindToStartAndNoPlaybackState_ShouldGoToPreviousTrack()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration { PreviousTrackRewindToStart = true };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync((PlaybackState?)null);
+            _mockSpotifyService.Setup(x => x.PreviousTrackAsync()).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PreviousTrackAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.PreviousTrackAsync(), Times.Once);
         }
     }
 }

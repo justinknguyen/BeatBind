@@ -9,22 +9,22 @@ using System.Net;
 
 namespace BeatBind.Tests.Infrastructure.Services
 {
-    public class SpotifyAuthenticationServiceTests : IDisposable
+    public class AuthenticationServiceTests : IDisposable
     {
-        private readonly Mock<ILogger<SpotifyAuthenticationService>> _mockLogger;
+        private readonly Mock<ILogger<AuthenticationService>> _mockLogger;
         private readonly Mock<IConfigurationService> _mockConfigService;
         private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler;
         private readonly HttpClient _httpClient;
-        private readonly SpotifyAuthenticationService _service;
+        private readonly AuthenticationService _service;
 
-        public SpotifyAuthenticationServiceTests()
+        public AuthenticationServiceTests()
         {
-            _mockLogger = new Mock<ILogger<SpotifyAuthenticationService>>();
+            _mockLogger = new Mock<ILogger<AuthenticationService>>();
             _mockConfigService = new Mock<IConfigurationService>();
             _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             _httpClient = new HttpClient(_mockHttpMessageHandler.Object);
 
-            _service = new SpotifyAuthenticationService(
+            _service = new AuthenticationService(
                 _mockLogger.Object,
                 _mockConfigService.Object,
                 _httpClient);
@@ -208,6 +208,88 @@ namespace BeatBind.Tests.Infrastructure.Services
         }
 
         [Fact]
+        public void GetStoredAuthentication_WithNoStoredTokens_ShouldReturnNull()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration
+            {
+                AccessToken = "",
+                RefreshToken = ""
+            };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+
+            // Act
+            var result = _service.GetStoredAuthentication();
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public void GetStoredAuthentication_WithStoredTokens_ShouldReturnAuthResult()
+        {
+            // Arrange
+            var expiresAt = DateTime.UtcNow.AddHours(1);
+            var config = new ApplicationConfiguration
+            {
+                AccessToken = "stored-token",
+                RefreshToken = "stored-refresh",
+                TokenExpiresAt = expiresAt
+            };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+
+            // Act
+            var result = _service.GetStoredAuthentication();
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.Success.Should().BeTrue();
+            result.AccessToken.Should().Be("stored-token");
+            result.RefreshToken.Should().Be("stored-refresh");
+        }
+
+        [Fact]
+        public void IsTokenValid_WithNullAuthResult_ShouldReturnFalse()
+        {
+            // Act
+            var result = _service.IsTokenValid(null!);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task RefreshTokenAsync_WhenNewRefreshTokenProvided_ShouldUseNewOne()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration
+            {
+                ClientId = "client-id",
+                ClientSecret = "client-secret"
+            };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+
+            var tokenResponse = """
+            {
+                "access_token": "new-access-token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+                "refresh_token": "new-refresh-token",
+                "scope": "user-read-playback-state"
+            }
+            """;
+
+            SetupHttpResponse(HttpStatusCode.OK, tokenResponse);
+
+            // Act
+            var result = await _service.RefreshTokenAsync("old-refresh-token");
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.RefreshToken.Should().Be("new-refresh-token");
+        }
+
+        [Fact]
         public async Task RefreshTokenAsync_WhenHttpClientThrows_ShouldReturnFailure()
         {
             // Arrange
@@ -231,6 +313,99 @@ namespace BeatBind.Tests.Infrastructure.Services
             // Assert
             result.Success.Should().BeFalse();
             result.Error.Should().Contain("Network error");
+        }
+
+        [Fact]
+        public void SaveAuthentication_WithValidAuthResult_ShouldSaveToConfig()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration();
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            var authResult = new AuthenticationResult
+            {
+                Success = true,
+                AccessToken = "test-token",
+                RefreshToken = "test-refresh",
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            };
+
+            // Act
+            _service.SaveAuthentication(authResult);
+
+            // Assert
+            _mockConfigService.Verify(x => x.SaveConfiguration(It.Is<ApplicationConfiguration>(c =>
+                c.AccessToken == "test-token" &&
+                c.RefreshToken == "test-refresh"
+            )), Times.Once);
+        }
+
+        [Fact]
+        public void SaveAuthentication_WhenExceptionThrown_ShouldNotThrow()
+        {
+            // Arrange
+            _mockConfigService.Setup(x => x.GetConfiguration()).Throws(new Exception("Config error"));
+            var authResult = new AuthenticationResult
+            {
+                Success = true,
+                AccessToken = "test-token",
+                RefreshToken = "test-refresh"
+            };
+
+            // Act
+            var act = () => _service.SaveAuthentication(authResult);
+
+            // Assert
+            act.Should().NotThrow();
+        }
+
+        [Fact]
+        public void GetStoredAuthentication_WhenExceptionThrown_ShouldReturnNull()
+        {
+            // Arrange
+            _mockConfigService.Setup(x => x.GetConfiguration()).Throws(new Exception("Config error"));
+
+            // Act
+            var result = _service.GetStoredAuthentication();
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task RefreshTokenAsync_WhenResponseNotSuccessful_ShouldReturnFailure()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration
+            {
+                ClientId = "client-id",
+                ClientSecret = "client-secret"
+            };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            SetupHttpResponse(HttpStatusCode.Unauthorized, "Unauthorized");
+
+            // Act
+            var result = await _service.RefreshTokenAsync("refresh-token");
+
+            // Assert
+            result.Success.Should().BeFalse();
+        }
+
+        [Fact]
+        public void IsTokenValid_WithExactlyExpiredToken_ShouldReturnFalse()
+        {
+            // Arrange
+            var authResult = new AuthenticationResult
+            {
+                Success = true,
+                AccessToken = "token",
+                ExpiresAt = DateTime.UtcNow
+            };
+
+            // Act
+            var result = _service.IsTokenValid(authResult);
+
+            // Assert
+            result.Should().BeFalse();
         }
 
         private void SetupHttpResponse(HttpStatusCode statusCode, string content)

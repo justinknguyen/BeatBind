@@ -7,25 +7,25 @@ using Moq;
 
 namespace BeatBind.Tests.Application.Services
 {
-    public class HotkeyManagementServiceTests
+    public class HotkeyApplicationServiceTests
     {
         private readonly Mock<IHotkeyService> _mockHotkeyService;
         private readonly Mock<IConfigurationService> _mockConfigService;
-        private readonly Mock<MusicControlService> _mockMusicControlService;
-        private readonly Mock<ILogger<HotkeyManagementService>> _mockLogger;
-        private readonly HotkeyManagementService _service;
+        private readonly Mock<MusicControlApplicationService> _mockMusicControlService;
+        private readonly Mock<ILogger<HotkeyApplicationService>> _mockLogger;
+        private readonly HotkeyApplicationService _service;
 
-        public HotkeyManagementServiceTests()
+        public HotkeyApplicationServiceTests()
         {
             _mockHotkeyService = new Mock<IHotkeyService>();
             _mockConfigService = new Mock<IConfigurationService>();
-            _mockMusicControlService = new Mock<MusicControlService>(
+            _mockMusicControlService = new Mock<MusicControlApplicationService>(
                 Mock.Of<ISpotifyService>(),
                 Mock.Of<IConfigurationService>(),
-                Mock.Of<ILogger<MusicControlService>>());
-            _mockLogger = new Mock<ILogger<HotkeyManagementService>>();
+                Mock.Of<ILogger<MusicControlApplicationService>>());
+            _mockLogger = new Mock<ILogger<HotkeyApplicationService>>();
             
-            _service = new HotkeyManagementService(
+            _service = new HotkeyApplicationService(
                 _mockHotkeyService.Object,
                 _mockConfigService.Object,
                 _mockMusicControlService.Object,
@@ -173,5 +173,58 @@ namespace BeatBind.Tests.Application.Services
             // Assert
             triggeredHotkey.Should().Be(hotkey);
         }
-    }
+
+        [Fact]
+        public void RegisterHotkey_WhenExceptionThrown_ShouldReturnFalse()
+        {
+            // Arrange
+            var hotkey = new Hotkey { Id = 1, Action = HotkeyAction.PlayPause, IsEnabled = true, KeyCode = 0xB3 };
+            _mockHotkeyService.Setup(x => x.RegisterHotkey(hotkey, It.IsAny<Action>())).Throws(new Exception("Registration failed"));
+
+            // Act
+            var result = _service.RegisterHotkey(hotkey);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public void UnregisterHotkey_WhenExceptionThrown_ShouldReturnFalse()
+        {
+            // Arrange
+            _mockHotkeyService.Setup(x => x.UnregisterHotkey(1)).Throws(new Exception("Unregistration failed"));
+
+            // Act
+            var result = _service.UnregisterHotkey(1);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public void UpdateHotkey_WhenNotPreviouslyRegistered_ShouldOnlyUpdateAndRegister()
+        {
+            // Arrange
+            var hotkey = new Hotkey { Id = 1, Action = HotkeyAction.NextTrack, IsEnabled = true, KeyCode = 0xB0 };
+            _mockHotkeyService.Setup(x => x.IsHotkeyRegistered(1)).Returns(false);
+            _mockHotkeyService.Setup(x => x.RegisterHotkey(hotkey, It.IsAny<Action>())).Returns(true);
+
+            // Act
+            _service.UpdateHotkey(hotkey);
+
+            // Assert
+            _mockHotkeyService.Verify(x => x.UnregisterHotkey(1), Times.Never);
+            _mockConfigService.Verify(x => x.UpdateHotkey(hotkey), Times.Once);
+            _mockHotkeyService.Verify(x => x.RegisterHotkey(hotkey, It.IsAny<Action>()), Times.Once);
+        }
+
+        [Fact]
+        public void Dispose_ShouldUnregisterAllHotkeys()
+        {
+            // Act
+            _service.Dispose();
+
+            // Assert
+            _mockHotkeyService.Verify(x => x.UnregisterAllHotkeys(), Times.Once);
+        }    }
 }
