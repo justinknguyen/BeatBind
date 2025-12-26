@@ -2,6 +2,12 @@ namespace BeatBind.Presentation.Themes
 {
     public readonly struct Argb
     {
+        /// <summary>
+        /// Initializes a new instance of the Argb struct with RGB color values.
+        /// </summary>
+        /// <param name="r">Red component (0-255)</param>
+        /// <param name="g">Green component (0-255)</param>
+        /// <param name="b">Blue component (0-255)</param>
         public Argb(int r, int g, int b)
         {
             R = r;
@@ -13,6 +19,10 @@ namespace BeatBind.Presentation.Themes
         public int G { get; }
         public int B { get; }
 
+        /// <summary>
+        /// Converts the Argb struct to a System.Drawing.Color.
+        /// </summary>
+        /// <returns>A Color object representing this RGB value</returns>
         public Color ToColor() => Color.FromArgb(R, G, B);
     }
 

@@ -10,6 +10,12 @@ namespace BeatBind.Application.Services
         private readonly IConfigurationService _configurationService;
         private readonly ILogger<AuthenticationApplicationService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the AuthenticationApplicationService class.
+        /// </summary>
+        /// <param name="authenticationService">The authentication service.</param>
+        /// <param name="configurationService">The configuration service.</param>
+        /// <param name="logger">The logger instance.</param>
         public AuthenticationApplicationService(
             IAuthenticationService authenticationService,
             IConfigurationService configurationService,
@@ -20,6 +26,10 @@ namespace BeatBind.Application.Services
             _logger = logger;
         }
 
+        /// <summary>
+        /// Authenticates the user with Spotify and verifies that client credentials are configured.
+        /// </summary>
+        /// <returns>A Result indicating success or failure with error details.</returns>
         public async Task<Result> AuthenticateUserAsync()
         {
             try
@@ -50,6 +60,12 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Updates the Spotify client credentials after validation.
+        /// </summary>
+        /// <param name="clientId">The Spotify application client ID.</param>
+        /// <param name="clientSecret">The Spotify application client secret.</param>
+        /// <returns>A Result indicating success or failure with error details.</returns>
         public async Task<Result> UpdateClientCredentialsAsync(string clientId, string clientSecret)
         {
             try

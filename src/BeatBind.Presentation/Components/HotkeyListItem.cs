@@ -19,7 +19,9 @@ namespace BeatBind.Presentation.Components
 
         public Hotkey Hotkey => _hotkey;
 
-        // Parameterless ctor for WinForms designer support
+        /// <summary>
+        /// Parameterless constructor for WinForms designer support.
+        /// </summary>
         public HotkeyListItem()
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
@@ -42,6 +44,10 @@ namespace BeatBind.Presentation.Components
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the HotkeyListItem with a hotkey.
+        /// </summary>
+        /// <param name="hotkey">The hotkey to display</param>
         public HotkeyListItem(Hotkey hotkey)
         {
             _hotkey = hotkey;
@@ -50,6 +56,9 @@ namespace BeatBind.Presentation.Components
             ApplyTheme();
         }
 
+        /// <summary>
+        /// Initializes all UI components and layout for the hotkey list item.
+        /// </summary>
         private void InitializeComponent()
         {
             Size = new Size(540, 60);
@@ -136,6 +145,10 @@ namespace BeatBind.Presentation.Components
             Controls.Add(cardPanel);
         }
 
+        /// <summary>
+        /// Updates the hotkey display with new values.
+        /// </summary>
+        /// <param name="_">The updated hotkey (parameter not currently used)</param>
         public void UpdateHotkey(Hotkey _)
         {
             // Update the internal reference (note: this is a simplified approach)
@@ -143,12 +156,18 @@ namespace BeatBind.Presentation.Components
             UpdateDisplay();
         }
 
+        /// <summary>
+        /// Updates the display labels with current hotkey information.
+        /// </summary>
         private void UpdateDisplay()
         {
             _descriptionLabel.Text = Hotkey.GetActionDisplayName(_hotkey.Action);
             _keysLabel.Text = FormatHotkeyString(_hotkey);
         }
 
+        /// <summary>
+        /// Applies theme colors to all UI components.
+        /// </summary>
         private void ApplyTheme()
         {
             BackColor = Theme.CardBackground;
@@ -157,6 +176,11 @@ namespace BeatBind.Presentation.Components
             _keysLabel.BackColor = Theme.InputFieldBackground;
         }
 
+        /// <summary>
+        /// Formats a hotkey into a human-readable string (e.g., "Ctrl + Alt + P").
+        /// </summary>
+        /// <param name="hotkey">The hotkey to format</param>
+        /// <returns>A formatted string representation of the hotkey</returns>
         private static string FormatHotkeyString(Hotkey hotkey)
         {
             var parts = new List<string>();

@@ -42,6 +42,11 @@ namespace BeatBind.Infrastructure.Services
 
         public event EventHandler<Hotkey>? HotkeyPressed;
 
+        /// <summary>
+        /// Initializes a new instance of the HotkeyService class and installs a low-level keyboard hook.
+        /// </summary>
+        /// <param name="parentForm">The parent form for hotkey registration.</param>
+        /// <param name="logger">The logger instance.</param>
         public HotkeyService(Form parentForm, ILogger<HotkeyService> logger)
         {
             _parentForm = parentForm;
@@ -54,6 +59,12 @@ namespace BeatBind.Infrastructure.Services
             _logger.LogInformation("Keyboard hook installed");
         }
 
+        /// <summary>
+        /// Registers a hotkey with an associated action to execute when pressed.
+        /// </summary>
+        /// <param name="hotkey">The hotkey to register.</param>
+        /// <param name="action">The action to execute when the hotkey is pressed.</param>
+        /// <returns>True if the hotkey was successfully registered; otherwise, false.</returns>
         public bool RegisterHotkey(Hotkey hotkey, Action action)
         {
             try
@@ -77,6 +88,11 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Unregisters a hotkey by its ID.
+        /// </summary>
+        /// <param name="hotkeyId">The ID of the hotkey to unregister.</param>
+        /// <returns>True if the hotkey was successfully unregistered; otherwise, false.</returns>
         public bool UnregisterHotkey(int hotkeyId)
         {
             try
@@ -100,6 +116,9 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Unregisters all currently registered hotkeys.
+        /// </summary>
         public void UnregisterAllHotkeys()
         {
             var hotkeyIds = _registeredHotkeys.Keys.ToList();
@@ -109,11 +128,21 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Checks if a hotkey with the specified ID is currently registered.
+        /// </summary>
+        /// <param name="hotkeyId">The hotkey ID to check.</param>
+        /// <returns>True if the hotkey is registered; otherwise, false.</returns>
         public bool IsHotkeyRegistered(int hotkeyId)
         {
             return _registeredHotkeys.ContainsKey(hotkeyId);
         }
 
+        /// <summary>
+        /// Installs a low-level keyboard hook to intercept keyboard events.
+        /// </summary>
+        /// <param name="proc">The callback procedure for the hook.</param>
+        /// <returns>A handle to the installed hook.</returns>
         private IntPtr SetHook(LowLevelKeyboardProc proc)
         {
             using var curProcess = System.Diagnostics.Process.GetCurrentProcess();
@@ -121,6 +150,14 @@ namespace BeatBind.Infrastructure.Services
             return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule?.ModuleName ?? ""), 0);
         }
 
+        /// <summary>
+        /// Processes keyboard events from the low-level keyboard hook.
+        /// Tracks pressed and released keys and triggers hotkey checks.
+        /// </summary>
+        /// <param name="nCode">The hook code.</param>
+        /// <param name="wParam">The message identifier.</param>
+        /// <param name="lParam">A pointer to keyboard event information.</param>
+        /// <returns>The result of the next hook in the chain.</returns>
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0)
@@ -147,6 +184,9 @@ namespace BeatBind.Infrastructure.Services
             return CallNextHookEx(_hookId, nCode, wParam, lParam);
         }
 
+        /// <summary>
+        /// Checks all registered hotkeys against currently pressed keys and executes matching hotkey actions.
+        /// </summary>
         private void CheckHotkeys()
         {
             var currentModifiers = GetCurrentModifiers();
@@ -186,6 +226,12 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Executes a hotkey action asynchronously and raises the HotkeyPressed event.
+        /// </summary>
+        /// <param name="hotkeyId">The ID of the hotkey being executed.</param>
+        /// <param name="hotkeyInfo">The hotkey and action information.</param>
+        /// <returns>A completed task.</returns>
         private Task ExecuteHotkeyAsync(int hotkeyId, (Hotkey Hotkey, Action Action) hotkeyInfo)
         {
             try
@@ -209,6 +255,10 @@ namespace BeatBind.Infrastructure.Services
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Determines which modifier keys (Ctrl, Alt, Shift, Windows) are currently pressed.
+        /// </summary>
+        /// <returns>A ModifierKeys enum value representing the currently pressed modifiers.</returns>
         private ModifierKeys GetCurrentModifiers()
         {
             var modifiers = ModifierKeys.None;
@@ -236,6 +286,9 @@ namespace BeatBind.Infrastructure.Services
             return modifiers;
         }
 
+        /// <summary>
+        /// Removes hotkeys from the active set when their keys are no longer pressed.
+        /// </summary>
         private void ClearInactiveHotkeys()
         {
             lock (_activeLock)
@@ -272,6 +325,9 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Releases all resources used by the HotkeyService, including unregistering hotkeys and removing the keyboard hook.
+        /// </summary>
         public void Dispose()
         {
             if (!_disposed)

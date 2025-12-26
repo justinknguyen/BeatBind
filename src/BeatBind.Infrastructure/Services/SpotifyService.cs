@@ -14,6 +14,12 @@ namespace BeatBind.Infrastructure.Services
 
         private AuthenticationResult? _currentAuth;
 
+        /// <summary>
+        /// Initializes a new instance of the SpotifyService class.
+        /// </summary>
+        /// <param name="httpClient">The HTTP client for making API requests.</param>
+        /// <param name="logger">The logger instance.</param>
+        /// <param name="authenticationService">The authentication service.</param>
         public SpotifyService(
             HttpClient httpClient,
             ILogger<SpotifyService> logger,
@@ -27,6 +33,10 @@ namespace BeatBind.Infrastructure.Services
             LoadStoredAuthentication();
         }
 
+        /// <summary>
+        /// Loads and validates stored authentication tokens from storage.
+        /// Attempts to refresh expired tokens if a refresh token is available.
+        /// </summary>
         private void LoadStoredAuthentication()
         {
             try
@@ -65,8 +75,16 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Indicates whether the user is currently authenticated with valid tokens.
+        /// </summary>
         public bool IsAuthenticated => _currentAuth != null && _authenticationService.IsTokenValid(_currentAuth);
 
+        /// <summary>
+        /// Authenticates with Spotify using OAuth 2.0 authorization code flow.
+        /// Opens a browser window for user authentication and stores the resulting tokens.
+        /// </summary>
+        /// <returns>True if authentication was successful; otherwise, false.</returns>
         public async Task<bool> AuthenticateAsync()
         {
             try
@@ -93,6 +111,11 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Refreshes the current access token using the stored refresh token.
+        /// Saves the new tokens to storage upon successful refresh.
+        /// </summary>
+        /// <returns>True if the token was successfully refreshed; otherwise, false.</returns>
         public async Task<bool> RefreshTokenAsync()
         {
             try
@@ -120,6 +143,10 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Retrieves the current playback state from Spotify including track, device, and playback information.
+        /// </summary>
+        /// <returns>The current playback state, or null if no active playback or device is found.</returns>
         public async Task<PlaybackState?> GetCurrentPlaybackAsync()
         {
             try
@@ -159,26 +186,48 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Starts or resumes playback on the active Spotify device.
+        /// </summary>
+        /// <returns>True if the command was successful; otherwise, false.</returns>
         public async Task<bool> PlayAsync()
         {
             return await SendPlayerCommandAsync("play", HttpMethod.Put);
         }
 
+        /// <summary>
+        /// Pauses playback on the active Spotify device.
+        /// </summary>
+        /// <returns>True if the command was successful; otherwise, false.</returns>
         public async Task<bool> PauseAsync()
         {
             return await SendPlayerCommandAsync("pause", HttpMethod.Put);
         }
 
+        /// <summary>
+        /// Skips to the next track in the playback queue.
+        /// </summary>
+        /// <returns>True if the command was successful; otherwise, false.</returns>
         public async Task<bool> NextTrackAsync()
         {
             return await SendPlayerCommandAsync("next", HttpMethod.Post);
         }
 
+        /// <summary>
+        /// Skips to the previous track in the playback queue.
+        /// </summary>
+        /// <returns>True if the command was successful; otherwise, false.</returns>
         public async Task<bool> PreviousTrackAsync()
         {
             return await SendPlayerCommandAsync("previous", HttpMethod.Post);
         }
 
+        /// <summary>
+        /// Sets the playback volume on the active Spotify device.
+        /// Volume is automatically clamped to the range 0-100.
+        /// </summary>
+        /// <param name="volume">The volume level (0-100).</param>
+        /// <returns>True if the volume was successfully set; otherwise, false.</returns>
         public async Task<bool> SetVolumeAsync(int volume)
         {
             try
@@ -205,6 +254,10 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Toggles the shuffle mode for the current playback.
+        /// </summary>
+        /// <returns>True if shuffle mode was successfully toggled; otherwise, false.</returns>
         public async Task<bool> ToggleShuffleAsync()
         {
             try
@@ -227,6 +280,10 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Cycles through repeat modes: Off -> Context -> Track -> Off.
+        /// </summary>
+        /// <returns>True if repeat mode was successfully changed; otherwise, false.</returns>
         public async Task<bool> ToggleRepeatAsync()
         {
             try
@@ -255,6 +312,10 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Saves the currently playing track to the user's Spotify library.
+        /// </summary>
+        /// <returns>True if the track was successfully saved; otherwise, false.</returns>
         public async Task<bool> SaveCurrentTrackAsync()
         {
             try
@@ -277,6 +338,10 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Removes the currently playing track from the user's Spotify library.
+        /// </summary>
+        /// <returns>True if the track was successfully removed; otherwise, false.</returns>
         public async Task<bool> RemoveCurrentTrackAsync()
         {
             try
@@ -299,6 +364,12 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Seeks to a specific position in the currently playing track.
+        /// Position is automatically clamped to a minimum of 0.
+        /// </summary>
+        /// <param name="positionMs">The position in milliseconds.</param>
+        /// <returns>True if the seek operation was successful; otherwise, false.</returns>
         public async Task<bool> SeekToPositionAsync(int positionMs)
         {
             try
@@ -325,6 +396,11 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Ensures that a valid authentication token is available for API requests.
+        /// Authenticates or refreshes the token as needed.
+        /// </summary>
+        /// <returns>True if a valid token is available; otherwise, false.</returns>
         private async Task<bool> EnsureValidTokenAsync()
         {
             if (_currentAuth == null)
@@ -340,6 +416,14 @@ namespace BeatBind.Infrastructure.Services
             return true;
         }
 
+        /// <summary>
+        /// Sends a command to the Spotify player API endpoint.
+        /// </summary>
+        /// <param name="endpoint">The API endpoint or full URL.</param>
+        /// <param name="method">The HTTP method to use.</param>
+        /// <param name="body">Optional request body as JSON string.</param>
+        /// <param name="useFullUrl">Whether the endpoint parameter is a full URL.</param>
+        /// <returns>True if the command was successful; otherwise, false.</returns>
         private async Task<bool> SendPlayerCommandAsync(string endpoint, HttpMethod method, string? body = null, bool useFullUrl = false)
         {
             try
@@ -369,6 +453,11 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Parses the JSON response from Spotify API into a PlaybackState object.
+        /// </summary>
+        /// <param name="root">The root JSON element from the API response.</param>
+        /// <returns>A populated PlaybackState object.</returns>
         private static PlaybackState ParsePlaybackState(JsonElement root)
         {
             var playbackState = new PlaybackState

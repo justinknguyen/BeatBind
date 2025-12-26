@@ -19,6 +19,10 @@ namespace BeatBind.Presentation.Components
 
         public Hotkey Hotkey { get; private set; } = new();
 
+        /// <summary>
+        /// Initializes a new instance of the HotkeyEditorDialog.
+        /// </summary>
+        /// <param name="existingHotkey">Optional existing hotkey to edit. If null, creates a new hotkey.</param>
         public HotkeyEditorDialog(Hotkey? existingHotkey = null)
         {
             if (existingHotkey != null)
@@ -38,11 +42,17 @@ namespace BeatBind.Presentation.Components
             ApplyTheme();
         }
 
+        /// <summary>
+        /// Applies the application theme to the dialog.
+        /// </summary>
         private void ApplyTheme()
         {
             BackColor = Theme.FormBackground;
         }
 
+        /// <summary>
+        /// Initializes all dialog components and creates the UI layout.
+        /// </summary>
         private void InitializeComponent()
         {
             Text = "Hotkey Configuration";
@@ -323,6 +333,9 @@ namespace BeatBind.Presentation.Components
         }
 
 
+        /// <summary>
+        /// Updates the hotkey preview label based on current selections.
+        /// </summary>
         private void UpdatePreview()
         {
             var parts = new List<string>();
@@ -358,6 +371,9 @@ namespace BeatBind.Presentation.Components
             }
         }
 
+        /// <summary>
+        /// Populates the action combo box with available hotkey actions.
+        /// </summary>
         private void PopulateActionComboBox()
         {
             var actions = Enum.GetValues<HotkeyAction>()
@@ -369,6 +385,9 @@ namespace BeatBind.Presentation.Components
             _actionComboBox.ValueMember = "Value";
         }
 
+        /// <summary>
+        /// Populates the key combo box with available key codes.
+        /// </summary>
         private void PopulateKeyComboBox()
         {
             // Use keys from the entity with friendly display names
@@ -382,6 +401,10 @@ namespace BeatBind.Presentation.Components
             _keyComboBox.ValueMember = "Value";
         }
 
+        /// <summary>
+        /// Loads existing hotkey data into the dialog controls.
+        /// </summary>
+        /// <param name="hotkey">The hotkey to load</param>
         private void LoadHotkeyData(Hotkey hotkey)
         {
             _actionComboBox.SelectedValue = hotkey.Action;
@@ -395,6 +418,11 @@ namespace BeatBind.Presentation.Components
         }
 
 
+        /// <summary>
+        /// Handles the OK button click event. Validates input and saves the hotkey.
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event arguments</param>
         private void OkButton_Click(object? sender, EventArgs e)
         {
             if (ValidateInput())
@@ -440,6 +468,10 @@ namespace BeatBind.Presentation.Components
             }
         }
 
+        /// <summary>
+        /// Validates user input before saving the hotkey.
+        /// </summary>
+        /// <returns>True if input is valid, false otherwise</returns>
         private bool ValidateInput()
         {
 

@@ -17,18 +17,28 @@ public partial class SettingsPanel : BasePanelControl
     private NumericUpDown _volumeStepsNumeric = null!;
     private NumericUpDown _seekMillisecondsNumeric = null!;
 
+    /// <summary>
+    /// Initializes a new instance of the SettingsPanel with dependency injection.
+    /// </summary>
+    /// <param name="configurationService">Service for configuration management</param>
+    /// <param name="logger">Logger instance</param>
     public SettingsPanel(IConfigurationService configurationService, ILogger<SettingsPanel> logger)
         : base(logger)
     {
         _configurationService = configurationService;
     }
 
-    // Parameterless constructor for WinForms designer support
+    /// <summary>
+    /// Parameterless constructor for WinForms designer support.
+    /// </summary>
     public SettingsPanel() : base()
     {
         _configurationService = null!;
     }
 
+    /// <summary>
+    /// Initializes the UI layout and controls for the settings panel.
+    /// </summary>
     protected override void InitializeUI()
     {
         var mainLayout = new TableLayoutPanel
@@ -52,6 +62,10 @@ public partial class SettingsPanel : BasePanelControl
         Controls.Add(mainLayout);
     }
 
+    /// <summary>
+    /// Creates the application settings section with general and audio control options.
+    /// </summary>
+    /// <returns>A control containing application settings controls</returns>
     private Control CreateAppSettingsContent()
     {
         var panel = new Panel { Dock = DockStyle.Fill };
@@ -147,6 +161,10 @@ public partial class SettingsPanel : BasePanelControl
         return panel;
     }
 
+    /// <summary>
+    /// Creates the about section with application information and links.
+    /// </summary>
+    /// <returns>A control containing about information</returns>
     private Control CreateAboutContent()
     {
         var panel = new Panel { Dock = DockStyle.Fill };
@@ -179,6 +197,9 @@ public partial class SettingsPanel : BasePanelControl
         return panel;
     }
 
+    /// <summary>
+    /// Loads saved configuration values into the UI controls.
+    /// </summary>
     public void LoadConfiguration()
     {
         try
@@ -196,6 +217,10 @@ public partial class SettingsPanel : BasePanelControl
         }
     }
 
+    /// <summary>
+    /// Applies the current UI settings to the provided configuration object.
+    /// </summary>
+    /// <param name="config">The configuration object to update</param>
     public void ApplySettingsToConfiguration(ApplicationConfiguration config)
     {
         config.StartMinimized = _startupCheckBox.Checked;

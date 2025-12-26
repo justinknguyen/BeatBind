@@ -21,18 +21,28 @@ public partial class HotkeysPanel : BasePanelControl
     public event EventHandler<Hotkey>? HotkeyDeleteRequested;
     public event EventHandler? HotkeyAdded;
 
+    /// <summary>
+    /// Initializes a new instance of the HotkeysPanel with dependency injection.
+    /// </summary>
+    /// <param name="hotkeyApplicationService">Service for hotkey management operations</param>
+    /// <param name="logger">Logger instance</param>
     public HotkeysPanel(HotkeyApplicationService? hotkeyApplicationService, ILogger<HotkeysPanel> logger)
         : base(logger)
     {
         _hotkeyApplicationService = hotkeyApplicationService;
     }
 
-    // Parameterless constructor for WinForms designer support
+    /// <summary>
+    /// Parameterless constructor for WinForms designer support.
+    /// </summary>
     public HotkeysPanel() : base()
     {
         _hotkeyApplicationService = null;
     }
 
+    /// <summary>
+    /// Initializes the base component settings for the panel.
+    /// </summary>
     protected override void InitializeComponent()
     {
         SuspendLayout();
@@ -44,6 +54,9 @@ public partial class HotkeysPanel : BasePanelControl
         ResumeLayout(false);
     }
 
+    /// <summary>
+    /// Initializes the UI layout and controls for the hotkeys panel.
+    /// </summary>
     protected override void InitializeUI()
     {
         var mainLayout = new TableLayoutPanel
@@ -67,6 +80,10 @@ public partial class HotkeysPanel : BasePanelControl
         Controls.Add(mainLayout);
     }
 
+    /// <summary>
+    /// Creates the last triggered hotkey display section.
+    /// </summary>
+    /// <returns>A control showing the most recently triggered hotkey</returns>
     private Control CreateLastHotkeyContent()
     {
         var panel = new Panel { Height = 30, Dock = DockStyle.Top };
@@ -78,6 +95,10 @@ public partial class HotkeysPanel : BasePanelControl
         return panel;
     }
 
+    /// <summary>
+    /// Creates the hotkey management section with add button and hotkey list.
+    /// </summary>
+    /// <returns>A control containing hotkey management UI</returns>
     private Control CreateHotkeyManagementContent()
     {
         var panel = new Panel { Dock = DockStyle.Fill };
@@ -123,6 +144,11 @@ public partial class HotkeysPanel : BasePanelControl
         return panel;
     }
 
+    /// <summary>
+    /// Handles the add hotkey button click event. Shows hotkey editor dialog.
+    /// </summary>
+    /// <param name="sender">Event sender</param>
+    /// <param name="e">Event arguments</param>
     private void AddHotkeyButton_Click(object? sender, EventArgs e)
     {
         var hotkeyDialog = new HotkeyEditorDialog();
@@ -145,6 +171,10 @@ public partial class HotkeysPanel : BasePanelControl
         }
     }
 
+    /// <summary>
+    /// Loads a list of hotkeys into the UI panel.
+    /// </summary>
+    /// <param name="hotkeys">The list of hotkeys to display</param>
     public void LoadHotkeys(List<Hotkey> hotkeys)
     {
         if (_hotkeyFlowPanel == null)
@@ -168,6 +198,10 @@ public partial class HotkeysPanel : BasePanelControl
         LogInfo($"Total controls in _hotkeyFlowPanel: {_hotkeyFlowPanel.Controls.Count}");
     }
 
+    /// <summary>
+    /// Adds a hotkey entry to the UI display.
+    /// </summary>
+    /// <param name="hotkey">The hotkey to add</param>
     public void AddHotkeyEntryToUI(Hotkey hotkey)
     {
         var entry = new HotkeyListItem(hotkey);
@@ -182,6 +216,10 @@ public partial class HotkeysPanel : BasePanelControl
         LogInfo($"Added hotkey to UI: {hotkey.Action} with ID {hotkey.Id}");
     }
 
+    /// <summary>
+    /// Updates an existing hotkey entry in the UI.
+    /// </summary>
+    /// <param name="hotkey">The hotkey with updated values</param>
     public void UpdateHotkeyEntry(Hotkey hotkey)
     {
         if (_hotkeyEntries.TryGetValue(hotkey.Id.ToString(), out var entry))
@@ -190,6 +228,10 @@ public partial class HotkeysPanel : BasePanelControl
         }
     }
 
+    /// <summary>
+    /// Removes a hotkey entry from the UI.
+    /// </summary>
+    /// <param name="hotkeyId">The ID of the hotkey to remove</param>
     public void RemoveHotkeyEntry(int hotkeyId)
     {
         if (_hotkeyEntries.TryGetValue(hotkeyId.ToString(), out var entry))
@@ -200,11 +242,19 @@ public partial class HotkeysPanel : BasePanelControl
         }
     }
 
+    /// <summary>
+    /// Retrieves all hotkeys currently displayed in the UI.
+    /// </summary>
+    /// <returns>A list of all hotkeys</returns>
     public List<Hotkey> GetHotkeysFromUI()
     {
         return _hotkeyEntries.Values.Select(entry => entry.Hotkey).ToList();
     }
 
+    /// <summary>
+    /// Updates the last triggered hotkey display label with thread safety.
+    /// </summary>
+    /// <param name="text">The text to display</param>
     public void UpdateLastHotkeyLabel(string text)
     {
         if (_lastHotkeyLabel.InvokeRequired)

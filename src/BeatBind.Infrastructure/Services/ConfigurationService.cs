@@ -11,11 +11,20 @@ namespace BeatBind.Infrastructure.Services
         private readonly string _configPath;
         private ApplicationConfiguration _config;
 
+        /// <summary>
+        /// Initializes a new instance of the ConfigurationService class with default config path.
+        /// </summary>
+        /// <param name="logger">The logger instance.</param>
         public ConfigurationService(ILogger<ConfigurationService> logger)
             : this(logger, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BeatBind", "config.json"))
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the ConfigurationService class with a custom config path.
+        /// </summary>
+        /// <param name="logger">The logger instance.</param>
+        /// <param name="configPath">The path to the configuration file.</param>
         public ConfigurationService(ILogger<ConfigurationService> logger, string configPath)
         {
             _logger = logger;
@@ -26,11 +35,19 @@ namespace BeatBind.Infrastructure.Services
             LoadConfiguration();
         }
 
+        /// <summary>
+        /// Gets the current application configuration.
+        /// </summary>
+        /// <returns>The application configuration object.</returns>
         public ApplicationConfiguration GetConfiguration()
         {
             return _config;
         }
 
+        /// <summary>
+        /// Saves the application configuration to disk.
+        /// </summary>
+        /// <param name="configuration">The configuration to save.</param>
         public void SaveConfiguration(ApplicationConfiguration configuration)
         {
             try
@@ -47,6 +64,11 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Updates the Spotify client credentials and saves the configuration.
+        /// </summary>
+        /// <param name="clientId">The Spotify application client ID.</param>
+        /// <param name="clientSecret">The Spotify application client secret.</param>
         public void UpdateClientCredentials(string clientId, string clientSecret)
         {
             _config.ClientId = clientId;
@@ -54,6 +76,10 @@ namespace BeatBind.Infrastructure.Services
             SaveConfiguration(_config);
         }
 
+        /// <summary>
+        /// Adds a new hotkey to the configuration. Assigns a new ID if not already set.
+        /// </summary>
+        /// <param name="hotkey">The hotkey to add.</param>
         public void AddHotkey(Hotkey hotkey)
         {
             // Assign a new ID if not already set
@@ -66,6 +92,10 @@ namespace BeatBind.Infrastructure.Services
             SaveConfiguration(_config);
         }
 
+        /// <summary>
+        /// Removes a hotkey from the configuration by its ID.
+        /// </summary>
+        /// <param name="hotkeyId">The ID of the hotkey to remove.</param>
         public void RemoveHotkey(int hotkeyId)
         {
             var hotkey = _config.Hotkeys.FirstOrDefault(h => h.Id == hotkeyId);
@@ -76,6 +106,10 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Updates an existing hotkey in the configuration.
+        /// </summary>
+        /// <param name="hotkey">The hotkey with updated values.</param>
         public void UpdateHotkey(Hotkey hotkey)
         {
             var existingHotkey = _config.Hotkeys.FirstOrDefault(h => h.Id == hotkey.Id);
@@ -87,11 +121,18 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Gets all configured hotkeys.
+        /// </summary>
+        /// <returns>A list of all hotkeys.</returns>
         public List<Hotkey> GetHotkeys()
         {
             return _config.Hotkeys.ToList();
         }
 
+        /// <summary>
+        /// Ensures that the configuration directory exists, creating it if necessary.
+        /// </summary>
         private void EnsureConfigDirectoryExists()
         {
             var directory = Path.GetDirectoryName(_configPath);
@@ -102,6 +143,9 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Loads the configuration from disk or creates a new default configuration if the file doesn't exist.
+        /// </summary>
         private void LoadConfiguration()
         {
             try

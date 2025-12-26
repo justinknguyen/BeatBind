@@ -24,6 +24,12 @@ public partial class AuthenticationPanel : BasePanelControl
 
     public bool IsAuthenticated => _isAuthenticated;
 
+    /// <summary>
+    /// Initializes a new instance of the AuthenticationPanel with dependency injection.
+    /// </summary>
+    /// <param name="authenticationService">Service for authentication operations</param>
+    /// <param name="configurationService">Service for configuration management</param>
+    /// <param name="logger">Logger instance</param>
     public AuthenticationPanel(AuthenticationApplicationService authenticationService, IConfigurationService configurationService, ILogger<AuthenticationPanel> logger)
         : base(logger)
     {
@@ -31,13 +37,18 @@ public partial class AuthenticationPanel : BasePanelControl
         _configurationService = configurationService;
     }
 
-    // Parameterless constructor for WinForms designer support
+    /// <summary>
+    /// Parameterless constructor for WinForms designer support.
+    /// </summary>
     public AuthenticationPanel() : base()
     {
         _authenticationService = null!;
         _configurationService = null!;
     }
 
+    /// <summary>
+    /// Initializes the UI layout and controls for the authentication panel.
+    /// </summary>
     protected override void InitializeUI()
     {
         var mainLayout = new TableLayoutPanel
@@ -61,6 +72,10 @@ public partial class AuthenticationPanel : BasePanelControl
         Controls.Add(mainLayout);
     }
 
+    /// <summary>
+    /// Creates the credentials input section with client ID, secret, and redirect port fields.
+    /// </summary>
+    /// <returns>A control containing the credentials input fields</returns>
     private Control CreateCredentialsContent()
     {
         var panel = new Panel { Dock = DockStyle.Fill };
@@ -88,6 +103,10 @@ public partial class AuthenticationPanel : BasePanelControl
         return panel;
     }
 
+    /// <summary>
+    /// Creates the authentication status and action button section.
+    /// </summary>
+    /// <returns>A control containing the authentication button and status label</returns>
     private Control CreateAuthStatusContent()
     {
         var panel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(15, 15, 15, 20) };
@@ -118,6 +137,11 @@ public partial class AuthenticationPanel : BasePanelControl
         return panel;
     }
 
+    /// <summary>
+    /// Handles the authenticate button click event. Saves credentials and initiates OAuth flow.
+    /// </summary>
+    /// <param name="sender">Event sender</param>
+    /// <param name="e">Event arguments</param>
     private async void AuthenticateButton_Click(object? sender, EventArgs e)
     {
         _authenticateButton.Enabled = false;
@@ -157,6 +181,9 @@ public partial class AuthenticationPanel : BasePanelControl
         }
     }
 
+    /// <summary>
+    /// Loads saved configuration values into the UI controls.
+    /// </summary>
     public void LoadConfiguration()
     {
         try
@@ -174,6 +201,10 @@ public partial class AuthenticationPanel : BasePanelControl
         }
     }
 
+    /// <summary>
+    /// Retrieves the current configuration with values from the UI controls.
+    /// </summary>
+    /// <returns>The updated application configuration</returns>
     public ApplicationConfiguration GetConfiguration()
     {
         var config = _configurationService.GetConfiguration();
@@ -189,6 +220,9 @@ public partial class AuthenticationPanel : BasePanelControl
         return config;
     }
 
+    /// <summary>
+    /// Updates the authentication status display based on stored credentials.
+    /// </summary>
     public void UpdateAuthenticationStatus()
     {
         bool hasStoredAuth = CheckStoredAuthentication();
@@ -208,6 +242,10 @@ public partial class AuthenticationPanel : BasePanelControl
         }
     }
 
+    /// <summary>
+    /// Checks if valid authentication tokens are stored in the configuration.
+    /// </summary>
+    /// <returns>True if valid authentication exists, false otherwise</returns>
     private bool CheckStoredAuthentication()
     {
         try

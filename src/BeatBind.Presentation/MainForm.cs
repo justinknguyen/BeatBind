@@ -39,7 +39,9 @@ namespace BeatBind.Presentation
         private HotkeysPanel _hotkeysPanel = null!;
         private SettingsPanel _settingsPanel = null!;
 
-        // Parameterless constructor for WinForms designer support
+        /// <summary>
+        /// Parameterless constructor for WinForms designer support.
+        /// </summary>
         public MainForm()
         {
             _materialSkinManager = MaterialSkinManager.Instance;
@@ -60,6 +62,15 @@ namespace BeatBind.Presentation
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the MainForm with dependency injection.
+        /// </summary>
+        /// <param name="musicControlService">Service for music control operations</param>
+        /// <param name="authenticationService">Service for authentication operations</param>
+        /// <param name="mediator">Mediator for command/query handling</param>
+        /// <param name="configurationService">Service for configuration management</param>
+        /// <param name="githubReleaseService">Service for checking GitHub releases</param>
+        /// <param name="logger">Logger instance</param>
         public MainForm(
             MusicControlApplicationService musicControlService,
             AuthenticationApplicationService authenticationService,
@@ -90,6 +101,10 @@ namespace BeatBind.Presentation
             LoadConfiguration();
         }
 
+        /// <summary>
+        /// Called when the form is first shown. Applies theme and checks for updates.
+        /// </summary>
+        /// <param name="e">Event arguments</param>
         protected override void OnShown(EventArgs e)
         {
             base.OnShown(e);
@@ -99,6 +114,10 @@ namespace BeatBind.Presentation
             _ = CheckForUpdatesAsync();
         }
 
+        /// <summary>
+        /// Sets the hotkey application service and subscribes to hotkey events.
+        /// </summary>
+        /// <param name="hotkeyApplicationService">The hotkey application service instance</param>
         public void SetHotkeyApplicationService(HotkeyApplicationService hotkeyApplicationService)
         {
             _hotkeyApplicationService = hotkeyApplicationService;
@@ -110,11 +129,19 @@ namespace BeatBind.Presentation
             _hotkeyApplicationService.InitializeHotkeys();
         }
 
+        /// <summary>
+        /// Handles hotkey triggered events and updates the UI.
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="hotkey">The hotkey that was triggered</param>
         private void OnHotkeyTriggered(object? sender, Hotkey hotkey)
         {
             _hotkeysPanel?.UpdateLastHotkeyLabel($"{hotkey.Action}");
         }
 
+        /// <summary>
+        /// Initializes all form components and creates the UI layout.
+        /// </summary>
         private void InitializeComponent()
         {
             SuspendLayout();
@@ -238,6 +265,11 @@ namespace BeatBind.Presentation
             ResumeLayout(false);
         }
 
+        /// <summary>
+        /// Handles hotkey edit requests from the hotkeys panel.
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="hotkey">The hotkey to edit</param>
         private void HotkeysPanel_HotkeyEditRequested(object? sender, Hotkey hotkey)
         {
             var hotkeyDialog = new HotkeyEditorDialog(hotkey);
@@ -248,6 +280,11 @@ namespace BeatBind.Presentation
             }
         }
 
+        /// <summary>
+        /// Handles hotkey delete requests from the hotkeys panel.
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="hotkey">The hotkey to delete</param>
         private void HotkeysPanel_HotkeyDeleteRequested(object? sender, Hotkey hotkey)
         {
             if (MessageBoxHelper.ConfirmDelete(hotkey.Action.ToString(), "hotkey"))
@@ -256,11 +293,19 @@ namespace BeatBind.Presentation
             }
         }
 
+        /// <summary>
+        /// Handles hotkey added events from the hotkeys panel.
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event arguments</param>
         private void HotkeysPanel_HotkeyAdded(object? sender, EventArgs e)
         {
             // Optional: Handle any additional logic when a hotkey is added
         }
 
+        /// <summary>
+        /// Configures the system tray notification icon and context menu.
+        /// </summary>
         private void SetupNotifyIcon()
         {
             _notifyIcon = new NotifyIcon
@@ -282,6 +327,9 @@ namespace BeatBind.Presentation
             _notifyIcon.DoubleClick += (s, e) => { Show(); WindowState = FormWindowState.Normal; };
         }
 
+        /// <summary>
+        /// Loads application configuration and initializes all panels with saved settings.
+        /// </summary>
         private void LoadConfiguration()
         {
             try
@@ -303,6 +351,11 @@ namespace BeatBind.Presentation
             }
         }
 
+        /// <summary>
+        /// Handles save configuration button click event. Saves all settings and reloads hotkeys.
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event arguments</param>
         private async void SaveConfigButton_Click(object? sender, EventArgs e)
         {
             try
@@ -325,6 +378,9 @@ namespace BeatBind.Presentation
             }
         }
 
+        /// <summary>
+        /// Applies the application theme to all UI elements.
+        /// </summary>
         private void ApplyTheme()
         {
             // Form background
@@ -341,6 +397,10 @@ namespace BeatBind.Presentation
             ThemeHelper.ApplyThemeToControlHierarchy(this);
         }
 
+        /// <summary>
+        /// Controls form visibility and manages system tray icon visibility.
+        /// </summary>
+        /// <param name="value">Whether the form should be visible</param>
         protected override void SetVisibleCore(bool value)
         {
             base.SetVisibleCore(value);
@@ -350,6 +410,10 @@ namespace BeatBind.Presentation
             }
         }
 
+        /// <summary>
+        /// Handles form closing event. Minimizes to tray unless explicitly exiting.
+        /// </summary>
+        /// <param name="e">Form closing event arguments</param>
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             if (e.CloseReason == CloseReason.UserClosing && !_isExiting)
@@ -369,6 +433,10 @@ namespace BeatBind.Presentation
             base.OnFormClosing(e);
         }
 
+        /// <summary>
+        /// Checks for application updates from GitHub releases.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation</returns>
         private async Task CheckForUpdatesAsync()
         {
             try
@@ -392,6 +460,10 @@ namespace BeatBind.Presentation
             }
         }
 
+        /// <summary>
+        /// Displays an update notification banner at the top of the form.
+        /// </summary>
+        /// <param name="release">The GitHub release information</param>
         private void ShowUpdateNotification(GithubRelease release)
         {
             if (InvokeRequired)
