@@ -3,9 +3,9 @@ using BeatBind.Core.Entities;
 using BeatBind.Presentation.Themes;
 using DomainModifierKeys = BeatBind.Core.Entities.ModifierKeys;
 
-namespace BeatBind.Presentation.Forms
+namespace BeatBind.Presentation.Components
 {
-    public partial class HotkeyEntry : UserControl
+    public partial class HotkeyListItem : UserControl
     {
         private readonly Hotkey _hotkey;
         private Button _editButton = null!;
@@ -19,7 +19,7 @@ namespace BeatBind.Presentation.Forms
         public Hotkey Hotkey => _hotkey;
 
         // Parameterless ctor for WinForms designer support
-        public HotkeyEntry()
+        public HotkeyListItem()
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
             {
@@ -41,7 +41,7 @@ namespace BeatBind.Presentation.Forms
             }
         }
 
-        public HotkeyEntry(Hotkey hotkey)
+        public HotkeyListItem(Hotkey hotkey)
         {
             _hotkey = hotkey;
             InitializeComponent();
