@@ -310,7 +310,7 @@ namespace BeatBind.Presentation
         {
             _notifyIcon = new NotifyIcon
             {
-                Icon = SystemIcons.Application,
+                Icon = Icon,  // Use the same icon as the form
                 Text = "BeatBind - Spotify Global Hotkeys",
                 Visible = true
             };
