@@ -1,5 +1,6 @@
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
+using BeatBind.Infrastructure.Helpers;
 using BeatBind.Presentation.Helpers;
 using BeatBind.Presentation.Themes;
 using MaterialSkin.Controls;
@@ -94,7 +95,7 @@ public partial class SettingsPanel : BasePanelControl
 
         var checkboxPanel1 = ControlFactory.CreateFlowPanel();
         _startupCheckBox = ControlFactory.CreateMaterialCheckbox("Start with Windows");
-        _minimizeCheckBox = ControlFactory.CreateMaterialCheckbox("Minimize to tray");
+        _minimizeCheckBox = ControlFactory.CreateMaterialCheckbox("Start minimized");
         checkboxPanel1.Controls.Add(_startupCheckBox);
         checkboxPanel1.Controls.Add(_minimizeCheckBox);
         layout.Controls.Add(checkboxPanel1, 0, 1);
@@ -205,8 +206,12 @@ public partial class SettingsPanel : BasePanelControl
         try
         {
             var config = _configurationService.GetConfiguration();
-            _startupCheckBox.Checked = config.StartMinimized;
-            _minimizeCheckBox.Checked = config.MinimizeToTray;
+
+            // Sync the StartWithWindows checkbox with actual registry state
+            var isInStartup = StartupHelper.IsInStartup(Logger);
+            _startupCheckBox.Checked = isInStartup || config.StartWithWindows;
+
+            _minimizeCheckBox.Checked = config.StartMinimized;
             _rewindCheckBox.Checked = config.PreviousTrackRewindToStart;
             _volumeStepsNumeric.Value = config.VolumeSteps;
             _seekMillisecondsNumeric.Value = config.SeekMilliseconds;
@@ -223,8 +228,8 @@ public partial class SettingsPanel : BasePanelControl
     /// <param name="config">The configuration object to update</param>
     public void ApplySettingsToConfiguration(ApplicationConfiguration config)
     {
-        config.StartMinimized = _startupCheckBox.Checked;
-        config.MinimizeToTray = _minimizeCheckBox.Checked;
+        config.StartWithWindows = _startupCheckBox.Checked;
+        config.StartMinimized = _minimizeCheckBox.Checked;
         config.PreviousTrackRewindToStart = _rewindCheckBox.Checked;
         config.VolumeSteps = (int)_volumeStepsNumeric.Value;
         config.SeekMilliseconds = (int)_seekMillisecondsNumeric.Value;

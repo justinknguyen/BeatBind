@@ -2,6 +2,7 @@ using System.ComponentModel;
 using BeatBind.Application.Services;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
+using BeatBind.Infrastructure.Helpers;
 using BeatBind.Presentation.Components;
 using BeatBind.Presentation.Helpers;
 using BeatBind.Presentation.Panels;
@@ -99,6 +100,7 @@ namespace BeatBind.Presentation
             InitializeComponent();
             SetupNotifyIcon();
             LoadConfiguration();
+            ApplyStartupSettings();
         }
 
         /// <summary>
@@ -402,6 +404,29 @@ namespace BeatBind.Presentation
         }
 
         /// <summary>
+        /// Applies startup settings including starting minimized to tray.
+        /// </summary>
+        private void ApplyStartupSettings()
+        {
+            try
+            {
+                var config = _configurationService.GetConfiguration();
+
+                // If StartMinimized is enabled, start the app minimized to system tray
+                if (config.StartMinimized)
+                {
+                    _logger.LogInformation("Starting minimized to system tray");
+                    WindowState = FormWindowState.Minimized;
+                    Hide();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to apply startup settings");
+            }
+        }
+
+        /// <summary>
         /// Handles save configuration button click event. Saves all settings and reloads hotkeys.
         /// </summary>
         /// <param name="sender">Event sender</param>
@@ -415,6 +440,9 @@ namespace BeatBind.Presentation
                 config.Hotkeys = _hotkeysPanel.GetHotkeysFromUI();
 
                 _configurationService.SaveConfiguration(config);
+
+                // Apply Windows startup setting
+                StartupHelper.SetStartupWithWindows(config.StartWithWindows, _logger);
 
                 // Reload hotkeys to ensure they're properly registered
                 _hotkeyApplicationService?.ReloadHotkeys();

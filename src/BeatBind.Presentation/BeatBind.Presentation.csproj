@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BeatBind.Core\BeatBind.Core.csproj" />
     <ProjectReference Include="..\BeatBind.Application\BeatBind.Application.csproj" />
+    <ProjectReference Include="..\BeatBind.Infrastructure\BeatBind.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

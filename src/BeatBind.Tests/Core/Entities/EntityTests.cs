@@ -319,8 +319,8 @@ namespace BeatBind.Tests.Core.Entities
             config.ClientId.Should().BeEmpty();
             config.ClientSecret.Should().BeEmpty();
             config.RedirectUri.Should().Be("http://127.0.0.1:8888/callback");
-            config.StartMinimized.Should().BeFalse();
-            config.MinimizeToTray.Should().BeTrue();
+            config.StartWithWindows.Should().BeFalse();
+            config.StartMinimized.Should().BeTrue();
             config.VolumeSteps.Should().Be(10);
             config.SeekMilliseconds.Should().Be(10000);
             config.Hotkeys.Should().NotBeNull();

@@ -7,8 +7,8 @@ namespace BeatBind.Core.Entities
         public int RedirectPort { get; set; } = 8888;
         public string RedirectUri { get; set; } = "http://127.0.0.1:8888/callback";
         public List<Hotkey> Hotkeys { get; set; } = new();
-        public bool StartMinimized { get; set; }
-        public bool MinimizeToTray { get; set; } = true;
+        public bool StartWithWindows { get; set; }
+        public bool StartMinimized { get; set; } = true;
 
         // Audio Control Settings
         public bool PreviousTrackRewindToStart { get; set; } = true;
