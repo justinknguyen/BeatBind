@@ -2,9 +2,9 @@ using BeatBind.Core.Entities;
 using BeatBind.Presentation.Themes;
 using DomainModifierKeys = BeatBind.Core.Entities.ModifierKeys;
 
-namespace BeatBind.Presentation
+namespace BeatBind.Presentation.Components
 {
-    public partial class HotkeyConfigurationDialog : Form
+    public partial class HotkeyEditorDialog : Form
     {
         private ComboBox _actionComboBox = null!;
         private ComboBox _keyComboBox = null!;
@@ -19,7 +19,7 @@ namespace BeatBind.Presentation
 
         public Hotkey Hotkey { get; private set; } = new();
 
-        public HotkeyConfigurationDialog(Hotkey? existingHotkey = null)
+        public HotkeyEditorDialog(Hotkey? existingHotkey = null)
         {
             if (existingHotkey != null)
             {

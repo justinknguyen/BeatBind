@@ -5,6 +5,7 @@ using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
 using BeatBind.Presentation.Themes;
 using BeatBind.Presentation.Panels;
+using BeatBind.Presentation.Components;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -234,7 +235,7 @@ namespace BeatBind.Presentation
 
         private void HotkeysPanel_HotkeyEditRequested(object? sender, Hotkey hotkey)
         {
-            var hotkeyDialog = new HotkeyConfigurationDialog(hotkey);
+            var hotkeyDialog = new HotkeyEditorDialog(hotkey);
             if (hotkeyDialog.ShowDialog() == DialogResult.OK)
             {
                 var updatedHotkey = hotkeyDialog.Hotkey;

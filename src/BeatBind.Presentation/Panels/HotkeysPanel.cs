@@ -1,6 +1,7 @@
 using BeatBind.Application.Services;
 using BeatBind.Core.Entities;
 using BeatBind.Presentation.Themes;
+using BeatBind.Presentation.Components;
 using MaterialSkin.Controls;
 using Microsoft.Extensions.Logging;
 
@@ -14,7 +15,7 @@ public partial class HotkeysPanel : UserControl
     private MaterialLabel _lastHotkeyLabel = null!;
     private FlowLayoutPanel _hotkeyFlowPanel = null!;
     private MaterialButton _addHotkeyButton = null!;
-    private Dictionary<string, HotkeyEntry> _hotkeyEntries = new();
+    private Dictionary<string, HotkeyListItem> _hotkeyEntries = new();
     
     public event EventHandler<Hotkey>? HotkeyEditRequested;
     public event EventHandler<Hotkey>? HotkeyDeleteRequested;
@@ -192,7 +193,7 @@ public partial class HotkeysPanel : UserControl
 
             foreach (Control control in _hotkeyFlowPanel.Controls)
             {
-                if (control is HotkeyEntry)
+                if (control is HotkeyListItem)
                 {
                     control.Width = Math.Max(400, availableWidth);
                 }
@@ -208,7 +209,7 @@ public partial class HotkeysPanel : UserControl
 
     private void AddHotkeyButton_Click(object? sender, EventArgs e)
     {
-        var hotkeyDialog = new HotkeyConfigurationDialog();
+        var hotkeyDialog = new HotkeyEditorDialog();
         if (hotkeyDialog.ShowDialog() == DialogResult.OK)
         {
             var hotkey = hotkeyDialog.Hotkey;
@@ -252,7 +253,7 @@ public partial class HotkeysPanel : UserControl
 
     public void AddHotkeyEntryToUI(Hotkey hotkey)
     {
-        var entry = new HotkeyEntry(hotkey);
+        var entry = new HotkeyListItem(hotkey);
         entry.EditRequested += (s, e) => HotkeyEditRequested?.Invoke(this, hotkey);
         entry.DeleteRequested += (s, e) => HotkeyDeleteRequested?.Invoke(this, hotkey);
 
