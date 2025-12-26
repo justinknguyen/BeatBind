@@ -68,6 +68,9 @@ namespace BeatBind
                 System.Windows.Forms.Application.EnableVisualStyles();
                 System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
 
+                // Set the application to stay running even when all forms are hidden
+                System.Windows.Forms.Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+
                 var host = CreateHostBuilder().Build();
 
                 // Start the host to initialize services (like Startup)
@@ -76,7 +79,10 @@ namespace BeatBind
                 using (host)
                 {
                     var mainForm = host.Services.GetRequiredService<MainForm>();
-                    System.Windows.Forms.Application.Run(mainForm);
+
+                    // Use ApplicationContext to keep the app running even when form is hidden
+                    var context = new ApplicationContext(mainForm);
+                    System.Windows.Forms.Application.Run(context);
                 }
 
                 // Stop the host when application exits

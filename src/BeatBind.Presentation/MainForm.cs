@@ -308,15 +308,25 @@ namespace BeatBind.Presentation
         /// </summary>
         private void SetupNotifyIcon()
         {
-            // Load icon from embedded resources or create a default icon
+            // Load icon from embedded resources or use default
             Icon? appIcon = null;
             try
             {
-                // Try to load the application icon
-                var iconStream = System.Reflection.Assembly.GetEntryAssembly()?.GetManifestResourceStream("icon.ico");
-                if (iconStream != null)
+                // Try to load the embedded icon resource
+                var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                var resourceName = "icon.ico"; // Logical name from EmbeddedResource
+
+                using (var iconStream = assembly.GetManifestResourceStream(resourceName))
                 {
-                    appIcon = new Icon(iconStream);
+                    if (iconStream != null)
+                    {
+                        appIcon = new Icon(iconStream);
+                        _logger.LogInformation("Successfully loaded application icon from embedded resources");
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Icon resource '{ResourceName}' not found in assembly", resourceName);
+                    }
                 }
             }
             catch (Exception ex)
@@ -324,9 +334,10 @@ namespace BeatBind.Presentation
                 _logger.LogWarning(ex, "Failed to load application icon from resources");
             }
 
-            // If we couldn't load from resources, create a simple default icon
+            // If we couldn't load from resources, use the system default
             if (appIcon == null)
             {
+                _logger.LogInformation("Using system default application icon");
                 appIcon = SystemIcons.Application;
             }
 
@@ -341,7 +352,13 @@ namespace BeatBind.Presentation
             };
 
             var contextMenu = new ContextMenuStrip();
-            contextMenu.Items.Add("Show", null, (s, e) => { Show(); WindowState = FormWindowState.Normal; });
+            contextMenu.Items.Add("Show", null, (s, e) =>
+            {
+                Show();
+                WindowState = FormWindowState.Normal;
+                Activate();
+                BringToFront();
+            });
             contextMenu.Items.Add("Exit", null, (s, e) =>
             {
                 _isExiting = true;
@@ -349,7 +366,15 @@ namespace BeatBind.Presentation
             });
 
             _notifyIcon.ContextMenuStrip = contextMenu;
-            _notifyIcon.DoubleClick += (s, e) => { Show(); WindowState = FormWindowState.Normal; };
+            _notifyIcon.DoubleClick += (s, e) =>
+            {
+                Show();
+                WindowState = FormWindowState.Normal;
+                Activate();
+                BringToFront();
+            };
+
+            _logger.LogInformation("System tray icon initialized successfully");
         }
 
         /// <summary>
