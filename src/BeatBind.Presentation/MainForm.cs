@@ -147,19 +147,22 @@ namespace BeatBind.Presentation
             // Create tabs
             var hotkeysTab = new TabPage("⌨️ Hotkeys")
             {
-                BackColor = Theme.CardBackground
+                BackColor = Theme.CardBackground,
+                ForeColor = Color.White
             };
             hotkeysTab.Controls.Add(_hotkeysPanel);
             
             var authTab = new TabPage("🔐 Authentication")
             {
-                BackColor = Theme.CardBackground
+                BackColor = Theme.CardBackground,
+                ForeColor = Color.White
             };
             authTab.Controls.Add(_authenticationPanel);
             
             var settingsTab = new TabPage("⚙️ Settings")
             {
-                BackColor = Theme.CardBackground
+                BackColor = Theme.CardBackground,
+                ForeColor = Color.White
             };
             settingsTab.Controls.Add(_settingsPanel);
 
