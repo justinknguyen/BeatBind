@@ -136,7 +136,7 @@ namespace BeatBind.Application.Services
                 case HotkeyAction.VolumeDown:
                     await _musicControlService.VolumeDownAsync();
                     break;
-                case HotkeyAction.Mute:
+                case HotkeyAction.MuteUnmute:
                     await _musicControlService.MuteAsync();
                     break;
                 case HotkeyAction.SaveTrack:

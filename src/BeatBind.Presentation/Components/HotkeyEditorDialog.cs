@@ -443,13 +443,13 @@ namespace BeatBind.Presentation.Components
                 HotkeyAction.PreviousTrack => "Previous Track",
                 HotkeyAction.VolumeUp => "Volume Up",
                 HotkeyAction.VolumeDown => "Volume Down",
-                HotkeyAction.Mute => "Mute/Unmute",
+                HotkeyAction.MuteUnmute => "Mute/Unmute",
+                HotkeyAction.SeekForward => "Seek Forward",
+                HotkeyAction.SeekBackward => "Seek Backward",
                 HotkeyAction.SaveTrack => "Save Track",
                 HotkeyAction.RemoveTrack => "Remove Track",
                 HotkeyAction.ToggleShuffle => "Toggle Shuffle",
                 HotkeyAction.ToggleRepeat => "Toggle Repeat",
-                HotkeyAction.SeekForward => "Seek Forward",
-                HotkeyAction.SeekBackward => "Seek Backward",
                 _ => action.ToString()
             };
         }

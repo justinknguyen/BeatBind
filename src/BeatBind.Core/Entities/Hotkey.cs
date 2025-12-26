@@ -26,12 +26,12 @@ namespace BeatBind.Core.Entities
         PreviousTrack,
         VolumeUp,
         VolumeDown,
-        Mute,
+        MuteUnmute,
+        SeekForward,
+        SeekBackward,
         SaveTrack,
         RemoveTrack,
         ToggleShuffle,
         ToggleRepeat,
-        SeekForward,
-        SeekBackward
     }
 }
