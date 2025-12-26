@@ -131,7 +131,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with [Spotify Web API](https://developer.spotify.com/documentation/web-api)
 - UI powered by [MaterialSkin](https://github.com/IgnaceMaes/MaterialSkin)
 - Architecture inspired by [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
-
----
-
-<p align="center">Made with ♥ by <a href="https://github.com/justinknguyen">Justin Nguyen</a></p>
