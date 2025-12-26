@@ -9,8 +9,6 @@ namespace BeatBind.Core.Entities
         public List<Hotkey> Hotkeys { get; set; } = new();
         public bool StartMinimized { get; set; }
         public bool MinimizeToTray { get; set; } = true;
-        public bool ShowNotifications { get; set; } = true;
-        public int DefaultVolume { get; set; } = 50;
 
         // Audio Control Settings
         public bool PreviousTrackRewindToStart { get; set; } = true;

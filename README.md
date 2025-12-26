@@ -104,6 +104,10 @@ Once configured, BeatBind runs in the background. Use your hotkeys from any appl
 
 Access settings anytime by right-clicking the system tray icon.
 
+### Configuration File
+
+Your settings are saved to `%APPDATA%\BeatBind\config.json`. You can edit this file directly if needed, or use the in-app settings interface.
+
 ## Contributing
 
 Contributions are welcome! This project follows Clean Architecture principles.
