@@ -3,7 +3,7 @@ using BeatBind.Core.Entities;
 using BeatBind.Presentation.Themes;
 using DomainModifierKeys = BeatBind.Core.Entities.ModifierKeys;
 
-namespace BeatBind.Presentation.Forms
+namespace BeatBind.Presentation.Panels
 {
     public partial class HotkeyEntry : UserControl
     {

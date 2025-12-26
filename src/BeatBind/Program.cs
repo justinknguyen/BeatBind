@@ -2,7 +2,7 @@ using BeatBind.Application.Behaviors;
 using BeatBind.Application.Services;
 using BeatBind.Core.Interfaces;
 using BeatBind.Infrastructure.Services;
-using BeatBind.Presentation.Forms;
+using BeatBind.Presentation;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;

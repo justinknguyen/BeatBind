@@ -2,7 +2,7 @@ using BeatBind.Core.Entities;
 using BeatBind.Presentation.Themes;
 using DomainModifierKeys = BeatBind.Core.Entities.ModifierKeys;
 
-namespace BeatBind.Presentation.Forms
+namespace BeatBind.Presentation
 {
     public partial class HotkeyConfigurationDialog : Form
     {
