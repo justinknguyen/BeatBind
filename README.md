@@ -89,6 +89,7 @@ BeatBind needs Spotify API credentials to control your music. This takes about 5
 2. Change the **Redirect Port** if needed
 3. Click **Authenticate with Spotify** to setup the Spotify connection
 4. Click **Save Configuration** to save your settings
+5. After adding Hotkeys, click **Save Configuration** to enable them
 
 ## Usage
 

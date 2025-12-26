@@ -35,8 +35,8 @@ namespace BeatBind.Application.Services
                 var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
                 if (playbackState == null)
                 {
-                    _logger.LogWarning("No playback state available");
-                    return false;
+                    _logger.LogInformation("No active playback, attempting to start playback");
+                    return await _spotifyService.PlayAsync();
                 }
 
                 return playbackState.IsPlaying

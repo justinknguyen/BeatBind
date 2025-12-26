@@ -308,9 +308,34 @@ namespace BeatBind.Presentation
         /// </summary>
         private void SetupNotifyIcon()
         {
+            // Load icon from embedded resources or create a default icon
+            Icon? appIcon = null;
+            try
+            {
+                // Try to load the application icon
+                var iconStream = System.Reflection.Assembly.GetEntryAssembly()?.GetManifestResourceStream("icon.ico");
+                if (iconStream != null)
+                {
+                    appIcon = new Icon(iconStream);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to load application icon from resources");
+            }
+
+            // If we couldn't load from resources, create a simple default icon
+            if (appIcon == null)
+            {
+                appIcon = SystemIcons.Application;
+            }
+
+            // Set the form icon
+            Icon = appIcon;
+
             _notifyIcon = new NotifyIcon
             {
-                Icon = Icon,  // Use the same icon as the form
+                Icon = appIcon,
                 Text = "BeatBind - Spotify Global Hotkeys",
                 Visible = true
             };
