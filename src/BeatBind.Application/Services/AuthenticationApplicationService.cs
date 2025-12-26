@@ -46,6 +46,8 @@ namespace BeatBind.Application.Services
 
                 if (authResult.Success)
                 {
+                    // Save the authentication tokens to configuration
+                    _authenticationService.SaveAuthentication(authResult);
                     _logger.LogInformation("User authenticated successfully");
                     return Result.Success();
                 }
