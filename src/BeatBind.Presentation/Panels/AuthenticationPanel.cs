@@ -1,16 +1,15 @@
-using BeatBind.Application.Commands;
+using BeatBind.Application.Services;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
 using BeatBind.Presentation.Themes;
 using MaterialSkin.Controls;
-using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace BeatBind.Presentation.Panels;
 
 public partial class AuthenticationPanel : UserControl
 {
-    private readonly IMediator _mediator;
+    private readonly AuthenticationApplicationService _authenticationService;
     private readonly IConfigurationService _configurationService;
     private readonly ILogger<AuthenticationPanel> _logger;
     
@@ -24,9 +23,9 @@ public partial class AuthenticationPanel : UserControl
     
     public bool IsAuthenticated => _isAuthenticated;
 
-    public AuthenticationPanel(IMediator mediator, IConfigurationService configurationService, ILogger<AuthenticationPanel> logger)
+    public AuthenticationPanel(AuthenticationApplicationService authenticationService, IConfigurationService configurationService, ILogger<AuthenticationPanel> logger)
     {
-        _mediator = mediator;
+        _authenticationService = authenticationService;
         _configurationService = configurationService;
         _logger = logger;
         
@@ -37,7 +36,7 @@ public partial class AuthenticationPanel : UserControl
     // Parameterless constructor for WinForms designer support
     public AuthenticationPanel()
     {
-        _mediator = null!;
+        _authenticationService = null!;
         _configurationService = null!;
         _logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<AuthenticationPanel>.Instance;
         
@@ -254,10 +253,10 @@ public partial class AuthenticationPanel : UserControl
             // Save credentials first if provided
             if (!string.IsNullOrEmpty(_clientIdTextBox.Text) && !string.IsNullOrEmpty(_clientSecretTextBox.Text))
             {
-                await _mediator.Send(new UpdateClientCredentialsCommand(_clientIdTextBox.Text, _clientSecretTextBox.Text));
+                await _authenticationService.UpdateClientCredentialsAsync(_clientIdTextBox.Text, _clientSecretTextBox.Text);
             }
 
-            var result = await _mediator.Send(new AuthenticateUserCommand());
+            var result = await _authenticationService.AuthenticateUserAsync();
             
             _isAuthenticated = result.IsSuccess;
             UpdateAuthenticationStatus();

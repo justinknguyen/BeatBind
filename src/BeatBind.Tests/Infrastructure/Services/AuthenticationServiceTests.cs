@@ -208,6 +208,88 @@ namespace BeatBind.Tests.Infrastructure.Services
         }
 
         [Fact]
+        public void GetStoredAuthentication_WithNoStoredTokens_ShouldReturnNull()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration
+            {
+                AccessToken = "",
+                RefreshToken = ""
+            };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+
+            // Act
+            var result = _service.GetStoredAuthentication();
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public void GetStoredAuthentication_WithStoredTokens_ShouldReturnAuthResult()
+        {
+            // Arrange
+            var expiresAt = DateTime.UtcNow.AddHours(1);
+            var config = new ApplicationConfiguration
+            {
+                AccessToken = "stored-token",
+                RefreshToken = "stored-refresh",
+                TokenExpiresAt = expiresAt
+            };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+
+            // Act
+            var result = _service.GetStoredAuthentication();
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.Success.Should().BeTrue();
+            result.AccessToken.Should().Be("stored-token");
+            result.RefreshToken.Should().Be("stored-refresh");
+        }
+
+        [Fact]
+        public void IsTokenValid_WithNullAuthResult_ShouldReturnFalse()
+        {
+            // Act
+            var result = _service.IsTokenValid(null!);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task RefreshTokenAsync_WhenNewRefreshTokenProvided_ShouldUseNewOne()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration
+            {
+                ClientId = "client-id",
+                ClientSecret = "client-secret"
+            };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+
+            var tokenResponse = """
+            {
+                "access_token": "new-access-token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+                "refresh_token": "new-refresh-token",
+                "scope": "user-read-playback-state"
+            }
+            """;
+
+            SetupHttpResponse(HttpStatusCode.OK, tokenResponse);
+
+            // Act
+            var result = await _service.RefreshTokenAsync("old-refresh-token");
+
+            // Assert
+            result.Success.Should().BeTrue();
+            result.RefreshToken.Should().Be("new-refresh-token");
+        }
+
+        [Fact]
         public async Task RefreshTokenAsync_WhenHttpClientThrows_ShouldReturnFailure()
         {
             // Arrange

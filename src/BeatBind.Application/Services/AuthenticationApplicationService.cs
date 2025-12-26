@@ -49,5 +49,29 @@ namespace BeatBind.Application.Services
                 return Result.Failure("An error occurred during authentication");
             }
         }
+
+        public async Task<Result> UpdateClientCredentialsAsync(string clientId, string clientSecret)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(clientId) || string.IsNullOrWhiteSpace(clientSecret))
+                {
+                    return Result.Failure("Client ID and Client Secret are required");
+                }
+
+                var config = _configurationService.GetConfiguration();
+                config.ClientId = clientId;
+                config.ClientSecret = clientSecret;
+                _configurationService.SaveConfiguration(config);
+
+                _logger.LogInformation("Client credentials updated successfully");
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating client credentials");
+                return Result.Failure("An error occurred while updating credentials");
+            }
+        }    
     }
 }

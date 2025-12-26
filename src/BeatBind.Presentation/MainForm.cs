@@ -17,6 +17,7 @@ namespace BeatBind.Presentation
     {
         private readonly MaterialSkinManager _materialSkinManager;
         private readonly MusicControlApplicationService _musicControlService;
+        private readonly AuthenticationApplicationService _authenticationService;
         private HotkeyApplicationService _hotkeyApplicationService = null!;
         private readonly IMediator _mediator;
         private readonly IConfigurationService _configurationService;
@@ -42,6 +43,7 @@ namespace BeatBind.Presentation
         {
             _materialSkinManager = MaterialSkinManager.Instance;
             _musicControlService = null!;
+            _authenticationService = null!;
             _mediator = null!;
             _configurationService = null!;
             _githubReleaseService = null!;
@@ -59,12 +61,14 @@ namespace BeatBind.Presentation
 
         public MainForm(
             MusicControlApplicationService musicControlService,
+            AuthenticationApplicationService authenticationService,
             IMediator mediator,
             IConfigurationService configurationService,
             IGithubReleaseService githubReleaseService,
             ILogger<MainForm> logger)
         {
             _musicControlService = musicControlService;
+            _authenticationService = authenticationService;
             _mediator = mediator;
             _configurationService = configurationService;
             _githubReleaseService = githubReleaseService;
@@ -130,7 +134,7 @@ namespace BeatBind.Presentation
             };
 
             // Create panels
-            _authenticationPanel = new AuthenticationPanel(_mediator, _configurationService, NullLogger<AuthenticationPanel>.Instance);
+            _authenticationPanel = new AuthenticationPanel(_authenticationService, _configurationService, NullLogger<AuthenticationPanel>.Instance);
             _hotkeysPanel = new HotkeysPanel(null, NullLogger<HotkeysPanel>.Instance);
             _settingsPanel = new SettingsPanel(_configurationService, NullLogger<SettingsPanel>.Instance);
 
