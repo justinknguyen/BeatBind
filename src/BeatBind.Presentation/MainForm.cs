@@ -316,19 +316,25 @@ namespace BeatBind.Presentation
             {
                 // Try to load the embedded icon resource
                 var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-                var resourceName = "icon.ico"; // Logical name from EmbeddedResource
+                // Find the resource name that ends with icon.ico to handle namespace variations
+                var resourceName = assembly.GetManifestResourceNames()
+                    .FirstOrDefault(n => n.EndsWith("icon.ico"));
 
-                using (var iconStream = assembly.GetManifestResourceStream(resourceName))
+                if (!string.IsNullOrEmpty(resourceName))
                 {
-                    if (iconStream != null)
+                    using (var iconStream = assembly.GetManifestResourceStream(resourceName))
                     {
-                        appIcon = new Icon(iconStream);
-                        _logger.LogInformation("Successfully loaded application icon from embedded resources");
+                        if (iconStream != null)
+                        {
+                            appIcon = new Icon(iconStream);
+                            _logger.LogInformation("Successfully loaded application icon from embedded resources: {ResourceName}", resourceName);
+                        }
                     }
-                    else
-                    {
-                        _logger.LogWarning("Icon resource '{ResourceName}' not found in assembly", resourceName);
-                    }
+                }
+
+                if (appIcon == null)
+                {
+                    _logger.LogWarning("Icon resource not found in assembly. Available resources: {Resources}", string.Join(", ", assembly.GetManifestResourceNames()));
                 }
             }
             catch (Exception ex)
