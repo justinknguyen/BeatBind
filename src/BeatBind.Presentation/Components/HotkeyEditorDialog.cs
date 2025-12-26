@@ -327,13 +327,30 @@ namespace BeatBind.Presentation.Components
         {
             var parts = new List<string>();
 
-            if (_ctrlCheckBox?.Checked == true) parts.Add("Ctrl");
-            if (_altCheckBox?.Checked == true) parts.Add("Alt");
-            if (_shiftCheckBox?.Checked == true) parts.Add("Shift");
-            if (_winCheckBox?.Checked == true) parts.Add("Win");
+            if (_ctrlCheckBox?.Checked == true)
+            {
+                parts.Add("Ctrl");
+            }
+
+            if (_altCheckBox?.Checked == true)
+            {
+                parts.Add("Alt");
+            }
+
+            if (_shiftCheckBox?.Checked == true)
+            {
+                parts.Add("Shift");
+            }
+
+            if (_winCheckBox?.Checked == true)
+            {
+                parts.Add("Win");
+            }
 
             if (_keyComboBox?.SelectedItem != null)
+            {
                 parts.Add(_keyComboBox.SelectedItem.ToString()!);
+            }
 
             if (_previewLabel != null)
             {
@@ -395,10 +412,26 @@ namespace BeatBind.Presentation.Components
                 Hotkey.IsEnabled = _enabledCheckBox.Checked;
 
                 var modifiers = DomainModifierKeys.None;
-                if (_ctrlCheckBox.Checked) modifiers |= DomainModifierKeys.Control;
-                if (_altCheckBox.Checked) modifiers |= DomainModifierKeys.Alt;
-                if (_shiftCheckBox.Checked) modifiers |= DomainModifierKeys.Shift;
-                if (_winCheckBox.Checked) modifiers |= DomainModifierKeys.Windows;
+                if (_ctrlCheckBox.Checked)
+                {
+                    modifiers |= DomainModifierKeys.Control;
+                }
+
+                if (_altCheckBox.Checked)
+                {
+                    modifiers |= DomainModifierKeys.Alt;
+                }
+
+                if (_shiftCheckBox.Checked)
+                {
+                    modifiers |= DomainModifierKeys.Shift;
+                }
+
+                if (_winCheckBox.Checked)
+                {
+                    modifiers |= DomainModifierKeys.Windows;
+                }
+
                 Hotkey.Modifiers = modifiers;
             }
             else

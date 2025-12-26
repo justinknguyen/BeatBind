@@ -37,13 +37,13 @@ namespace BeatBind
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             // Prevent multiple instances
             using var mutex = new Mutex(true, "BeatBindGlobalMutex", out var createdNew);
             if (!createdNew)
             {
-                MessageBox.Show("BeatBind is already running! Check the system tray.", "Already Running", 
+                MessageBox.Show("BeatBind is already running! Check the system tray.", "Already Running",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
@@ -54,7 +54,7 @@ namespace BeatBind
                 System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
 
                 var host = CreateHostBuilder().Build();
-                
+
                 // Start the host to initialize services (like Startup)
                 host.Start();
 
@@ -63,7 +63,7 @@ namespace BeatBind
                     var mainForm = host.Services.GetRequiredService<MainForm>();
                     System.Windows.Forms.Application.Run(mainForm);
                 }
-                
+
                 // Stop the host when application exits
                 host.StopAsync().GetAwaiter().GetResult();
             }
@@ -71,8 +71,8 @@ namespace BeatBind
             {
                 var logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger("BeatBind");
                 logger.LogCritical(ex, "Fatal error occurred");
-                
-                MessageBox.Show($"A fatal error occurred: {ex.Message}", "Fatal Error", 
+
+                MessageBox.Show($"A fatal error occurred: {ex.Message}", "Fatal Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -113,11 +113,11 @@ namespace BeatBind
             services.AddTransient<ConfigurationApplicationService>();
             services.AddTransient<MusicControlApplicationService>();
             services.AddTransient<HotkeyApplicationService>();
-            
+
             // MediatR
-            services.AddMediatR(cfg => 
+            services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssembly(typeof(Application.Abstractions.ICommand).Assembly));
-            
+
             // Validators
             services.AddValidatorsFromAssembly(typeof(Application.Abstractions.ICommand).Assembly);
 

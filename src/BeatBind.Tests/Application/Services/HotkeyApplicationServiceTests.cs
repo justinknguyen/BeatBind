@@ -24,7 +24,7 @@ namespace BeatBind.Tests.Application.Services
                 Mock.Of<IConfigurationService>(),
                 Mock.Of<ILogger<MusicControlApplicationService>>());
             _mockLogger = new Mock<ILogger<HotkeyApplicationService>>();
-            
+
             _service = new HotkeyApplicationService(
                 _mockHotkeyService.Object,
                 _mockConfigService.Object,
@@ -226,5 +226,6 @@ namespace BeatBind.Tests.Application.Services
 
             // Assert
             _mockHotkeyService.Verify(x => x.UnregisterAllHotkeys(), Times.Once);
-        }    }
+        }
+    }
 }

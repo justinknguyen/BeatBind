@@ -45,7 +45,7 @@ namespace BeatBind.Application.Behaviors
         {
             // Use reflection to call the appropriate Failure method
             var resultType = typeof(TResponse);
-            
+
             if (resultType.IsGenericType)
             {
                 var genericArgument = resultType.GetGenericArguments()[0];
@@ -55,7 +55,7 @@ namespace BeatBind.Application.Behaviors
                     .MakeGenericMethod(genericArgument);
                 return (TResponse)failureMethod.Invoke(null, new object[] { errorMessage })!;
             }
-            
+
             return (TResponse)(object)Result.Failure(errorMessage);
         }
     }

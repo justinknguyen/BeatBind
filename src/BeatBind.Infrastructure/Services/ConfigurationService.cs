@@ -21,7 +21,7 @@ namespace BeatBind.Infrastructure.Services
             _logger = logger;
             _configPath = configPath;
             _config = new ApplicationConfiguration();
-            
+
             EnsureConfigDirectoryExists();
             LoadConfiguration();
         }

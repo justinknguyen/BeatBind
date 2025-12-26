@@ -1,8 +1,8 @@
 using BeatBind.Application.Services;
 using BeatBind.Core.Entities;
-using BeatBind.Presentation.Themes;
-using BeatBind.Presentation.Helpers;
 using BeatBind.Presentation.Components;
+using BeatBind.Presentation.Helpers;
+using BeatBind.Presentation.Themes;
 using MaterialSkin.Controls;
 using Microsoft.Extensions.Logging;
 
@@ -11,12 +11,12 @@ namespace BeatBind.Presentation.Panels;
 public partial class HotkeysPanel : BasePanelControl
 {
     private readonly HotkeyApplicationService? _hotkeyApplicationService;
-    
+
     private MaterialLabel _lastHotkeyLabel = null!;
     private FlowLayoutPanel _hotkeyFlowPanel = null!;
     private MaterialButton _addHotkeyButton = null!;
-    private Dictionary<string, HotkeyListItem> _hotkeyEntries = new();
-    
+    private readonly Dictionary<string, HotkeyListItem> _hotkeyEntries = new();
+
     public event EventHandler<Hotkey>? HotkeyEditRequested;
     public event EventHandler<Hotkey>? HotkeyDeleteRequested;
     public event EventHandler? HotkeyAdded;
@@ -36,11 +36,11 @@ public partial class HotkeysPanel : BasePanelControl
     protected override void InitializeComponent()
     {
         SuspendLayout();
-        
+
         Dock = DockStyle.Fill;
         BackColor = Theme.CardBackground;
         Padding = new Padding(20);
-        
+
         ResumeLayout(false);
     }
 

@@ -1,5 +1,3 @@
-using BeatBind.Presentation.Themes;
-
 namespace BeatBind.Presentation.Helpers;
 
 /// <summary>

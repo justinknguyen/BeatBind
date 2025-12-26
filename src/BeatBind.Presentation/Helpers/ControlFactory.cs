@@ -134,10 +134,10 @@ public static class ControlFactory
     /// <param name="width">Control width (default: 80)</param>
     /// <returns>A configured NumericUpDown control</returns>
     public static NumericUpDown CreateNumericUpDown(
-        decimal minimum, 
-        decimal maximum, 
-        decimal value, 
-        decimal increment = 1, 
+        decimal minimum,
+        decimal maximum,
+        decimal value,
+        decimal increment = 1,
         int width = 80)
     {
         return new NumericUpDown

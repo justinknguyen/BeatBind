@@ -15,11 +15,11 @@ namespace BeatBind.Tests.Infrastructure.Services
         public ConfigurationServiceTests()
         {
             _mockLogger = new Mock<ILogger<ConfigurationService>>();
-            
+
             // Use a temporary directory for tests
             _testConfigPath = Path.Combine(Path.GetTempPath(), "BeatBindTests", Guid.NewGuid().ToString());
             Directory.CreateDirectory(_testConfigPath);
-            
+
             var configFilePath = Path.Combine(_testConfigPath, "config.json");
             _service = new ConfigurationService(_mockLogger.Object, configFilePath);
         }
@@ -146,7 +146,7 @@ namespace BeatBind.Tests.Infrastructure.Services
         {
             // Arrange - Start with empty config to ensure clean state
             _service.SaveConfiguration(new ApplicationConfiguration());
-            
+
             var hotkey1 = new Hotkey { Action = HotkeyAction.PlayPause, IsEnabled = true, KeyCode = 0xB3 };
             var hotkey2 = new Hotkey { Action = HotkeyAction.NextTrack, IsEnabled = true, KeyCode = 0xB0 };
             _service.AddHotkey(hotkey1);

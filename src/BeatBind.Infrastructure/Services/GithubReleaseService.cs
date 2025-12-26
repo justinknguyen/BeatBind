@@ -24,9 +24,11 @@ namespace BeatBind.Infrastructure.Services
             try
             {
                 var response = await _httpClient.GetFromJsonAsync<GithubReleaseResponse>(GITHUB_API_URL);
-                
+
                 if (response == null)
+                {
                     return null;
+                }
 
                 return new GithubRelease
                 {
@@ -59,7 +61,7 @@ namespace BeatBind.Infrastructure.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to compare versions: {CurrentVersion} vs {LatestVersion}", 
+                _logger.LogError(ex, "Failed to compare versions: {CurrentVersion} vs {LatestVersion}",
                     currentVersion, latestVersion);
                 return false;
             }

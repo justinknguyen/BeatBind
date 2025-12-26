@@ -7,7 +7,7 @@ namespace BeatBind.Core.Interfaces
         Task<bool> AuthenticateAsync();
         Task<bool> RefreshTokenAsync();
         bool IsAuthenticated { get; }
-        
+
         Task<PlaybackState?> GetCurrentPlaybackAsync();
         Task<bool> PlayAsync();
         Task<bool> PauseAsync();

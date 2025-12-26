@@ -1,10 +1,9 @@
+using System.Net;
 using BeatBind.Infrastructure.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-using System.Net;
-using System.Text.Json;
 
 namespace BeatBind.Tests.Infrastructure.Services
 {

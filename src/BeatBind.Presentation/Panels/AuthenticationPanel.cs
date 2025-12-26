@@ -1,8 +1,8 @@
 using BeatBind.Application.Services;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
-using BeatBind.Presentation.Themes;
 using BeatBind.Presentation.Helpers;
+using BeatBind.Presentation.Themes;
 using MaterialSkin.Controls;
 using Microsoft.Extensions.Logging;
 
@@ -12,7 +12,7 @@ public partial class AuthenticationPanel : BasePanelControl
 {
     private readonly AuthenticationApplicationService _authenticationService;
     private readonly IConfigurationService _configurationService;
-    
+
     private MaterialTextBox _clientIdTextBox = null!;
     private MaterialTextBox _clientSecretTextBox = null!;
     private MaterialTextBox _redirectPortTextBox = null!;
@@ -21,7 +21,7 @@ public partial class AuthenticationPanel : BasePanelControl
     private bool _isAuthenticated;
 
     public event EventHandler? AuthenticationStatusChanged;
-    
+
     public bool IsAuthenticated => _isAuthenticated;
 
     public AuthenticationPanel(AuthenticationApplicationService authenticationService, IConfigurationService configurationService, ILogger<AuthenticationPanel> logger)
@@ -132,7 +132,7 @@ public partial class AuthenticationPanel : BasePanelControl
             }
 
             var result = await _authenticationService.AuthenticateUserAsync();
-            
+
             _isAuthenticated = result.IsSuccess;
             UpdateAuthenticationStatus();
 
@@ -142,7 +142,7 @@ public partial class AuthenticationPanel : BasePanelControl
                 "Authentication successful!",
                 $"Authentication failed. {result.Error}"
             );
-            
+
             AuthenticationStatusChanged?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception ex)
@@ -165,7 +165,7 @@ public partial class AuthenticationPanel : BasePanelControl
             _clientIdTextBox.Text = config.ClientId;
             _clientSecretTextBox.Text = config.ClientSecret;
             _redirectPortTextBox.Text = config.RedirectPort.ToString();
-            
+
             UpdateAuthenticationStatus();
         }
         catch (Exception ex)
@@ -179,13 +179,13 @@ public partial class AuthenticationPanel : BasePanelControl
         var config = _configurationService.GetConfiguration();
         config.ClientId = _clientIdTextBox.Text;
         config.ClientSecret = _clientSecretTextBox.Text;
-        
+
         if (int.TryParse(_redirectPortTextBox.Text, out int port))
         {
             config.RedirectPort = port;
             config.RedirectUri = $"http://127.0.0.1:{port}/callback";
         }
-        
+
         return config;
     }
 
@@ -213,7 +213,7 @@ public partial class AuthenticationPanel : BasePanelControl
         try
         {
             var config = _configurationService.GetConfiguration();
-            
+
             if (!string.IsNullOrEmpty(config.AccessToken) && !string.IsNullOrEmpty(config.RefreshToken))
             {
                 if (config.TokenExpiresAt > DateTime.UtcNow.AddMinutes(5))
@@ -227,7 +227,7 @@ public partial class AuthenticationPanel : BasePanelControl
                     return true;
                 }
             }
-            
+
             return false;
         }
         catch (Exception ex)

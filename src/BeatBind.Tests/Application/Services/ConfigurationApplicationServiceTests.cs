@@ -17,7 +17,7 @@ namespace BeatBind.Tests.Application.Services
         {
             _mockConfigService = new Mock<IConfigurationService>();
             _mockLogger = new Mock<ILogger<ConfigurationApplicationService>>();
-            
+
             _service = new ConfigurationApplicationService(
                 _mockConfigService.Object,
                 _mockLogger.Object);

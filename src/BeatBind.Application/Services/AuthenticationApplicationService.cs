@@ -25,7 +25,7 @@ namespace BeatBind.Application.Services
             try
             {
                 var config = _configurationService.GetConfiguration();
-                
+
                 if (string.IsNullOrEmpty(config.ClientId) || string.IsNullOrEmpty(config.ClientSecret))
                 {
                     _logger.LogWarning("Client credentials are not configured");
@@ -33,13 +33,13 @@ namespace BeatBind.Application.Services
                 }
 
                 var authResult = await _authenticationService.AuthenticateAsync();
-                
+
                 if (authResult.Success)
                 {
                     _logger.LogInformation("User authenticated successfully");
                     return Result.Success();
                 }
-                
+
                 _logger.LogWarning("Authentication failed: {Error}", authResult.Error);
                 return Result.Failure(authResult.Error ?? "Authentication failed");
             }
@@ -72,6 +72,6 @@ namespace BeatBind.Application.Services
                 _logger.LogError(ex, "Error updating client credentials");
                 return Result.Failure("An error occurred while updating credentials");
             }
-        }    
+        }
     }
 }

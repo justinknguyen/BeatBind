@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -66,9 +65,9 @@ namespace BeatBind.Infrastructure.Services
                 }
 
                 _registeredHotkeys[hotkey.Id] = (hotkey, action);
-                _logger.LogInformation("Registered hotkey: {Action} (ID: {HotkeyId}, Key: {Key}, Modifiers: {Modifiers})", 
+                _logger.LogInformation("Registered hotkey: {Action} (ID: {HotkeyId}, Key: {Key}, Modifiers: {Modifiers})",
                     hotkey.Action, hotkey.Id, (Keys)hotkey.KeyCode, hotkey.Modifiers);
-                
+
                 return true;
             }
             catch (Exception ex)
@@ -91,7 +90,7 @@ namespace BeatBind.Infrastructure.Services
                 var hotkey = _registeredHotkeys[hotkeyId].Hotkey;
                 _registeredHotkeys.Remove(hotkeyId);
                 _logger.LogInformation("Unregistered hotkey: {Action} (ID: {HotkeyId})", hotkey.Action, hotkeyId);
-                
+
                 return true;
             }
             catch (Exception ex)
@@ -127,7 +126,7 @@ namespace BeatBind.Infrastructure.Services
             if (nCode >= 0)
             {
                 int vkCode = Marshal.ReadInt32(lParam);
-                
+
                 if (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN)
                 {
                     _pressedKeys.Add(vkCode);
@@ -143,7 +142,7 @@ namespace BeatBind.Infrastructure.Services
                     ClearInactiveHotkeys();
                 }
             }
-            
+
             // IMPORTANT: Always call next hook to NOT block the key event
             return CallNextHookEx(_hookId, nCode, wParam, lParam);
         }
@@ -151,25 +150,33 @@ namespace BeatBind.Infrastructure.Services
         private void CheckHotkeys()
         {
             var currentModifiers = GetCurrentModifiers();
-            
+
             foreach (var (hotkeyId, hotkeyInfo) in _registeredHotkeys)
             {
                 if (!hotkeyInfo.Hotkey.IsEnabled)
+                {
                     continue;
+                }
 
                 // Check if the main key is pressed
                 if (!_pressedKeys.Contains(hotkeyInfo.Hotkey.KeyCode))
+                {
                     continue;
+                }
 
                 // Check if modifiers match
                 if (hotkeyInfo.Hotkey.Modifiers != currentModifiers)
+                {
                     continue;
+                }
 
                 // Prevent flooding while the key is held down
                 lock (_activeLock)
                 {
                     if (_activeHotkeys.Contains(hotkeyId))
+                    {
                         continue;
+                    }
 
                     _activeHotkeys.Add(hotkeyId);
                 }
@@ -207,13 +214,24 @@ namespace BeatBind.Infrastructure.Services
             var modifiers = ModifierKeys.None;
 
             if (_pressedKeys.Contains((int)Keys.LControlKey) || _pressedKeys.Contains((int)Keys.RControlKey) || _pressedKeys.Contains((int)Keys.ControlKey))
+            {
                 modifiers |= ModifierKeys.Control;
+            }
+
             if (_pressedKeys.Contains((int)Keys.LMenu) || _pressedKeys.Contains((int)Keys.RMenu) || _pressedKeys.Contains((int)Keys.Menu))
+            {
                 modifiers |= ModifierKeys.Alt;
+            }
+
             if (_pressedKeys.Contains((int)Keys.LShiftKey) || _pressedKeys.Contains((int)Keys.RShiftKey) || _pressedKeys.Contains((int)Keys.ShiftKey))
+            {
                 modifiers |= ModifierKeys.Shift;
+            }
+
             if (_pressedKeys.Contains((int)Keys.LWin) || _pressedKeys.Contains((int)Keys.RWin))
+            {
                 modifiers |= ModifierKeys.Windows;
+            }
 
             return modifiers;
         }
@@ -223,7 +241,9 @@ namespace BeatBind.Infrastructure.Services
             lock (_activeLock)
             {
                 if (_activeHotkeys.Count == 0)
+                {
                     return;
+                }
 
                 var currentModifiers = GetCurrentModifiers();
                 var toRemove = new List<int>();
@@ -257,14 +277,14 @@ namespace BeatBind.Infrastructure.Services
             if (!_disposed)
             {
                 UnregisterAllHotkeys();
-                
+
                 if (_hookId != IntPtr.Zero)
                 {
                     UnhookWindowsHookEx(_hookId);
                     _hookId = IntPtr.Zero;
                     _logger.LogInformation("Keyboard hook uninstalled");
                 }
-                
+
                 _disposed = true;
             }
         }

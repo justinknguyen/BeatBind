@@ -91,7 +91,7 @@ namespace BeatBind.Core.Entities
                 55 => "7",
                 56 => "8",
                 57 => "9",
-                
+
                 // Punctuation & Symbols
                 186 => "; (Semicolon)",
                 187 => "= (Plus)",
@@ -104,7 +104,7 @@ namespace BeatBind.Core.Entities
                 220 => "\\ (Backslash)",
                 221 => "] (Close Bracket)",
                 222 => "' (Quote)",
-                
+
                 // Numpad (96-105)
                 96 => "Numpad 0",
                 97 => "Numpad 1",
@@ -116,7 +116,7 @@ namespace BeatBind.Core.Entities
                 103 => "Numpad 7",
                 104 => "Numpad 8",
                 105 => "Numpad 9",
-                
+
                 // Media Keys
                 179 => "Media Play/Pause",
                 176 => "Media Next Track",
@@ -125,7 +125,7 @@ namespace BeatBind.Core.Entities
                 173 => "Volume Mute",
                 175 => "Volume Up",
                 174 => "Volume Down",
-                
+
                 // Browser Keys
                 166 => "Browser Back",
                 167 => "Browser Forward",
@@ -134,7 +134,7 @@ namespace BeatBind.Core.Entities
                 170 => "Browser Search",
                 171 => "Browser Favorites",
                 172 => "Browser Home",
-                
+
                 // Navigation
                 37 => "← (Left Arrow)",
                 39 => "→ (Right Arrow)",
@@ -142,13 +142,13 @@ namespace BeatBind.Core.Entities
                 40 => "↓ (Down Arrow)",
                 33 => "Page Up",
                 34 => "Page Down",
-                
+
                 // Letters (65-90 = A-Z)
                 >= 65 and <= 90 => ((char)keyCode).ToString(),
-                
+
                 // Function Keys (112-123 = F1-F12)
                 >= 112 and <= 123 => $"F{keyCode - 111}",
-                
+
                 // Special Keys
                 32 => "Space",
                 13 => "Enter",
@@ -158,7 +158,7 @@ namespace BeatBind.Core.Entities
                 35 => "End",
                 45 => "Insert",
                 46 => "Delete",
-                
+
                 // Default: return the key code
                 _ => $"Key{keyCode}"
             };

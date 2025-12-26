@@ -1,7 +1,7 @@
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
-using BeatBind.Presentation.Themes;
 using BeatBind.Presentation.Helpers;
+using BeatBind.Presentation.Themes;
 using MaterialSkin.Controls;
 using Microsoft.Extensions.Logging;
 
@@ -10,7 +10,7 @@ namespace BeatBind.Presentation.Panels;
 public partial class SettingsPanel : BasePanelControl
 {
     private readonly IConfigurationService _configurationService;
-    
+
     private MaterialCheckbox _startupCheckBox = null!;
     private MaterialCheckbox _minimizeCheckBox = null!;
     private MaterialCheckbox _rewindCheckBox = null!;

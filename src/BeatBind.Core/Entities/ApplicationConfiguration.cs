@@ -11,7 +11,7 @@ namespace BeatBind.Core.Entities
         public bool MinimizeToTray { get; set; } = true;
         public bool ShowNotifications { get; set; } = true;
         public int DefaultVolume { get; set; } = 50;
-        
+
         // Audio Control Settings
         public bool PreviousTrackRewindToStart { get; set; } = true;
         public int VolumeSteps { get; set; } = 10;

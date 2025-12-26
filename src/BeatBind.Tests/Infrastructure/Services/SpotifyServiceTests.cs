@@ -1,3 +1,4 @@
+using System.Net;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
 using BeatBind.Infrastructure.Services;
@@ -5,7 +6,6 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-using System.Net;
 
 namespace BeatBind.Tests.Infrastructure.Services
 {
@@ -428,7 +428,7 @@ namespace BeatBind.Tests.Infrastructure.Services
                     "SendAsync",
                     ItExpr.IsAny<HttpRequestMessage>(),
                     ItExpr.IsAny<CancellationToken>());
-            
+
             sequence.ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
@@ -486,7 +486,7 @@ namespace BeatBind.Tests.Infrastructure.Services
                     "SendAsync",
                     ItExpr.IsAny<HttpRequestMessage>(),
                     ItExpr.IsAny<CancellationToken>());
-            
+
             sequence.ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
@@ -525,7 +525,7 @@ namespace BeatBind.Tests.Infrastructure.Services
                     "SendAsync",
                     ItExpr.IsAny<HttpRequestMessage>(),
                     ItExpr.IsAny<CancellationToken>());
-            
+
             sequence.ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
@@ -564,7 +564,7 @@ namespace BeatBind.Tests.Infrastructure.Services
                     "SendAsync",
                     ItExpr.IsAny<HttpRequestMessage>(),
                     ItExpr.IsAny<CancellationToken>());
-            
+
             sequence.ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
@@ -677,7 +677,7 @@ namespace BeatBind.Tests.Infrastructure.Services
             };
             _mockAuthService.Setup(x => x.AuthenticateAsync()).ReturnsAsync(authResult);
             _mockAuthService.Setup(x => x.IsTokenValid(It.IsAny<AuthenticationResult>())).Returns(true);
-            
+
             await _service.AuthenticateAsync();
         }
 

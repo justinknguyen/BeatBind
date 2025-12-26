@@ -2,15 +2,15 @@ using System.ComponentModel;
 using BeatBind.Application.Services;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
-using BeatBind.Presentation.Themes;
-using BeatBind.Presentation.Panels;
 using BeatBind.Presentation.Components;
 using BeatBind.Presentation.Helpers;
+using BeatBind.Presentation.Panels;
+using BeatBind.Presentation.Themes;
+using MaterialSkin;
+using MaterialSkin.Controls;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using MaterialSkin;
-using MaterialSkin.Controls;
 
 namespace BeatBind.Presentation
 {
@@ -25,7 +25,7 @@ namespace BeatBind.Presentation
         private readonly IGithubReleaseService _githubReleaseService;
         private readonly ILogger<MainForm> _logger;
         private const string CURRENT_VERSION = "2.0.0";
-        
+
         private NotifyIcon? _notifyIcon;
         private Panel? _updateNotificationPanel;
         private bool _isExiting;
@@ -33,7 +33,7 @@ namespace BeatBind.Presentation
         // UI Controls
         private MaterialTabControl _mainTabControl = null!;
         private MaterialButton _saveConfigButton = null!;
-        
+
         // Panel controls
         private AuthenticationPanel _authenticationPanel = null!;
         private HotkeysPanel _hotkeysPanel = null!;
@@ -151,14 +151,14 @@ namespace BeatBind.Presentation
                 ForeColor = Color.White
             };
             hotkeysTab.Controls.Add(_hotkeysPanel);
-            
+
             var authTab = new TabPage("🔐 Authentication")
             {
                 BackColor = Theme.CardBackground,
                 ForeColor = Color.White
             };
             authTab.Controls.Add(_authenticationPanel);
-            
+
             var settingsTab = new TabPage("⚙️ Settings")
             {
                 BackColor = Theme.CardBackground,
@@ -222,7 +222,7 @@ namespace BeatBind.Presentation
             _saveConfigButton.Click += SaveConfigButton_Click;
 
             // Center the button using ThemeHelper
-            saveButtonContainer.Resize += (s, e) => 
+            saveButtonContainer.Resize += (s, e) =>
             {
                 ThemeHelper.CenterControl(_saveConfigButton, saveButtonContainer);
             };
@@ -232,7 +232,7 @@ namespace BeatBind.Presentation
             formLayout.Controls.Add(tabSelector, 0, 0);
             formLayout.Controls.Add(tabContainer, 0, 1);
             formLayout.Controls.Add(saveButtonContainer, 0, 2);
-            
+
             Controls.Add(formLayout);
 
             ResumeLayout(false);
@@ -272,7 +272,7 @@ namespace BeatBind.Presentation
 
             var contextMenu = new ContextMenuStrip();
             contextMenu.Items.Add("Show", null, (s, e) => { Show(); WindowState = FormWindowState.Normal; });
-            contextMenu.Items.Add("Exit", null, (s, e) => 
+            contextMenu.Items.Add("Exit", null, (s, e) =>
             {
                 _isExiting = true;
                 System.Windows.Forms.Application.Exit();
@@ -287,7 +287,7 @@ namespace BeatBind.Presentation
             try
             {
                 var config = _configurationService.GetConfiguration();
-                
+
                 // Load configuration into panels
                 _authenticationPanel.LoadConfiguration();
                 _settingsPanel.LoadConfiguration();
@@ -374,7 +374,7 @@ namespace BeatBind.Presentation
             try
             {
                 var latestRelease = await _githubReleaseService.GetLatestReleaseAsync();
-                
+
                 if (latestRelease == null)
                 {
                     _logger.LogWarning("Could not fetch latest release information");
@@ -434,7 +434,7 @@ namespace BeatBind.Presentation
                 Height = 30
             };
             downloadButton.FlatAppearance.BorderSize = 0;
-            downloadButton.Click += (s, e) => 
+            downloadButton.Click += (s, e) =>
             {
                 MessageBoxHelper.OpenUrl(release.Url, ex => _logger.LogError(ex, "Failed to open release URL"));
             };
@@ -453,7 +453,7 @@ namespace BeatBind.Presentation
                 Dock = DockStyle.Right
             };
             closeButton.FlatAppearance.BorderSize = 0;
-            closeButton.Click += (s, e) => 
+            closeButton.Click += (s, e) =>
             {
                 Controls.Remove(_updateNotificationPanel);
                 _updateNotificationPanel?.Dispose();

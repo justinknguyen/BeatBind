@@ -29,7 +29,7 @@ namespace BeatBind.Application.Services
                     return false;
                 }
 
-                return playbackState.IsPlaying 
+                return playbackState.IsPlaying
                     ? await _spotifyService.PauseAsync()
                     : await _spotifyService.PlayAsync();
             }
@@ -58,7 +58,7 @@ namespace BeatBind.Application.Services
             try
             {
                 var config = _configurationService.GetConfiguration();
-                
+
                 if (config.PreviousTrackRewindToStart)
                 {
                     var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
@@ -68,7 +68,7 @@ namespace BeatBind.Application.Services
                         return await _spotifyService.SeekToPositionAsync(0);
                     }
                 }
-                
+
                 return await _spotifyService.PreviousTrackAsync();
             }
             catch (Exception ex)

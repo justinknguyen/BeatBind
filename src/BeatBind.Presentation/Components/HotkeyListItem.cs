@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using BeatBind.Core.Entities;
-using BeatBind.Presentation.Themes;
 using BeatBind.Presentation.Helpers;
+using BeatBind.Presentation.Themes;
 using DomainModifierKeys = BeatBind.Core.Entities.ModifierKeys;
 
 namespace BeatBind.Presentation.Components
@@ -136,7 +136,7 @@ namespace BeatBind.Presentation.Components
             Controls.Add(cardPanel);
         }
 
-        public void UpdateHotkey(Hotkey hotkey)
+        public void UpdateHotkey(Hotkey _)
         {
             // Update the internal reference (note: this is a simplified approach)
             // In a more robust implementation, you'd need to properly handle the update
@@ -162,13 +162,24 @@ namespace BeatBind.Presentation.Components
             var parts = new List<string>();
 
             if (hotkey.Modifiers.HasFlag(DomainModifierKeys.Control))
+            {
                 parts.Add("Ctrl");
+            }
+
             if (hotkey.Modifiers.HasFlag(DomainModifierKeys.Alt))
+            {
                 parts.Add("Alt");
+            }
+
             if (hotkey.Modifiers.HasFlag(DomainModifierKeys.Shift))
+            {
                 parts.Add("Shift");
+            }
+
             if (hotkey.Modifiers.HasFlag(DomainModifierKeys.Windows))
+            {
                 parts.Add("Win");
+            }
 
             parts.Add(Hotkey.GetKeyDisplayName(hotkey.KeyCode));
 

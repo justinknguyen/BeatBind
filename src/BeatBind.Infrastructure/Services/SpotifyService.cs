@@ -11,7 +11,7 @@ namespace BeatBind.Infrastructure.Services
         private readonly HttpClient _httpClient;
         private readonly ILogger<SpotifyService> _logger;
         private readonly IAuthenticationService _authenticationService;
-        
+
         private AuthenticationResult? _currentAuth;
 
         public SpotifyService(
@@ -22,7 +22,7 @@ namespace BeatBind.Infrastructure.Services
             _httpClient = httpClient;
             _logger = logger;
             _authenticationService = authenticationService;
-            
+
             // Try to load stored authentication on startup
             LoadStoredAuthentication();
         }
@@ -72,7 +72,7 @@ namespace BeatBind.Infrastructure.Services
             try
             {
                 _currentAuth = await _authenticationService.AuthenticateAsync();
-                
+
                 if (_currentAuth.Success && !string.IsNullOrEmpty(_currentAuth.AccessToken))
                 {
                     // Save the authentication tokens for future use
@@ -103,14 +103,14 @@ namespace BeatBind.Infrastructure.Services
                 }
 
                 _currentAuth = await _authenticationService.RefreshTokenAsync(_currentAuth.RefreshToken);
-                
+
                 if (_currentAuth.Success)
                 {
                     // Save the refreshed tokens
                     _authenticationService.SaveAuthentication(_currentAuth);
                     _logger.LogInformation("Successfully refreshed and saved authentication tokens");
                 }
-                
+
                 return _currentAuth.Success;
             }
             catch (Exception ex)
@@ -124,7 +124,10 @@ namespace BeatBind.Infrastructure.Services
         {
             try
             {
-                if (!await EnsureValidTokenAsync()) return null;
+                if (!await EnsureValidTokenAsync())
+                {
+                    return null;
+                }
 
                 var url = "https://api.spotify.com/v1/me/player";
                 _logger.LogInformation("GET {Url}", url);
@@ -132,7 +135,7 @@ namespace BeatBind.Infrastructure.Services
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _currentAuth!.AccessToken);
 
                 var response = await _httpClient.SendAsync(request);
-                
+
                 if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
                 {
                     return null; // No active device
@@ -180,12 +183,15 @@ namespace BeatBind.Infrastructure.Services
         {
             try
             {
-                if (!await EnsureValidTokenAsync()) return false;
+                if (!await EnsureValidTokenAsync())
+                {
+                    return false;
+                }
 
                 volume = Math.Clamp(volume, 0, 100);
                 var url = $"https://api.spotify.com/v1/me/player/volume?volume_percent={volume}";
                 _logger.LogInformation("PUT {Url}", url);
-                
+
                 var request = new HttpRequestMessage(HttpMethod.Put, url);
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _currentAuth!.AccessToken);
 
@@ -204,11 +210,14 @@ namespace BeatBind.Infrastructure.Services
             try
             {
                 var playback = await GetCurrentPlaybackAsync();
-                if (playback == null) return false;
+                if (playback == null)
+                {
+                    return false;
+                }
 
                 var newShuffleState = !playback.ShuffleState;
                 var url = $"https://api.spotify.com/v1/me/player/shuffle?state={newShuffleState.ToString().ToLower()}";
-                
+
                 return await SendPlayerCommandAsync(url, HttpMethod.Put, useFullUrl: true);
             }
             catch (Exception ex)
@@ -223,7 +232,10 @@ namespace BeatBind.Infrastructure.Services
             try
             {
                 var playback = await GetCurrentPlaybackAsync();
-                if (playback == null) return false;
+                if (playback == null)
+                {
+                    return false;
+                }
 
                 var newRepeatState = playback.RepeatState switch
                 {
@@ -248,11 +260,14 @@ namespace BeatBind.Infrastructure.Services
             try
             {
                 var playback = await GetCurrentPlaybackAsync();
-                if (playback?.CurrentTrack == null) return false;
+                if (playback?.CurrentTrack == null)
+                {
+                    return false;
+                }
 
                 var url = "https://api.spotify.com/v1/me/tracks";
                 var json = JsonSerializer.Serialize(new { ids = new[] { playback.CurrentTrack.Id } });
-                
+
                 return await SendPlayerCommandAsync(url, HttpMethod.Put, json, useFullUrl: true);
             }
             catch (Exception ex)
@@ -267,11 +282,14 @@ namespace BeatBind.Infrastructure.Services
             try
             {
                 var playback = await GetCurrentPlaybackAsync();
-                if (playback?.CurrentTrack == null) return false;
+                if (playback?.CurrentTrack == null)
+                {
+                    return false;
+                }
 
                 var url = "https://api.spotify.com/v1/me/tracks";
                 var json = JsonSerializer.Serialize(new { ids = new[] { playback.CurrentTrack.Id } });
-                
+
                 return await SendPlayerCommandAsync(url, HttpMethod.Delete, json, useFullUrl: true);
             }
             catch (Exception ex)
@@ -285,12 +303,15 @@ namespace BeatBind.Infrastructure.Services
         {
             try
             {
-                if (!await EnsureValidTokenAsync()) return false;
+                if (!await EnsureValidTokenAsync())
+                {
+                    return false;
+                }
 
                 positionMs = Math.Max(0, positionMs);
                 var url = $"https://api.spotify.com/v1/me/player/seek?position_ms={positionMs}";
                 _logger.LogInformation("PUT {Url}", url);
-                
+
                 var request = new HttpRequestMessage(HttpMethod.Put, url);
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _currentAuth!.AccessToken);
 
@@ -323,7 +344,10 @@ namespace BeatBind.Infrastructure.Services
         {
             try
             {
-                if (!await EnsureValidTokenAsync()) return false;
+                if (!await EnsureValidTokenAsync())
+                {
+                    return false;
+                }
 
                 var url = useFullUrl ? endpoint : $"https://api.spotify.com/v1/me/player/{endpoint}";
                 _logger.LogInformation("{Method} {Url}", method.Method, url);
@@ -370,7 +394,7 @@ namespace BeatBind.Infrastructure.Services
             {
                 var durationMs = item.GetProperty("duration_ms").GetInt32();
                 playbackState.DurationMs = durationMs;
-                
+
                 playbackState.CurrentTrack = new Track
                 {
                     Id = item.GetProperty("id").GetString() ?? string.Empty,

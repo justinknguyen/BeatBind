@@ -33,7 +33,7 @@ namespace BeatBind.Tests.Application.Behaviors
 
             // Assert
             result.Should().Be(expectedResult);
-            
+
             // Verify processing log
             _loggerMock.Verify(
                 x => x.Log(
@@ -68,7 +68,7 @@ namespace BeatBind.Tests.Application.Behaviors
 
             // Assert
             result.Should().Be(expectedResult);
-            
+
             // Verify warning log
             _loggerMock.Verify(
                 x => x.Log(

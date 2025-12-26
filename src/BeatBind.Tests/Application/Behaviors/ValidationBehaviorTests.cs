@@ -44,7 +44,7 @@ namespace BeatBind.Tests.Application.Behaviors
             // Arrange
             var request = new TestRequestForValidation();
             var expectedResult = Result.Success();
-            
+
             _validatorMock
                 .Setup(x => x.ValidateAsync(It.IsAny<ValidationContext<TestRequestForValidation>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ValidationResult());
