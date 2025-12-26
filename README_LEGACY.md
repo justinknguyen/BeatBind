@@ -22,7 +22,7 @@ This background Python Windows application utilizes the [global_hotkeys](https:/
 You'll create your own Spotify API to control your Spotify application. YOU are the one in control. 
 
 <p align="center">
-    <img src="./images/view.png" width="90%" height="90%"> <br> <br>
+    <img src="./images/view_legacy.png" width="90%" height="90%"> <br> <br>
 </p>
 
 This app does not control your Spotify locally. It sends an API request to Spotify over the internet to control your listening experience, so expect a slight delay. The delay experienced can vary depending on your internet speed.
