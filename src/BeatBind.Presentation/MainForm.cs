@@ -2,6 +2,7 @@ using System.ComponentModel;
 using BeatBind.Application.Services;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
+using BeatBind.Infrastructure.Helpers;
 using BeatBind.Presentation.Components;
 using BeatBind.Presentation.Helpers;
 using BeatBind.Presentation.Panels;
@@ -99,6 +100,7 @@ namespace BeatBind.Presentation
             InitializeComponent();
             SetupNotifyIcon();
             LoadConfiguration();
+            ApplyStartupSettings();
         }
 
         /// <summary>
@@ -314,19 +316,25 @@ namespace BeatBind.Presentation
             {
                 // Try to load the embedded icon resource
                 var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-                var resourceName = "icon.ico"; // Logical name from EmbeddedResource
+                // Find the resource name that ends with icon.ico to handle namespace variations
+                var resourceName = assembly.GetManifestResourceNames()
+                    .FirstOrDefault(n => n.EndsWith("icon.ico"));
 
-                using (var iconStream = assembly.GetManifestResourceStream(resourceName))
+                if (!string.IsNullOrEmpty(resourceName))
                 {
-                    if (iconStream != null)
+                    using (var iconStream = assembly.GetManifestResourceStream(resourceName))
                     {
-                        appIcon = new Icon(iconStream);
-                        _logger.LogInformation("Successfully loaded application icon from embedded resources");
+                        if (iconStream != null)
+                        {
+                            appIcon = new Icon(iconStream);
+                            _logger.LogInformation("Successfully loaded application icon from embedded resources: {ResourceName}", resourceName);
+                        }
                     }
-                    else
-                    {
-                        _logger.LogWarning("Icon resource '{ResourceName}' not found in assembly", resourceName);
-                    }
+                }
+
+                if (appIcon == null)
+                {
+                    _logger.LogWarning("Icon resource not found in assembly. Available resources: {Resources}", string.Join(", ", assembly.GetManifestResourceNames()));
                 }
             }
             catch (Exception ex)
@@ -402,6 +410,29 @@ namespace BeatBind.Presentation
         }
 
         /// <summary>
+        /// Applies startup settings including starting minimized to tray.
+        /// </summary>
+        private void ApplyStartupSettings()
+        {
+            try
+            {
+                var config = _configurationService.GetConfiguration();
+
+                // If StartMinimized is enabled, start the app minimized to system tray
+                if (config.StartMinimized)
+                {
+                    _logger.LogInformation("Starting minimized to system tray");
+                    WindowState = FormWindowState.Minimized;
+                    Hide();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to apply startup settings");
+            }
+        }
+
+        /// <summary>
         /// Handles save configuration button click event. Saves all settings and reloads hotkeys.
         /// </summary>
         /// <param name="sender">Event sender</param>
@@ -415,6 +446,9 @@ namespace BeatBind.Presentation
                 config.Hotkeys = _hotkeysPanel.GetHotkeysFromUI();
 
                 _configurationService.SaveConfiguration(config);
+
+                // Apply Windows startup setting
+                StartupHelper.SetStartupWithWindows(config.StartWithWindows, _logger);
 
                 // Reload hotkeys to ensure they're properly registered
                 _hotkeyApplicationService?.ReloadHotkeys();
