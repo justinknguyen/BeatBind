@@ -7,25 +7,25 @@ using Moq;
 
 namespace BeatBind.Tests.Application.Services
 {
-    public class HotkeyManagementServiceTests
+    public class HotkeyApplicationServiceTests
     {
         private readonly Mock<IHotkeyService> _mockHotkeyService;
         private readonly Mock<IConfigurationService> _mockConfigService;
-        private readonly Mock<MusicControlService> _mockMusicControlService;
-        private readonly Mock<ILogger<HotkeyManagementService>> _mockLogger;
-        private readonly HotkeyManagementService _service;
+        private readonly Mock<MusicControlApplicationService> _mockMusicControlService;
+        private readonly Mock<ILogger<HotkeyApplicationService>> _mockLogger;
+        private readonly HotkeyApplicationService _service;
 
-        public HotkeyManagementServiceTests()
+        public HotkeyApplicationServiceTests()
         {
             _mockHotkeyService = new Mock<IHotkeyService>();
             _mockConfigService = new Mock<IConfigurationService>();
-            _mockMusicControlService = new Mock<MusicControlService>(
+            _mockMusicControlService = new Mock<MusicControlApplicationService>(
                 Mock.Of<ISpotifyService>(),
                 Mock.Of<IConfigurationService>(),
-                Mock.Of<ILogger<MusicControlService>>());
-            _mockLogger = new Mock<ILogger<HotkeyManagementService>>();
+                Mock.Of<ILogger<MusicControlApplicationService>>());
+            _mockLogger = new Mock<ILogger<HotkeyApplicationService>>();
             
-            _service = new HotkeyManagementService(
+            _service = new HotkeyApplicationService(
                 _mockHotkeyService.Object,
                 _mockConfigService.Object,
                 _mockMusicControlService.Object,

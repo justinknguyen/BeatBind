@@ -7,19 +7,19 @@ using Moq;
 
 namespace BeatBind.Tests.Application.Services
 {
-    public class MusicControlServiceTests
+    public class MusicControlApplicationServiceTests
     {
         private readonly Mock<ISpotifyService> _mockSpotifyService;
         private readonly Mock<IConfigurationService> _mockConfigService;
-        private readonly Mock<ILogger<MusicControlService>> _mockLogger;
-        private readonly MusicControlService _service;
+        private readonly Mock<ILogger<MusicControlApplicationService>> _mockLogger;
+        private readonly MusicControlApplicationService _service;
 
-        public MusicControlServiceTests()
+        public MusicControlApplicationServiceTests()
         {
             _mockSpotifyService = new Mock<ISpotifyService>();
             _mockConfigService = new Mock<IConfigurationService>();
-            _mockLogger = new Mock<ILogger<MusicControlService>>();
-            _service = new MusicControlService(_mockSpotifyService.Object, _mockConfigService.Object, _mockLogger.Object);
+            _mockLogger = new Mock<ILogger<MusicControlApplicationService>>();
+            _service = new MusicControlApplicationService(_mockSpotifyService.Object, _mockConfigService.Object, _mockLogger.Object);
         }
 
         [Fact]

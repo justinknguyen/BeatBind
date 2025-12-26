@@ -14,17 +14,17 @@ namespace BeatBind
     internal sealed class Startup : IHostedService
     {
         private readonly MainForm _mainForm;
-        private readonly HotkeyManagementService _hotkeyManagementService;
+        private readonly HotkeyApplicationService _hotkeyApplicationService;
 
-        public Startup(MainForm mainForm, HotkeyManagementService hotkeyManagementService)
+        public Startup(MainForm mainForm, HotkeyApplicationService hotkeyApplicationService)
         {
             _mainForm = mainForm;
-            _hotkeyManagementService = hotkeyManagementService;
+            _hotkeyApplicationService = hotkeyApplicationService;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _mainForm.SetHotkeyManagementService(_hotkeyManagementService);
+            _mainForm.SetHotkeyApplicationService(_hotkeyApplicationService);
             return Task.CompletedTask;
         }
 
@@ -100,15 +100,19 @@ namespace BeatBind
 
         private static void ConfigureInfrastructure(IServiceCollection services)
         {
-            services.AddSingleton<IConfigurationService, JsonConfigurationService>();
+            services.AddSingleton<IConfigurationService, ConfigurationService>();
             services.AddHttpClient<ISpotifyService, SpotifyService>();
-            services.AddHttpClient<IAuthenticationService, SpotifyAuthenticationService>();
+            services.AddHttpClient<IAuthenticationService, AuthenticationService>();
             services.AddHttpClient<IGithubReleaseService, GithubReleaseService>();
         }
 
         private static void ConfigureApplication(IServiceCollection services)
         {
-            services.AddTransient<MusicControlService>();
+            // Application Services
+            services.AddTransient<AuthenticationApplicationService>();
+            services.AddTransient<ConfigurationApplicationService>();
+            services.AddTransient<MusicControlApplicationService>();
+            services.AddTransient<HotkeyApplicationService>();
             
             // MediatR
             services.AddMediatR(cfg => 
@@ -126,14 +130,13 @@ namespace BeatBind
         {
             services.AddSingleton<MainForm>();
 
-            services.AddSingleton<IHotkeyService, WindowsHotkeyService>(sp =>
+            services.AddSingleton<IHotkeyService, HotkeyService>(sp =>
             {
                 var mainForm = sp.GetRequiredService<MainForm>();
-                var logger = sp.GetRequiredService<ILogger<WindowsHotkeyService>>();
-                return new WindowsHotkeyService(mainForm, logger);
+                var logger = sp.GetRequiredService<ILogger<HotkeyService>>();
+                return new HotkeyService(mainForm, logger);
             });
 
-            services.AddSingleton<HotkeyManagementService>();
             services.AddSingleton<IHostedService, Startup>();
         }
     }

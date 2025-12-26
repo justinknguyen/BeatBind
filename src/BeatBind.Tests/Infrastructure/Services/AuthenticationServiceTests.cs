@@ -9,22 +9,22 @@ using System.Net;
 
 namespace BeatBind.Tests.Infrastructure.Services
 {
-    public class SpotifyAuthenticationServiceTests : IDisposable
+    public class AuthenticationServiceTests : IDisposable
     {
-        private readonly Mock<ILogger<SpotifyAuthenticationService>> _mockLogger;
+        private readonly Mock<ILogger<AuthenticationService>> _mockLogger;
         private readonly Mock<IConfigurationService> _mockConfigService;
         private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler;
         private readonly HttpClient _httpClient;
-        private readonly SpotifyAuthenticationService _service;
+        private readonly AuthenticationService _service;
 
-        public SpotifyAuthenticationServiceTests()
+        public AuthenticationServiceTests()
         {
-            _mockLogger = new Mock<ILogger<SpotifyAuthenticationService>>();
+            _mockLogger = new Mock<ILogger<AuthenticationService>>();
             _mockConfigService = new Mock<IConfigurationService>();
             _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             _httpClient = new HttpClient(_mockHttpMessageHandler.Object);
 
-            _service = new SpotifyAuthenticationService(
+            _service = new AuthenticationService(
                 _mockLogger.Object,
                 _mockConfigService.Object,
                 _httpClient);

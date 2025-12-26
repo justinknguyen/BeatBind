@@ -10,15 +10,15 @@ using Microsoft.Extensions.Logging;
 
 namespace BeatBind.Infrastructure.Services
 {
-    public class SpotifyAuthenticationService : IAuthenticationService
+    public class AuthenticationService : IAuthenticationService
     {
-        private readonly ILogger<SpotifyAuthenticationService> _logger;
+        private readonly ILogger<AuthenticationService> _logger;
         private readonly IConfigurationService _configurationService;
         private readonly HttpClient _httpClient;
         private HttpListener? _httpListener;
 
-        public SpotifyAuthenticationService(
-            ILogger<SpotifyAuthenticationService> logger,
+        public AuthenticationService(
+            ILogger<AuthenticationService> logger,
             IConfigurationService configurationService,
             HttpClient httpClient)
         {

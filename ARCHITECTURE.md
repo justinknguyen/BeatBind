@@ -21,21 +21,21 @@ src/
 Domain models and contracts. No external dependencies.
 
 **Entities**: `Track`, `Hotkey`, `PlaybackState`, `Device`, `ApplicationConfiguration`  
-**Interfaces**: `ISpotifyService`, `IConfigurationService`, `IHotkeyService`, `IAuthenticationService`
+**Interfaces**: `ISpotifyService`, `IConfigurationService`, `IHotkeyService`, `IAuthenticationService`  
+**Services**: Internal business logic services (future expansion)
 
 ### Application ([src/BeatBind.Application/](src/BeatBind.Application/))
 
-Orchestrates business logic using MediatR and FluentValidation.
+Orchestrates business logic using application services.
 
-**Commands**: Authentication, configuration management, credential updates  
-**Services**: `MusicControlService`, `HotkeyManagementService`  
-**Behaviors**: Validation and logging pipelines
+**Application Services**: `AuthenticationApplicationService`, `ConfigurationApplicationService`, `MusicControlApplicationService`, `HotkeyApplicationService`  
+**Behaviors**: Validation and logging pipelines (MediatR)
 
 ### Infrastructure ([src/BeatBind.Infrastructure/](src/BeatBind.Infrastructure/))
 
 Implements Core interfaces for external systems.
 
-**Services**: `SpotifyService`, `SpotifyAuthenticationService`, `JsonConfigurationService`, `WindowsHotkeyService`
+**Services**: `SpotifyService`, `AuthenticationService`, `ConfigurationService`, `HotkeyService`, `GithubReleaseService`
 
 ### Presentation ([src/BeatBind.Presentation/](src/BeatBind.Presentation/))
 
@@ -46,17 +46,17 @@ Windows Forms UI components.
 ## How It Works
 
 1. **Startup**: [Program.cs](src/BeatBind/Program.cs) configures DI container and launches `MainForm`
-2. **User Action**: UI sends commands via MediatR
-3. **Processing**: Command handlers coordinate services to execute business logic
-4. **External Calls**: Infrastructure services interact with Spotify API or file system
+2. **User Action**: UI interacts with Application Services
+3. **Processing**: Application Services coordinate Core and Infrastructure services to execute business logic
+4. **External Calls**: Infrastructure services interact with Spotify API or file system via Core interfaces
 5. **Response**: Results flow back through the layers to update the UI
 
 ## Making Changes
 
-**Adding a feature**: Create command in Application layer, implement handler, update UI  
+**Adding a feature**: Create or extend Application Service, implement business logic, update UI  
 **New Spotify endpoint**: Add method to `ISpotifyService`, implement in `SpotifyService`  
 **UI change**: Modify forms in Presentation layer  
-**Configuration option**: Update `ApplicationConfiguration` entity, modify `JsonConfigurationService`
+**Configuration option**: Update `ApplicationConfiguration` entity, modify `ConfigurationService`
 
 ## Testing
 

@@ -6,24 +6,22 @@ using Moq;
 
 namespace BeatBind.Tests.Infrastructure.Services
 {
-    public class JsonConfigurationServiceTests : IDisposable
+    public class ConfigurationServiceTests : IDisposable
     {
-        private readonly Mock<ILogger<JsonConfigurationService>> _mockLogger;
+        private readonly Mock<ILogger<ConfigurationService>> _mockLogger;
         private readonly string _testConfigPath;
-        private readonly JsonConfigurationService _service;
+        private readonly ConfigurationService _service;
 
-        public JsonConfigurationServiceTests()
+        public ConfigurationServiceTests()
         {
-            _mockLogger = new Mock<ILogger<JsonConfigurationService>>();
+            _mockLogger = new Mock<ILogger<ConfigurationService>>();
             
             // Use a temporary directory for tests
             _testConfigPath = Path.Combine(Path.GetTempPath(), "BeatBindTests", Guid.NewGuid().ToString());
             Directory.CreateDirectory(_testConfigPath);
             
-            // Set the config path via environment variable
-            Environment.SetEnvironmentVariable("APPDATA", _testConfigPath);
-            
-            _service = new JsonConfigurationService(_mockLogger.Object);
+            var configFilePath = Path.Combine(_testConfigPath, "config.json");
+            _service = new ConfigurationService(_mockLogger.Object, configFilePath);
         }
 
         [Fact]
@@ -158,7 +156,7 @@ namespace BeatBind.Tests.Infrastructure.Services
             var hotkeys = _service.GetHotkeys();
 
             // Assert
-            hotkeys.Should().HaveCountGreaterThanOrEqualTo(2);
+            hotkeys.Should().HaveCount(2);
             hotkeys.Should().Contain(h => h.Action == HotkeyAction.PlayPause);
             hotkeys.Should().Contain(h => h.Action == HotkeyAction.NextTrack);
         }

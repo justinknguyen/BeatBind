@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using BeatBind.Application.Services;
-using BeatBind.Application.Commands;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
 using BeatBind.Presentation.Themes;
@@ -17,8 +16,8 @@ namespace BeatBind.Presentation
     public partial class MainForm : MaterialForm
     {
         private readonly MaterialSkinManager _materialSkinManager;
-        private readonly MusicControlService _musicControlService;
-        private HotkeyManagementService _hotkeyManagementService = null!;
+        private readonly MusicControlApplicationService _musicControlService;
+        private HotkeyApplicationService _hotkeyApplicationService = null!;
         private readonly IMediator _mediator;
         private readonly IConfigurationService _configurationService;
         private readonly IGithubReleaseService _githubReleaseService;
@@ -59,7 +58,7 @@ namespace BeatBind.Presentation
         }
 
         public MainForm(
-            MusicControlService musicControlService,
+            MusicControlApplicationService musicControlService,
             IMediator mediator,
             IConfigurationService configurationService,
             IGithubReleaseService githubReleaseService,
@@ -95,15 +94,15 @@ namespace BeatBind.Presentation
             _ = CheckForUpdatesAsync();
         }
 
-        public void SetHotkeyManagementService(HotkeyManagementService hotkeyManagementService)
+        public void SetHotkeyApplicationService(HotkeyApplicationService hotkeyApplicationService)
         {
-            _hotkeyManagementService = hotkeyManagementService;
+            _hotkeyApplicationService = hotkeyApplicationService;
 
             // Subscribe to hotkey triggered events
-            _hotkeyManagementService.HotkeyTriggered += OnHotkeyTriggered;
+            _hotkeyApplicationService.HotkeyTriggered += OnHotkeyTriggered;
 
             // Initialize hotkeys from configuration once the service is set
-            _hotkeyManagementService.InitializeHotkeys();
+            _hotkeyApplicationService.InitializeHotkeys();
         }
 
         private void OnHotkeyTriggered(object? sender, Hotkey hotkey)
@@ -239,7 +238,7 @@ namespace BeatBind.Presentation
             if (hotkeyDialog.ShowDialog() == DialogResult.OK)
             {
                 var updatedHotkey = hotkeyDialog.Hotkey;
-                _hotkeyManagementService?.UpdateHotkey(updatedHotkey);
+                _hotkeyApplicationService?.UpdateHotkey(updatedHotkey);
                 _hotkeysPanel?.UpdateHotkeyEntry(updatedHotkey);
             }
         }
@@ -251,7 +250,7 @@ namespace BeatBind.Presentation
             
             if (result == DialogResult.Yes)
             {
-                _hotkeyManagementService?.RemoveHotkey(hotkey.Id);
+                _hotkeyApplicationService?.RemoveHotkey(hotkey.Id);
                 _hotkeysPanel?.RemoveHotkeyEntry(hotkey.Id);
             }
         }
@@ -312,16 +311,11 @@ namespace BeatBind.Presentation
                 _settingsPanel.ApplySettingsToConfiguration(config);
                 config.Hotkeys = _hotkeysPanel.GetHotkeysFromUI();
 
-                var result = await _mediator.Send(new SaveConfigurationCommand(config));
+                _configurationService.SaveConfiguration(config);
 
-                var message = result.IsSuccess
-                    ? "Configuration saved successfully!"
-                    : $"Failed to save configuration: {result.Error}";
+                var message = "Configuration saved successfully!";
                 
-                var icon = result.IsSuccess ? MessageBoxIcon.Information : MessageBoxIcon.Error;
-                var title = result.IsSuccess ? "Success" : "Error";
-                
-                MessageBox.Show(message, title, MessageBoxButtons.OK, icon);
+                MessageBox.Show(message, "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -412,10 +406,10 @@ namespace BeatBind.Presentation
                 return;
             }
 
-            if (_hotkeyManagementService != null)
+            if (_hotkeyApplicationService != null)
             {
-                _hotkeyManagementService.HotkeyTriggered -= OnHotkeyTriggered;
-                _hotkeyManagementService.Dispose();
+                _hotkeyApplicationService.HotkeyTriggered -= OnHotkeyTriggered;
+                _hotkeyApplicationService.Dispose();
             }
 
             _notifyIcon?.Dispose();

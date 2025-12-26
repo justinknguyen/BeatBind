@@ -9,7 +9,7 @@ namespace BeatBind.Presentation.Panels;
 
 public partial class HotkeysPanel : UserControl
 {
-    private readonly HotkeyManagementService? _hotkeyManagementService;
+    private readonly HotkeyApplicationService? _hotkeyApplicationService;
     private readonly ILogger<HotkeysPanel> _logger;
     
     private MaterialLabel _lastHotkeyLabel = null!;
@@ -21,9 +21,9 @@ public partial class HotkeysPanel : UserControl
     public event EventHandler<Hotkey>? HotkeyDeleteRequested;
     public event EventHandler? HotkeyAdded;
 
-    public HotkeysPanel(HotkeyManagementService? hotkeyManagementService, ILogger<HotkeysPanel> logger)
+    public HotkeysPanel(HotkeyApplicationService? hotkeyApplicationService, ILogger<HotkeysPanel> logger)
     {
-        _hotkeyManagementService = hotkeyManagementService;
+        _hotkeyApplicationService = hotkeyApplicationService;
         _logger = logger;
         
         InitializeComponent();
@@ -33,7 +33,7 @@ public partial class HotkeysPanel : UserControl
     // Parameterless constructor for WinForms designer support
     public HotkeysPanel()
     {
-        _hotkeyManagementService = null;
+        _hotkeyApplicationService = null;
         _logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<HotkeysPanel>.Instance;
         
         InitializeComponent();
@@ -223,7 +223,7 @@ public partial class HotkeysPanel : UserControl
             }
 
             AddHotkeyEntryToUI(hotkey);
-            _hotkeyManagementService?.AddHotkey(hotkey);
+            _hotkeyApplicationService?.AddHotkey(hotkey);
             HotkeyAdded?.Invoke(this, EventArgs.Empty);
         }
     }

@@ -4,14 +4,14 @@ using Microsoft.Extensions.Logging;
 
 namespace BeatBind.Application.Services
 {
-    public class MusicControlService
+    public class MusicControlApplicationService
     {
         private readonly ISpotifyService _spotifyService;
         private readonly IConfigurationService _configurationService;
-        private readonly ILogger<MusicControlService> _logger;
+        private readonly ILogger<MusicControlApplicationService> _logger;
         private int _lastVolume = 50;
 
-        public MusicControlService(ISpotifyService spotifyService, IConfigurationService configurationService, ILogger<MusicControlService> logger)
+        public MusicControlApplicationService(ISpotifyService spotifyService, IConfigurationService configurationService, ILogger<MusicControlApplicationService> logger)
         {
             _spotifyService = spotifyService;
             _configurationService = configurationService;
