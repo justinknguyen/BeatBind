@@ -30,6 +30,7 @@ namespace BeatBind.Presentation
         private NotifyIcon? _notifyIcon;
         private Panel? _updateNotificationPanel;
         private bool _isExiting;
+        private bool _startMinimized;
 
         // UI Controls
         private MaterialTabControl _mainTabControl = null!;
@@ -422,8 +423,9 @@ namespace BeatBind.Presentation
                 if (config.StartMinimized)
                 {
                     _logger.LogInformation("Starting minimized to system tray");
-                    WindowState = FormWindowState.Minimized;
-                    Hide();
+                    _startMinimized = true;
+                    // Check for updates since OnShown won't be called immediately
+                    _ = CheckForUpdatesAsync();
                 }
             }
             catch (Exception ex)
@@ -487,6 +489,12 @@ namespace BeatBind.Presentation
         /// <param name="value">Whether the form should be visible</param>
         protected override void SetVisibleCore(bool value)
         {
+            if (_startMinimized && value)
+            {
+                value = false;
+                _startMinimized = false;
+            }
+
             base.SetVisibleCore(value);
             if (!value && _notifyIcon != null)
             {
