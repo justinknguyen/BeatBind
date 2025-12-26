@@ -21,7 +21,7 @@ Control Spotify from anywhere on Windows using global hotkeys. No more alt-tabbi
 
 - 🎹 **Global Hotkeys** - Control Spotify from any application
 - 🔊 **Volume Control** - Adjust Spotify volume independently from system volume
-- ⏯️ **Playback Control** - Play, pause, skip, seek, and shuffle
+- ⏯️ **Playback Control** - Play, pause, skip, seek, shuffle, and repeat
 - 💾 **Track Management** - Save and remove tracks from your library
 - 🌙 **System Tray** - Runs quietly in the background
 - 🔄 **Auto-Update Checker** - Get notified when new versions are available
@@ -33,7 +33,7 @@ Control Spotify from anywhere on Windows using global hotkeys. No more alt-tabbi
 - Spotify Premium account
 - Internet connection
 
-> **Note:** This app uses Spotify's Web API, which requires Premium. It sends commands over the internet, so expect a slight delay based on your connection speed.
+> **Note:** This app uses Spotify's Web API, which requires Premium. It sends commands to Spotify over the internet, so expect a slight delay based on your connection speed.
 
 ## Installation
 
@@ -87,7 +87,8 @@ BeatBind needs Spotify API credentials to control your music. This takes about 5
 
 1. Open BeatBind and go to the `Authentication` tab and paste your **Client ID** and **Client Secret**
 2. Change the **Redirect Port** if needed
-3. Click **Save Configuration** to save your settings
+3. Click **Authenticate with Spotify** to setup the Spotify connection
+4. Click **Save Configuration** to save your settings
 
 ## Usage
 
