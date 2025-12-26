@@ -39,9 +39,13 @@ Implements Core interfaces for external systems.
 
 ### Presentation ([src/BeatBind.Presentation/](src/BeatBind.Presentation/))
 
-Windows Forms UI components.
+Windows Forms UI components built with MaterialSkin.
 
-**Forms**: `MainForm`, `HotkeyConfigurationDialog`, `HotkeyEntry`
+**Main Form**: `MainForm` - Tab-based interface with MaterialSkinManager integration  
+**Panels**: `AuthenticationPanel`, `HotkeysPanel`, `SettingsPanel` - Tab content panels extending `BasePanelControl`  
+**Components**: `HotkeyEditorDialog`, `HotkeyListItem` - Reusable UI components  
+**Helpers**: `ControlFactory`, `CardFactory`, `MessageBoxHelper`, `ThemeHelper` - UI creation utilities  
+**Themes**: `Theme` - Centralized color and styling definitions
 
 ## How It Works
 
