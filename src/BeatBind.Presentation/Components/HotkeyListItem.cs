@@ -145,28 +145,8 @@ namespace BeatBind.Presentation.Components
 
         private void UpdateDisplay()
         {
-            _descriptionLabel.Text = FormatActionName(_hotkey.Action);
+            _descriptionLabel.Text = Hotkey.GetActionDisplayName(_hotkey.Action);
             _keysLabel.Text = FormatHotkeyString(_hotkey);
-        }
-
-        private static string FormatActionName(HotkeyAction action)
-        {
-            return action switch
-            {
-                HotkeyAction.PlayPause => "Play/Pause",
-                HotkeyAction.NextTrack => "Next Track",
-                HotkeyAction.PreviousTrack => "Previous Track",
-                HotkeyAction.VolumeUp => "Volume Up",
-                HotkeyAction.VolumeDown => "Volume Down",
-                HotkeyAction.MuteUnmute => "Mute/Unmute",
-                HotkeyAction.SeekForward => "Seek Forward",
-                HotkeyAction.SeekBackward => "Seek Backward",
-                HotkeyAction.SaveTrack => "Save Track",
-                HotkeyAction.RemoveTrack => "Remove Track",
-                HotkeyAction.ToggleShuffle => "Toggle Shuffle",
-                HotkeyAction.ToggleRepeat => "Toggle Repeat",
-                _ => action.ToString()
-            };
         }
 
         private void ApplyTheme()

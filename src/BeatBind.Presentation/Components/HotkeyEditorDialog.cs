@@ -344,7 +344,7 @@ namespace BeatBind.Presentation.Components
         private void PopulateActionComboBox()
         {
             var actions = Enum.GetValues<HotkeyAction>()
-                .Select(action => new { Value = action, Display = GetActionDisplayName(action) })
+                .Select(action => new { Value = action, Display = Hotkey.GetActionDisplayName(action) })
                 .ToArray();
 
             _actionComboBox.DataSource = actions;
@@ -354,24 +354,15 @@ namespace BeatBind.Presentation.Components
 
         private void PopulateKeyComboBox()
         {
-            // Add common keys
-            var keys = new[]
-            {
-                Keys.F1, Keys.F2, Keys.F3, Keys.F4, Keys.F5, Keys.F6,
-                Keys.F7, Keys.F8, Keys.F9, Keys.F10, Keys.F11, Keys.F12,
-                Keys.A, Keys.B, Keys.C, Keys.D, Keys.E, Keys.F, Keys.G,
-                Keys.H, Keys.I, Keys.J, Keys.K, Keys.L, Keys.M, Keys.N,
-                Keys.O, Keys.P, Keys.Q, Keys.R, Keys.S, Keys.T, Keys.U,
-                Keys.V, Keys.W, Keys.X, Keys.Y, Keys.Z,
-                Keys.D0, Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5,
-                Keys.D6, Keys.D7, Keys.D8, Keys.D9,
-                Keys.Space, Keys.Enter, Keys.Tab, Keys.Escape,
-                Keys.Left, Keys.Right, Keys.Up, Keys.Down,
-                Keys.Home, Keys.End, Keys.PageUp, Keys.PageDown,
-                Keys.Insert, Keys.Delete
-            };
+            // Use keys from the entity with friendly display names
+            var keys = Hotkey.AvailableKeyCodes
+                .Select(code => new { Value = (Keys)code, Display = Hotkey.GetKeyDisplayName(code) })
+                .OrderBy(k => k.Display)
+                .ToArray();
 
             _keyComboBox.DataSource = keys;
+            _keyComboBox.DisplayMember = "Display";
+            _keyComboBox.ValueMember = "Value";
         }
 
         private void LoadHotkeyData(Hotkey hotkey)
@@ -432,26 +423,6 @@ namespace BeatBind.Presentation.Components
             }
 
             return true;
-        }
-
-        private static string GetActionDisplayName(HotkeyAction action)
-        {
-            return action switch
-            {
-                HotkeyAction.PlayPause => "Play/Pause",
-                HotkeyAction.NextTrack => "Next Track",
-                HotkeyAction.PreviousTrack => "Previous Track",
-                HotkeyAction.VolumeUp => "Volume Up",
-                HotkeyAction.VolumeDown => "Volume Down",
-                HotkeyAction.MuteUnmute => "Mute/Unmute",
-                HotkeyAction.SeekForward => "Seek Forward",
-                HotkeyAction.SeekBackward => "Seek Backward",
-                HotkeyAction.SaveTrack => "Save Track",
-                HotkeyAction.RemoveTrack => "Remove Track",
-                HotkeyAction.ToggleShuffle => "Toggle Shuffle",
-                HotkeyAction.ToggleRepeat => "Toggle Repeat",
-                _ => action.ToString()
-            };
         }
     }
 }
