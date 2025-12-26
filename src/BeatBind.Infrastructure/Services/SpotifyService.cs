@@ -187,12 +187,121 @@ namespace BeatBind.Infrastructure.Services
         }
 
         /// <summary>
+        /// Retrieves the list of available Spotify devices.
+        /// </summary>
+        /// <returns>A list of available devices.</returns>
+        public async Task<List<Device>> GetAvailableDevicesAsync()
+        {
+            try
+            {
+                if (!await EnsureValidTokenAsync())
+                {
+                    return new List<Device>();
+                }
+
+                var url = "https://api.spotify.com/v1/me/player/devices";
+                _logger.LogInformation("GET {Url}", url);
+                var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _currentAuth!.AccessToken);
+
+                var response = await _httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var jsonDoc = JsonDocument.Parse(content);
+                    var devices = new List<Device>();
+
+                    if (jsonDoc.RootElement.TryGetProperty("devices", out var devicesArray))
+                    {
+                        foreach (var deviceElement in devicesArray.EnumerateArray())
+                        {
+                            devices.Add(new Device
+                            {
+                                Id = deviceElement.GetProperty("id").GetString() ?? string.Empty,
+                                Name = deviceElement.GetProperty("name").GetString() ?? string.Empty,
+                                Type = deviceElement.GetProperty("type").GetString() ?? string.Empty,
+                                IsActive = deviceElement.GetProperty("is_active").GetBoolean(),
+                                IsPrivateSession = deviceElement.GetProperty("is_private_session").GetBoolean(),
+                                IsRestricted = deviceElement.GetProperty("is_restricted").GetBoolean(),
+                                VolumePercent = deviceElement.TryGetProperty("volume_percent", out var vol) && !vol.ValueKind.Equals(JsonValueKind.Null) ? vol.GetInt32() : 0
+                            });
+                        }
+                    }
+
+                    return devices;
+                }
+
+                return new List<Device>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting available devices");
+                return new List<Device>();
+            }
+        }
+
+        /// <summary>
         /// Starts or resumes playback on the active Spotify device.
+        /// If no device is active, attempts to transfer playback to an available device.
         /// </summary>
         /// <returns>True if the command was successful; otherwise, false.</returns>
         public async Task<bool> PlayAsync()
         {
-            return await SendPlayerCommandAsync("play", HttpMethod.Put);
+            try
+            {
+                if (!await EnsureValidTokenAsync())
+                {
+                    return false;
+                }
+
+                var url = "https://api.spotify.com/v1/me/player/play";
+                _logger.LogInformation("PUT {Url}", url);
+                var request = new HttpRequestMessage(HttpMethod.Put, url);
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _currentAuth!.AccessToken);
+
+                var response = await _httpClient.SendAsync(request);
+
+                // If we get a 404, it likely means no active device
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    _logger.LogInformation("No active device found (404), checking for available devices");
+                    var devices = await GetAvailableDevicesAsync();
+
+                    if (devices.Count > 0)
+                    {
+                        // Try to transfer playback to the first available device (prefer active ones)
+                        var device = devices.FirstOrDefault(d => d.IsActive) ?? devices.First();
+                        _logger.LogInformation("Attempting to transfer playback to device: {DeviceName}", device.Name);
+
+                        var transferBody = JsonSerializer.Serialize(new { device_ids = new[] { device.Id }, play = true });
+                        var transferUrl = "https://api.spotify.com/v1/me/player";
+                        var transferRequest = new HttpRequestMessage(HttpMethod.Put, transferUrl);
+                        transferRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _currentAuth!.AccessToken);
+                        transferRequest.Content = new StringContent(transferBody, Encoding.UTF8, "application/json");
+
+                        var transferResponse = await _httpClient.SendAsync(transferRequest);
+                        if (!transferResponse.IsSuccessStatusCode)
+                        {
+                            _logger.LogWarning("Failed to transfer playback. Status: {StatusCode}. Ensure Spotify has recently played content.", transferResponse.StatusCode);
+                            return false;
+                        }
+
+                        return true;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("No available devices found. Please open Spotify on a device.");
+                        return false;
+                    }
+                }
+
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error playing");
+                return false;
+            }
         }
 
         /// <summary>
