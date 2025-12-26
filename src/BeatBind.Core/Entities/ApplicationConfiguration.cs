@@ -4,6 +4,7 @@ namespace BeatBind.Core.Entities
     {
         public string ClientId { get; set; } = string.Empty;
         public string ClientSecret { get; set; } = string.Empty;
+        public int RedirectPort { get; set; } = 8888;
         public string RedirectUri { get; set; } = "http://127.0.0.1:8888/callback";
         public List<Hotkey> Hotkeys { get; set; } = new();
         public bool StartMinimized { get; set; }

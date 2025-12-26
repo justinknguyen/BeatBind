@@ -15,6 +15,7 @@ public partial class AuthenticationPanel : BasePanelControl
     
     private MaterialTextBox _clientIdTextBox = null!;
     private MaterialTextBox _clientSecretTextBox = null!;
+    private MaterialTextBox _redirectPortTextBox = null!;
     private MaterialButton _authenticateButton = null!;
     private MaterialLabel _statusLabel = null!;
     private bool _isAuthenticated;
@@ -63,7 +64,7 @@ public partial class AuthenticationPanel : BasePanelControl
     private Control CreateCredentialsContent()
     {
         var panel = new Panel { Dock = DockStyle.Fill };
-        var layout = ControlFactory.CreateSingleColumnLayout(4);
+        var layout = ControlFactory.CreateSingleColumnLayout(6);
 
         // Use ControlFactory for consistent label and control creation
         var clientIdLabel = ControlFactory.CreateLabel("Client ID", bold: true);
@@ -71,12 +72,17 @@ public partial class AuthenticationPanel : BasePanelControl
 
         var clientSecretLabel = ControlFactory.CreateLabel("Client Secret", bold: true);
         _clientSecretTextBox = ControlFactory.CreateMaterialTextBox("Enter your Spotify Client Secret");
-        _clientSecretTextBox.Margin = new Padding(0, 0, 0, 0);
+
+        var redirectPortLabel = ControlFactory.CreateLabel("Redirect Port", bold: true);
+        _redirectPortTextBox = ControlFactory.CreateMaterialTextBox("http://127.0.0.1:{port}/callback");
+        _redirectPortTextBox.Margin = new Padding(0, 0, 0, 0);
 
         layout.Controls.Add(clientIdLabel, 0, 0);
         layout.Controls.Add(_clientIdTextBox, 0, 1);
         layout.Controls.Add(clientSecretLabel, 0, 2);
         layout.Controls.Add(_clientSecretTextBox, 0, 3);
+        layout.Controls.Add(redirectPortLabel, 0, 4);
+        layout.Controls.Add(_redirectPortTextBox, 0, 5);
 
         panel.Controls.Add(layout);
         return panel;
@@ -158,6 +164,7 @@ public partial class AuthenticationPanel : BasePanelControl
             var config = _configurationService.GetConfiguration();
             _clientIdTextBox.Text = config.ClientId;
             _clientSecretTextBox.Text = config.ClientSecret;
+            _redirectPortTextBox.Text = config.RedirectPort.ToString();
             
             UpdateAuthenticationStatus();
         }
@@ -172,6 +179,13 @@ public partial class AuthenticationPanel : BasePanelControl
         var config = _configurationService.GetConfiguration();
         config.ClientId = _clientIdTextBox.Text;
         config.ClientSecret = _clientSecretTextBox.Text;
+        
+        if (int.TryParse(_redirectPortTextBox.Text, out int port))
+        {
+            config.RedirectPort = port;
+            config.RedirectUri = $"http://127.0.0.1:{port}/callback";
+        }
+        
         return config;
     }
 
