@@ -140,17 +140,17 @@ namespace BeatBind.Presentation
             _hotkeysPanel.HotkeyAdded += HotkeysPanel_HotkeyAdded;
 
             // Create tabs
-            var authTab = new TabPage("🔐 Authentication")
-            {
-                BackColor = Theme.CardBackground
-            };
-            authTab.Controls.Add(_authenticationPanel);
-            
             var hotkeysTab = new TabPage("⌨️ Hotkeys")
             {
                 BackColor = Theme.CardBackground
             };
             hotkeysTab.Controls.Add(_hotkeysPanel);
+            
+            var authTab = new TabPage("🔐 Authentication")
+            {
+                BackColor = Theme.CardBackground
+            };
+            authTab.Controls.Add(_authenticationPanel);
             
             var settingsTab = new TabPage("⚙️ Settings")
             {
@@ -158,8 +158,8 @@ namespace BeatBind.Presentation
             };
             settingsTab.Controls.Add(_settingsPanel);
 
-            _mainTabControl.TabPages.Add(authTab);
             _mainTabControl.TabPages.Add(hotkeysTab);
+            _mainTabControl.TabPages.Add(authTab);
             _mainTabControl.TabPages.Add(settingsTab);
 
             // Create MaterialTabSelector for the tab headers

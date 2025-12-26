@@ -173,7 +173,8 @@ public partial class SettingsPanel : UserControl
             Text = "Start with Windows",
             AutoSize = true,
             Depth = 0,
-            Margin = new Padding(0, 0, 20, 0)
+            Margin = new Padding(0, 0, 20, 0),
+            TabStop = false
         };
 
         _minimizeCheckBox = new MaterialCheckbox
@@ -181,7 +182,8 @@ public partial class SettingsPanel : UserControl
             Text = "Minimize to tray",
             AutoSize = true,
             Depth = 0,
-            Margin = new Padding(0, 0, 20, 0)
+            Margin = new Padding(0, 0, 20, 0),
+            TabStop = false
         };
 
         checkboxPanel1.Controls.Add(_startupCheckBox);
@@ -207,7 +209,8 @@ public partial class SettingsPanel : UserControl
             Checked = true,
             AutoSize = true,
             Depth = 0,
-            Margin = new Padding(0, 0, 0, 8)
+            Margin = new Padding(0, 0, 0, 8),
+            TabStop = false
         };
         layout.Controls.Add(_rewindCheckBox, 0, 3);
         layout.SetColumnSpan(_rewindCheckBox, 2);
