@@ -46,7 +46,7 @@ namespace BeatBind.Tests.Core.Entities
             // Arrange
             var beforeCreation = DateTime.UtcNow;
             var expiresAt = DateTime.UtcNow.AddHours(1);
-            
+
             // Act
             var result = new AuthenticationResult
             {

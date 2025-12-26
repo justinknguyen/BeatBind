@@ -12,6 +12,11 @@ namespace BeatBind.Infrastructure.Services
         private readonly ILogger<GithubReleaseService> _logger;
         private const string GITHUB_API_URL = "https://api.github.com/repos/justinknguyen/BeatBind/releases/latest";
 
+        /// <summary>
+        /// Initializes a new instance of the GithubReleaseService class.
+        /// </summary>
+        /// <param name="httpClient">The HTTP client for making API requests.</param>
+        /// <param name="logger">The logger instance.</param>
         public GithubReleaseService(HttpClient httpClient, ILogger<GithubReleaseService> logger)
         {
             _httpClient = httpClient;
@@ -19,14 +24,20 @@ namespace BeatBind.Infrastructure.Services
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "BeatBind");
         }
 
+        /// <summary>
+        /// Retrieves information about the latest release from the GitHub repository.
+        /// </summary>
+        /// <returns>A GithubRelease object if successful; otherwise, null.</returns>
         public async Task<GithubRelease?> GetLatestReleaseAsync()
         {
             try
             {
                 var response = await _httpClient.GetFromJsonAsync<GithubReleaseResponse>(GITHUB_API_URL);
-                
+
                 if (response == null)
+                {
                     return null;
+                }
 
                 return new GithubRelease
                 {
@@ -44,6 +55,12 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Compares two semantic version strings to determine if the latest version is newer.
+        /// </summary>
+        /// <param name="currentVersion">The current version string.</param>
+        /// <param name="latestVersion">The latest version string.</param>
+        /// <returns>True if the latest version is newer than the current version; otherwise, false.</returns>
         public bool IsNewerVersion(string currentVersion, string latestVersion)
         {
             try
@@ -59,7 +76,7 @@ namespace BeatBind.Infrastructure.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to compare versions: {CurrentVersion} vs {LatestVersion}", 
+                _logger.LogError(ex, "Failed to compare versions: {CurrentVersion} vs {LatestVersion}",
                     currentVersion, latestVersion);
                 return false;
             }

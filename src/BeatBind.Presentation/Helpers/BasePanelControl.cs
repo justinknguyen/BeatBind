@@ -22,7 +22,7 @@ public abstract class BasePanelControl : UserControl
     {
         Logger = logger;
         InitializeComponent();
-        
+
         // Only call InitializeUI if not in design mode
         if (LicenseManager.UsageMode != LicenseUsageMode.Designtime)
         {
@@ -47,11 +47,11 @@ public abstract class BasePanelControl : UserControl
     protected virtual void InitializeComponent()
     {
         SuspendLayout();
-        
+
         Dock = DockStyle.Fill;
         BackColor = Theme.CardBackground;
         Padding = new Padding(15);
-        
+
         ResumeLayout(false);
     }
 

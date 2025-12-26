@@ -10,6 +10,11 @@ namespace BeatBind.Application.Services
         private readonly IConfigurationService _configurationService;
         private readonly ILogger<ConfigurationApplicationService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the ConfigurationApplicationService class.
+        /// </summary>
+        /// <param name="configurationService">The configuration service.</param>
+        /// <param name="logger">The logger instance.</param>
         public ConfigurationApplicationService(
             IConfigurationService configurationService,
             ILogger<ConfigurationApplicationService> logger)
@@ -18,6 +23,11 @@ namespace BeatBind.Application.Services
             _logger = logger;
         }
 
+        /// <summary>
+        /// Saves the application configuration to persistent storage.
+        /// </summary>
+        /// <param name="configuration">The configuration to save.</param>
+        /// <returns>A Result indicating success or failure.</returns>
         public Result SaveConfiguration(ApplicationConfiguration configuration)
         {
             try
@@ -33,6 +43,12 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Updates the Spotify client credentials with validation.
+        /// </summary>
+        /// <param name="clientId">The Spotify application client ID.</param>
+        /// <param name="clientSecret">The Spotify application client secret.</param>
+        /// <returns>A Result indicating success or failure with error details.</returns>
         public Result UpdateClientCredentials(string clientId, string clientSecret)
         {
             try
@@ -58,11 +74,19 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Retrieves the current application configuration.
+        /// </summary>
+        /// <returns>The application configuration.</returns>
         public ApplicationConfiguration GetConfiguration()
         {
             return _configurationService.GetConfiguration();
         }
 
+        /// <summary>
+        /// Retrieves all configured hotkeys.
+        /// </summary>
+        /// <returns>A collection of all hotkeys.</returns>
         public IEnumerable<Hotkey> GetHotkeys()
         {
             return _configurationService.GetHotkeys();

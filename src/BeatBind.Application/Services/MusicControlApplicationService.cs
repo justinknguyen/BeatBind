@@ -11,6 +11,12 @@ namespace BeatBind.Application.Services
         private readonly ILogger<MusicControlApplicationService> _logger;
         private int _lastVolume = 50;
 
+        /// <summary>
+        /// Initializes a new instance of the MusicControlApplicationService class.
+        /// </summary>
+        /// <param name="spotifyService">The Spotify service for music control.</param>
+        /// <param name="configurationService">The configuration service.</param>
+        /// <param name="logger">The logger instance.</param>
         public MusicControlApplicationService(ISpotifyService spotifyService, IConfigurationService configurationService, ILogger<MusicControlApplicationService> logger)
         {
             _spotifyService = spotifyService;
@@ -18,6 +24,10 @@ namespace BeatBind.Application.Services
             _logger = logger;
         }
 
+        /// <summary>
+        /// Toggles between play and pause states based on current playback state.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
         public async Task<bool> PlayPauseAsync()
         {
             try
@@ -29,7 +39,7 @@ namespace BeatBind.Application.Services
                     return false;
                 }
 
-                return playbackState.IsPlaying 
+                return playbackState.IsPlaying
                     ? await _spotifyService.PauseAsync()
                     : await _spotifyService.PlayAsync();
             }
@@ -40,6 +50,10 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Skips to the next track in the playback queue.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
         public async Task<bool> NextTrackAsync()
         {
             try
@@ -53,12 +67,16 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Skips to the previous track or rewinds to the start of the current track based on configuration.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
         public async Task<bool> PreviousTrackAsync()
         {
             try
             {
                 var config = _configurationService.GetConfiguration();
-                
+
                 if (config.PreviousTrackRewindToStart)
                 {
                     var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
@@ -68,7 +86,7 @@ namespace BeatBind.Application.Services
                         return await _spotifyService.SeekToPositionAsync(0);
                     }
                 }
-                
+
                 return await _spotifyService.PreviousTrackAsync();
             }
             catch (Exception ex)
@@ -78,6 +96,10 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Increases the playback volume by the configured volume step amount.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
         public async Task<bool> VolumeUpAsync()
         {
             try
@@ -98,6 +120,10 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Decreases the playback volume by the configured volume step amount.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
         public async Task<bool> VolumeDownAsync()
         {
             try
@@ -118,6 +144,10 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Toggles mute state by setting volume to 0 or restoring the previous volume level.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
         public async Task<bool> MuteAsync()
         {
             try
@@ -146,6 +176,10 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Saves the currently playing track to the user's Spotify library.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
         public async Task<bool> SaveTrackAsync()
         {
             try
@@ -159,6 +193,10 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Removes the currently playing track from the user's Spotify library.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
         public async Task<bool> RemoveTrackAsync()
         {
             try
@@ -172,6 +210,10 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Toggles shuffle mode for the current playback.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
         public async Task<bool> ToggleShuffleAsync()
         {
             try
@@ -185,6 +227,10 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Cycles through repeat modes: Off -> Context -> Track -> Off.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
         public async Task<bool> ToggleRepeatAsync()
         {
             try
@@ -198,6 +244,10 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Seeks forward in the current track by the configured seek milliseconds amount.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
         public async Task<bool> SeekForwardAsync()
         {
             try
@@ -218,6 +268,10 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Seeks backward in the current track by the configured seek milliseconds amount.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
         public async Task<bool> SeekBackwardAsync()
         {
             try
@@ -238,6 +292,10 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Retrieves the current playback state including track and device information.
+        /// </summary>
+        /// <returns>The current playback state, or null if unavailable.</returns>
         public async Task<PlaybackState?> GetCurrentPlaybackAsync()
         {
             try

@@ -13,6 +13,13 @@ namespace BeatBind.Application.Services
 
         public event EventHandler<Hotkey>? HotkeyTriggered;
 
+        /// <summary>
+        /// Initializes a new instance of the HotkeyApplicationService class.
+        /// </summary>
+        /// <param name="hotkeyService">The hotkey service for key registration.</param>
+        /// <param name="configurationService">The configuration service.</param>
+        /// <param name="musicControlService">The music control service for executing actions.</param>
+        /// <param name="logger">The logger instance.</param>
         public HotkeyApplicationService(
             IHotkeyService hotkeyService,
             IConfigurationService configurationService,
@@ -27,6 +34,9 @@ namespace BeatBind.Application.Services
             _hotkeyService.HotkeyPressed += OnHotkeyPressed;
         }
 
+        /// <summary>
+        /// Initializes and registers all enabled hotkeys from the configuration.
+        /// </summary>
         public void InitializeHotkeys()
         {
             var hotkeys = _configurationService.GetHotkeys();
@@ -36,6 +46,11 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Registers a hotkey with the underlying hotkey service.
+        /// </summary>
+        /// <param name="hotkey">The hotkey to register.</param>
+        /// <returns>True if registration was successful; otherwise, false.</returns>
         public bool RegisterHotkey(Hotkey hotkey)
         {
             try
@@ -50,6 +65,11 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Unregisters a hotkey by its ID.
+        /// </summary>
+        /// <param name="hotkeyId">The ID of the hotkey to unregister.</param>
+        /// <returns>True if unregistration was successful; otherwise, false.</returns>
         public bool UnregisterHotkey(int hotkeyId)
         {
             try
@@ -63,6 +83,10 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Adds a new hotkey to the configuration and registers it if enabled.
+        /// </summary>
+        /// <param name="hotkey">The hotkey to add.</param>
         public void AddHotkey(Hotkey hotkey)
         {
             _configurationService.AddHotkey(hotkey);
@@ -72,12 +96,20 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Removes a hotkey from the configuration and unregisters it.
+        /// </summary>
+        /// <param name="hotkeyId">The ID of the hotkey to remove.</param>
         public void RemoveHotkey(int hotkeyId)
         {
             UnregisterHotkey(hotkeyId);
             _configurationService.RemoveHotkey(hotkeyId);
         }
 
+        /// <summary>
+        /// Updates an existing hotkey, unregistering the old version and registering the new one if enabled.
+        /// </summary>
+        /// <param name="hotkey">The hotkey with updated values.</param>
         public void UpdateHotkey(Hotkey hotkey)
         {
             // Unregister old hotkey if it exists
@@ -95,6 +127,23 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Reloads all hotkeys by unregistering current ones and re-initializing from configuration.
+        /// </summary>
+        public void ReloadHotkeys()
+        {
+            // Unregister all current hotkeys
+            _hotkeyService.UnregisterAllHotkeys();
+
+            // Re-initialize from configuration
+            InitializeHotkeys();
+        }
+
+        /// <summary>
+        /// Handles the HotkeyPressed event from the hotkey service.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="hotkey">The hotkey that was pressed.</param>
         private void OnHotkeyPressed(object? sender, Hotkey hotkey)
         {
             try
@@ -112,11 +161,21 @@ namespace BeatBind.Application.Services
             }
         }
 
+        /// <summary>
+        /// Creates an Action delegate for the specified hotkey action.
+        /// </summary>
+        /// <param name="hotkeyAction">The hotkey action to create an Action for.</param>
+        /// <returns>An Action delegate that executes the hotkey action.</returns>
         private Action GetActionForHotkey(HotkeyAction hotkeyAction)
         {
             return async () => await ExecuteHotkeyAction(hotkeyAction);
         }
 
+        /// <summary>
+        /// Executes the specified hotkey action by calling the appropriate music control service method.
+        /// </summary>
+        /// <param name="action">The hotkey action to execute.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ExecuteHotkeyAction(HotkeyAction action)
         {
             switch (action)
@@ -136,7 +195,7 @@ namespace BeatBind.Application.Services
                 case HotkeyAction.VolumeDown:
                     await _musicControlService.VolumeDownAsync();
                     break;
-                case HotkeyAction.Mute:
+                case HotkeyAction.MuteUnmute:
                     await _musicControlService.MuteAsync();
                     break;
                 case HotkeyAction.SaveTrack:

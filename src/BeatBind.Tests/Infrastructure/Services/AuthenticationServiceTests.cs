@@ -1,3 +1,4 @@
+using System.Net;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
 using BeatBind.Infrastructure.Services;
@@ -5,7 +6,6 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-using System.Net;
 
 namespace BeatBind.Tests.Infrastructure.Services
 {

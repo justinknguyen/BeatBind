@@ -16,18 +16,33 @@ namespace BeatBind
         private readonly MainForm _mainForm;
         private readonly HotkeyApplicationService _hotkeyApplicationService;
 
+        /// <summary>
+        /// Initializes a new instance of the Startup service.
+        /// </summary>
+        /// <param name="mainForm">The main application form</param>
+        /// <param name="hotkeyApplicationService">The hotkey application service</param>
         public Startup(MainForm mainForm, HotkeyApplicationService hotkeyApplicationService)
         {
             _mainForm = mainForm;
             _hotkeyApplicationService = hotkeyApplicationService;
         }
 
+        /// <summary>
+        /// Starts the hosted service and initializes the hotkey application service.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>A completed task</returns>
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _mainForm.SetHotkeyApplicationService(_hotkeyApplicationService);
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Stops the hosted service.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>A completed task</returns>
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 
@@ -37,13 +52,13 @@ namespace BeatBind
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             // Prevent multiple instances
             using var mutex = new Mutex(true, "BeatBindGlobalMutex", out var createdNew);
             if (!createdNew)
             {
-                MessageBox.Show("BeatBind is already running! Check the system tray.", "Already Running", 
+                MessageBox.Show("BeatBind is already running! Check the system tray.", "Already Running",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
@@ -54,7 +69,7 @@ namespace BeatBind
                 System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
 
                 var host = CreateHostBuilder().Build();
-                
+
                 // Start the host to initialize services (like Startup)
                 host.Start();
 
@@ -63,7 +78,7 @@ namespace BeatBind
                     var mainForm = host.Services.GetRequiredService<MainForm>();
                     System.Windows.Forms.Application.Run(mainForm);
                 }
-                
+
                 // Stop the host when application exits
                 host.StopAsync().GetAwaiter().GetResult();
             }
@@ -71,12 +86,16 @@ namespace BeatBind
             {
                 var logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger("BeatBind");
                 logger.LogCritical(ex, "Fatal error occurred");
-                
-                MessageBox.Show($"A fatal error occurred: {ex.Message}", "Fatal Error", 
+
+                MessageBox.Show($"A fatal error occurred: {ex.Message}", "Fatal Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
+        /// <summary>
+        /// Creates and configures the application host builder.
+        /// </summary>
+        /// <returns>A configured host builder</returns>
         private static IHostBuilder CreateHostBuilder()
         {
             return Host.CreateDefaultBuilder()
@@ -98,6 +117,10 @@ namespace BeatBind
                 });
         }
 
+        /// <summary>
+        /// Configures infrastructure layer services.
+        /// </summary>
+        /// <param name="services">The service collection</param>
         private static void ConfigureInfrastructure(IServiceCollection services)
         {
             services.AddSingleton<IConfigurationService, ConfigurationService>();
@@ -106,6 +129,10 @@ namespace BeatBind
             services.AddHttpClient<IGithubReleaseService, GithubReleaseService>();
         }
 
+        /// <summary>
+        /// Configures application layer services including MediatR and validation.
+        /// </summary>
+        /// <param name="services">The service collection</param>
         private static void ConfigureApplication(IServiceCollection services)
         {
             // Application Services
@@ -113,11 +140,11 @@ namespace BeatBind
             services.AddTransient<ConfigurationApplicationService>();
             services.AddTransient<MusicControlApplicationService>();
             services.AddTransient<HotkeyApplicationService>();
-            
+
             // MediatR
-            services.AddMediatR(cfg => 
+            services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssembly(typeof(Application.Abstractions.ICommand).Assembly));
-            
+
             // Validators
             services.AddValidatorsFromAssembly(typeof(Application.Abstractions.ICommand).Assembly);
 
@@ -126,6 +153,10 @@ namespace BeatBind
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         }
 
+        /// <summary>
+        /// Configures presentation layer services including forms and hotkey service.
+        /// </summary>
+        /// <param name="services">The service collection</param>
         private static void ConfigurePresentation(IServiceCollection services)
         {
             services.AddSingleton<MainForm>();

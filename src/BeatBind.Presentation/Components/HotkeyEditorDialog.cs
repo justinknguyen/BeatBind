@@ -19,6 +19,10 @@ namespace BeatBind.Presentation.Components
 
         public Hotkey Hotkey { get; private set; } = new();
 
+        /// <summary>
+        /// Initializes a new instance of the HotkeyEditorDialog.
+        /// </summary>
+        /// <param name="existingHotkey">Optional existing hotkey to edit. If null, creates a new hotkey.</param>
         public HotkeyEditorDialog(Hotkey? existingHotkey = null)
         {
             if (existingHotkey != null)
@@ -38,11 +42,17 @@ namespace BeatBind.Presentation.Components
             ApplyTheme();
         }
 
+        /// <summary>
+        /// Applies the application theme to the dialog.
+        /// </summary>
         private void ApplyTheme()
         {
             BackColor = Theme.FormBackground;
         }
 
+        /// <summary>
+        /// Initializes all dialog components and creates the UI layout.
+        /// </summary>
         private void InitializeComponent()
         {
             Text = "Hotkey Configuration";
@@ -323,17 +333,37 @@ namespace BeatBind.Presentation.Components
         }
 
 
+        /// <summary>
+        /// Updates the hotkey preview label based on current selections.
+        /// </summary>
         private void UpdatePreview()
         {
             var parts = new List<string>();
 
-            if (_ctrlCheckBox?.Checked == true) parts.Add("Ctrl");
-            if (_altCheckBox?.Checked == true) parts.Add("Alt");
-            if (_shiftCheckBox?.Checked == true) parts.Add("Shift");
-            if (_winCheckBox?.Checked == true) parts.Add("Win");
+            if (_ctrlCheckBox?.Checked == true)
+            {
+                parts.Add("Ctrl");
+            }
+
+            if (_altCheckBox?.Checked == true)
+            {
+                parts.Add("Alt");
+            }
+
+            if (_shiftCheckBox?.Checked == true)
+            {
+                parts.Add("Shift");
+            }
+
+            if (_winCheckBox?.Checked == true)
+            {
+                parts.Add("Win");
+            }
 
             if (_keyComboBox?.SelectedItem != null)
+            {
                 parts.Add(_keyComboBox.SelectedItem.ToString()!);
+            }
 
             if (_previewLabel != null)
             {
@@ -341,10 +371,13 @@ namespace BeatBind.Presentation.Components
             }
         }
 
+        /// <summary>
+        /// Populates the action combo box with available hotkey actions.
+        /// </summary>
         private void PopulateActionComboBox()
         {
             var actions = Enum.GetValues<HotkeyAction>()
-                .Select(action => new { Value = action, Display = GetActionDisplayName(action) })
+                .Select(action => new { Value = action, Display = Hotkey.GetActionDisplayName(action) })
                 .ToArray();
 
             _actionComboBox.DataSource = actions;
@@ -352,28 +385,26 @@ namespace BeatBind.Presentation.Components
             _actionComboBox.ValueMember = "Value";
         }
 
+        /// <summary>
+        /// Populates the key combo box with available key codes.
+        /// </summary>
         private void PopulateKeyComboBox()
         {
-            // Add common keys
-            var keys = new[]
-            {
-                Keys.F1, Keys.F2, Keys.F3, Keys.F4, Keys.F5, Keys.F6,
-                Keys.F7, Keys.F8, Keys.F9, Keys.F10, Keys.F11, Keys.F12,
-                Keys.A, Keys.B, Keys.C, Keys.D, Keys.E, Keys.F, Keys.G,
-                Keys.H, Keys.I, Keys.J, Keys.K, Keys.L, Keys.M, Keys.N,
-                Keys.O, Keys.P, Keys.Q, Keys.R, Keys.S, Keys.T, Keys.U,
-                Keys.V, Keys.W, Keys.X, Keys.Y, Keys.Z,
-                Keys.D0, Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5,
-                Keys.D6, Keys.D7, Keys.D8, Keys.D9,
-                Keys.Space, Keys.Enter, Keys.Tab, Keys.Escape,
-                Keys.Left, Keys.Right, Keys.Up, Keys.Down,
-                Keys.Home, Keys.End, Keys.PageUp, Keys.PageDown,
-                Keys.Insert, Keys.Delete
-            };
+            // Use keys from the entity with friendly display names
+            var keys = Hotkey.AvailableKeyCodes
+                .Select(code => new { Value = (Keys)code, Display = Hotkey.GetKeyDisplayName(code) })
+                .OrderBy(k => k.Display)
+                .ToArray();
 
             _keyComboBox.DataSource = keys;
+            _keyComboBox.DisplayMember = "Display";
+            _keyComboBox.ValueMember = "Value";
         }
 
+        /// <summary>
+        /// Loads existing hotkey data into the dialog controls.
+        /// </summary>
+        /// <param name="hotkey">The hotkey to load</param>
         private void LoadHotkeyData(Hotkey hotkey)
         {
             _actionComboBox.SelectedValue = hotkey.Action;
@@ -381,12 +412,17 @@ namespace BeatBind.Presentation.Components
             _altCheckBox.Checked = hotkey.Modifiers.HasFlag(DomainModifierKeys.Alt);
             _shiftCheckBox.Checked = hotkey.Modifiers.HasFlag(DomainModifierKeys.Shift);
             _winCheckBox.Checked = hotkey.Modifiers.HasFlag(DomainModifierKeys.Windows);
-            _keyComboBox.SelectedItem = (Keys)hotkey.KeyCode;
+            _keyComboBox.SelectedValue = (Keys)hotkey.KeyCode;
             _enabledCheckBox.Checked = hotkey.IsEnabled;
             UpdatePreview();
         }
 
 
+        /// <summary>
+        /// Handles the OK button click event. Validates input and saves the hotkey.
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event arguments</param>
         private void OkButton_Click(object? sender, EventArgs e)
         {
             if (ValidateInput())
@@ -400,14 +436,30 @@ namespace BeatBind.Presentation.Components
                 Hotkey.Action = _actionComboBox.SelectedValue is HotkeyAction action
                     ? action
                     : HotkeyAction.PlayPause; // or another default/fallback action
-                Hotkey.KeyCode = _keyComboBox.SelectedItem is Keys key ? (int)key : 0;
+                Hotkey.KeyCode = _keyComboBox.SelectedValue is Keys key ? (int)key : 0;
                 Hotkey.IsEnabled = _enabledCheckBox.Checked;
 
                 var modifiers = DomainModifierKeys.None;
-                if (_ctrlCheckBox.Checked) modifiers |= DomainModifierKeys.Control;
-                if (_altCheckBox.Checked) modifiers |= DomainModifierKeys.Alt;
-                if (_shiftCheckBox.Checked) modifiers |= DomainModifierKeys.Shift;
-                if (_winCheckBox.Checked) modifiers |= DomainModifierKeys.Windows;
+                if (_ctrlCheckBox.Checked)
+                {
+                    modifiers |= DomainModifierKeys.Control;
+                }
+
+                if (_altCheckBox.Checked)
+                {
+                    modifiers |= DomainModifierKeys.Alt;
+                }
+
+                if (_shiftCheckBox.Checked)
+                {
+                    modifiers |= DomainModifierKeys.Shift;
+                }
+
+                if (_winCheckBox.Checked)
+                {
+                    modifiers |= DomainModifierKeys.Windows;
+                }
+
                 Hotkey.Modifiers = modifiers;
             }
             else
@@ -416,6 +468,10 @@ namespace BeatBind.Presentation.Components
             }
         }
 
+        /// <summary>
+        /// Validates user input before saving the hotkey.
+        /// </summary>
+        /// <returns>True if input is valid, false otherwise</returns>
         private bool ValidateInput()
         {
 
@@ -432,26 +488,6 @@ namespace BeatBind.Presentation.Components
             }
 
             return true;
-        }
-
-        private static string GetActionDisplayName(HotkeyAction action)
-        {
-            return action switch
-            {
-                HotkeyAction.PlayPause => "Play/Pause",
-                HotkeyAction.NextTrack => "Next Track",
-                HotkeyAction.PreviousTrack => "Previous Track",
-                HotkeyAction.VolumeUp => "Volume Up",
-                HotkeyAction.VolumeDown => "Volume Down",
-                HotkeyAction.Mute => "Mute/Unmute",
-                HotkeyAction.SaveTrack => "Save Track",
-                HotkeyAction.RemoveTrack => "Remove Track",
-                HotkeyAction.ToggleShuffle => "Toggle Shuffle",
-                HotkeyAction.ToggleRepeat => "Toggle Repeat",
-                HotkeyAction.SeekForward => "Seek Forward",
-                HotkeyAction.SeekBackward => "Seek Backward",
-                _ => action.ToString()
-            };
         }
     }
 }

@@ -1,8 +1,8 @@
 using BeatBind.Application.Services;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
-using BeatBind.Presentation.Themes;
 using BeatBind.Presentation.Helpers;
+using BeatBind.Presentation.Themes;
 using MaterialSkin.Controls;
 using Microsoft.Extensions.Logging;
 
@@ -12,17 +12,24 @@ public partial class AuthenticationPanel : BasePanelControl
 {
     private readonly AuthenticationApplicationService _authenticationService;
     private readonly IConfigurationService _configurationService;
-    
+
     private MaterialTextBox _clientIdTextBox = null!;
     private MaterialTextBox _clientSecretTextBox = null!;
+    private MaterialTextBox _redirectPortTextBox = null!;
     private MaterialButton _authenticateButton = null!;
     private MaterialLabel _statusLabel = null!;
     private bool _isAuthenticated;
 
     public event EventHandler? AuthenticationStatusChanged;
-    
+
     public bool IsAuthenticated => _isAuthenticated;
 
+    /// <summary>
+    /// Initializes a new instance of the AuthenticationPanel with dependency injection.
+    /// </summary>
+    /// <param name="authenticationService">Service for authentication operations</param>
+    /// <param name="configurationService">Service for configuration management</param>
+    /// <param name="logger">Logger instance</param>
     public AuthenticationPanel(AuthenticationApplicationService authenticationService, IConfigurationService configurationService, ILogger<AuthenticationPanel> logger)
         : base(logger)
     {
@@ -30,13 +37,18 @@ public partial class AuthenticationPanel : BasePanelControl
         _configurationService = configurationService;
     }
 
-    // Parameterless constructor for WinForms designer support
+    /// <summary>
+    /// Parameterless constructor for WinForms designer support.
+    /// </summary>
     public AuthenticationPanel() : base()
     {
         _authenticationService = null!;
         _configurationService = null!;
     }
 
+    /// <summary>
+    /// Initializes the UI layout and controls for the authentication panel.
+    /// </summary>
     protected override void InitializeUI()
     {
         var mainLayout = new TableLayoutPanel
@@ -60,28 +72,41 @@ public partial class AuthenticationPanel : BasePanelControl
         Controls.Add(mainLayout);
     }
 
+    /// <summary>
+    /// Creates the credentials input section with client ID, secret, and redirect port fields.
+    /// </summary>
+    /// <returns>A control containing the credentials input fields</returns>
     private Control CreateCredentialsContent()
     {
         var panel = new Panel { Dock = DockStyle.Fill };
-        var layout = ControlFactory.CreateSingleColumnLayout(4);
+        var layout = ControlFactory.CreateSingleColumnLayout(6);
 
         // Use ControlFactory for consistent label and control creation
         var clientIdLabel = ControlFactory.CreateLabel("Client ID", bold: true);
         _clientIdTextBox = ControlFactory.CreateMaterialTextBox("Enter your Spotify Client ID");
 
         var clientSecretLabel = ControlFactory.CreateLabel("Client Secret", bold: true);
-        _clientSecretTextBox = ControlFactory.CreateMaterialTextBox("Enter your Spotify Client Secret", isPassword: true);
-        _clientSecretTextBox.Margin = new Padding(0, 0, 0, 0);
+        _clientSecretTextBox = ControlFactory.CreateMaterialTextBox("Enter your Spotify Client Secret");
+
+        var redirectPortLabel = ControlFactory.CreateLabel("Redirect Port", bold: true);
+        _redirectPortTextBox = ControlFactory.CreateMaterialTextBox("http://127.0.0.1:{port}/callback");
+        _redirectPortTextBox.Margin = new Padding(0, 0, 0, 0);
 
         layout.Controls.Add(clientIdLabel, 0, 0);
         layout.Controls.Add(_clientIdTextBox, 0, 1);
         layout.Controls.Add(clientSecretLabel, 0, 2);
         layout.Controls.Add(_clientSecretTextBox, 0, 3);
+        layout.Controls.Add(redirectPortLabel, 0, 4);
+        layout.Controls.Add(_redirectPortTextBox, 0, 5);
 
         panel.Controls.Add(layout);
         return panel;
     }
 
+    /// <summary>
+    /// Creates the authentication status and action button section.
+    /// </summary>
+    /// <returns>A control containing the authentication button and status label</returns>
     private Control CreateAuthStatusContent()
     {
         var panel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(15, 15, 15, 20) };
@@ -112,6 +137,11 @@ public partial class AuthenticationPanel : BasePanelControl
         return panel;
     }
 
+    /// <summary>
+    /// Handles the authenticate button click event. Saves credentials and initiates OAuth flow.
+    /// </summary>
+    /// <param name="sender">Event sender</param>
+    /// <param name="e">Event arguments</param>
     private async void AuthenticateButton_Click(object? sender, EventArgs e)
     {
         _authenticateButton.Enabled = false;
@@ -126,7 +156,7 @@ public partial class AuthenticationPanel : BasePanelControl
             }
 
             var result = await _authenticationService.AuthenticateUserAsync();
-            
+
             _isAuthenticated = result.IsSuccess;
             UpdateAuthenticationStatus();
 
@@ -136,7 +166,7 @@ public partial class AuthenticationPanel : BasePanelControl
                 "Authentication successful!",
                 $"Authentication failed. {result.Error}"
             );
-            
+
             AuthenticationStatusChanged?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception ex)
@@ -151,6 +181,9 @@ public partial class AuthenticationPanel : BasePanelControl
         }
     }
 
+    /// <summary>
+    /// Loads saved configuration values into the UI controls.
+    /// </summary>
     public void LoadConfiguration()
     {
         try
@@ -158,7 +191,8 @@ public partial class AuthenticationPanel : BasePanelControl
             var config = _configurationService.GetConfiguration();
             _clientIdTextBox.Text = config.ClientId;
             _clientSecretTextBox.Text = config.ClientSecret;
-            
+            _redirectPortTextBox.Text = config.RedirectPort.ToString();
+
             UpdateAuthenticationStatus();
         }
         catch (Exception ex)
@@ -167,14 +201,28 @@ public partial class AuthenticationPanel : BasePanelControl
         }
     }
 
+    /// <summary>
+    /// Retrieves the current configuration with values from the UI controls.
+    /// </summary>
+    /// <returns>The updated application configuration</returns>
     public ApplicationConfiguration GetConfiguration()
     {
         var config = _configurationService.GetConfiguration();
         config.ClientId = _clientIdTextBox.Text;
         config.ClientSecret = _clientSecretTextBox.Text;
+
+        if (int.TryParse(_redirectPortTextBox.Text, out int port))
+        {
+            config.RedirectPort = port;
+            config.RedirectUri = $"http://127.0.0.1:{port}/callback";
+        }
+
         return config;
     }
 
+    /// <summary>
+    /// Updates the authentication status display based on stored credentials.
+    /// </summary>
     public void UpdateAuthenticationStatus()
     {
         bool hasStoredAuth = CheckStoredAuthentication();
@@ -194,12 +242,16 @@ public partial class AuthenticationPanel : BasePanelControl
         }
     }
 
+    /// <summary>
+    /// Checks if valid authentication tokens are stored in the configuration.
+    /// </summary>
+    /// <returns>True if valid authentication exists, false otherwise</returns>
     private bool CheckStoredAuthentication()
     {
         try
         {
             var config = _configurationService.GetConfiguration();
-            
+
             if (!string.IsNullOrEmpty(config.AccessToken) && !string.IsNullOrEmpty(config.RefreshToken))
             {
                 if (config.TokenExpiresAt > DateTime.UtcNow.AddMinutes(5))
@@ -213,7 +265,7 @@ public partial class AuthenticationPanel : BasePanelControl
                     return true;
                 }
             }
-            
+
             return false;
         }
         catch (Exception ex)

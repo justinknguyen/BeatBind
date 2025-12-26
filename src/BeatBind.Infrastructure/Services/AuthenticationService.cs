@@ -17,6 +17,12 @@ namespace BeatBind.Infrastructure.Services
         private readonly HttpClient _httpClient;
         private HttpListener? _httpListener;
 
+        /// <summary>
+        /// Initializes a new instance of the AuthenticationService class.
+        /// </summary>
+        /// <param name="logger">The logger instance.</param>
+        /// <param name="configurationService">The configuration service.</param>
+        /// <param name="httpClient">The HTTP client for API requests.</param>
         public AuthenticationService(
             ILogger<AuthenticationService> logger,
             IConfigurationService configurationService,
@@ -27,12 +33,17 @@ namespace BeatBind.Infrastructure.Services
             _httpClient = httpClient;
         }
 
+        /// <summary>
+        /// Authenticates the user with Spotify using OAuth 2.0 authorization code flow.
+        /// Opens a browser for user authentication and starts a local HTTP listener for the callback.
+        /// </summary>
+        /// <returns>An AuthenticationResult containing tokens and status information.</returns>
         public async Task<AuthenticationResult> AuthenticateAsync()
         {
             try
             {
                 var config = _configurationService.GetConfiguration();
-                
+
                 if (string.IsNullOrEmpty(config.ClientId) || string.IsNullOrEmpty(config.ClientSecret))
                 {
                     return new AuthenticationResult { Success = false, Error = "Client ID and Client Secret are required" };
@@ -40,7 +51,7 @@ namespace BeatBind.Infrastructure.Services
 
                 // Generate state for security
                 var state = Guid.NewGuid().ToString("N");
-                
+
                 // Start local HTTP listener for callback
                 if (!await StartCallbackListenerAsync(config.RedirectUri))
                 {
@@ -49,13 +60,13 @@ namespace BeatBind.Infrastructure.Services
 
                 // Build authorization URL
                 var authUrl = BuildAuthorizationUrl(config.ClientId, config.RedirectUri, state);
-                
+
                 // Open browser for user authentication
                 Process.Start(new ProcessStartInfo(authUrl) { UseShellExecute = true });
 
                 // Wait for callback
                 var callbackResult = await WaitForCallbackAsync(state);
-                
+
                 if (!callbackResult.Success)
                 {
                     return callbackResult;
@@ -76,12 +87,17 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Refreshes an expired access token using a valid refresh token.
+        /// </summary>
+        /// <param name="refreshToken">The refresh token to use for obtaining a new access token.</param>
+        /// <returns>An AuthenticationResult containing the new tokens and status information.</returns>
         public async Task<AuthenticationResult> RefreshTokenAsync(string refreshToken)
         {
             try
             {
                 var config = _configurationService.GetConfiguration();
-                
+
                 var parameters = new Dictionary<string, string>
                 {
                     ["grant_type"] = "refresh_token",
@@ -89,7 +105,7 @@ namespace BeatBind.Infrastructure.Services
                 };
 
                 var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{config.ClientId}:{config.ClientSecret}"));
-                
+
                 var url = "https://accounts.spotify.com/api/token";
                 _logger.LogInformation("POST {Url} (refresh_token)", url);
                 var request = new HttpRequestMessage(HttpMethod.Post, url);
@@ -108,7 +124,7 @@ namespace BeatBind.Infrastructure.Services
                     {
                         Success = true,
                         AccessToken = root.GetProperty("access_token").GetString() ?? string.Empty,
-                        RefreshToken = root.TryGetProperty("refresh_token", out var refreshProp) ? 
+                        RefreshToken = root.TryGetProperty("refresh_token", out var refreshProp) ?
                             refreshProp.GetString() ?? refreshToken : refreshToken,
                         ExpiresIn = root.GetProperty("expires_in").GetInt32(),
                         ExpiresAt = DateTime.UtcNow.AddSeconds(root.GetProperty("expires_in").GetInt32())
@@ -127,19 +143,28 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Checks if the authentication result contains a valid, non-expired access token.
+        /// </summary>
+        /// <param name="authResult">The authentication result to validate.</param>
+        /// <returns>True if the token is valid and not expired; otherwise, false.</returns>
         public bool IsTokenValid(AuthenticationResult authResult)
         {
-            return authResult != null && 
-                   !string.IsNullOrEmpty(authResult.AccessToken) && 
+            return authResult != null &&
+                   !string.IsNullOrEmpty(authResult.AccessToken) &&
                    DateTime.UtcNow < authResult.ExpiresAt;
         }
 
+        /// <summary>
+        /// Retrieves stored authentication tokens from the configuration.
+        /// </summary>
+        /// <returns>An AuthenticationResult if tokens exist; otherwise, null.</returns>
         public AuthenticationResult? GetStoredAuthentication()
         {
             try
             {
                 var config = _configurationService.GetConfiguration();
-                
+
                 if (string.IsNullOrEmpty(config.AccessToken) || string.IsNullOrEmpty(config.RefreshToken))
                 {
                     return null;
@@ -160,6 +185,10 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Saves authentication tokens to the configuration for persistent storage.
+        /// </summary>
+        /// <param name="authResult">The authentication result containing tokens to save.</param>
         public void SaveAuthentication(AuthenticationResult authResult)
         {
             try
@@ -168,10 +197,10 @@ namespace BeatBind.Infrastructure.Services
                 config.AccessToken = authResult.AccessToken;
                 config.RefreshToken = authResult.RefreshToken;
                 config.TokenExpiresAt = authResult.ExpiresAt;
-                
+
                 // Save the updated configuration
                 _configurationService.SaveConfiguration(config);
-                
+
                 _logger.LogInformation("Authentication tokens saved successfully");
             }
             catch (Exception ex)
@@ -180,6 +209,11 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Starts a local HTTP listener to receive the OAuth callback.
+        /// </summary>
+        /// <param name="redirectUri">The redirect URI to listen on.</param>
+        /// <returns>True if the listener started successfully; otherwise, false.</returns>
         private Task<bool> StartCallbackListenerAsync(string redirectUri)
         {
             try
@@ -197,10 +231,17 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Builds the Spotify authorization URL with required parameters and scopes.
+        /// </summary>
+        /// <param name="clientId">The Spotify application client ID.</param>
+        /// <param name="redirectUri">The callback redirect URI.</param>
+        /// <param name="state">A unique state value for CSRF protection.</param>
+        /// <returns>The complete authorization URL.</returns>
         private static string BuildAuthorizationUrl(string clientId, string redirectUri, string state)
         {
             var scopes = "user-read-playback-state,user-modify-playback-state,user-read-currently-playing,user-library-read,user-library-modify";
-            
+
             var parameters = new NameValueCollection
             {
                 ["client_id"] = clientId,
@@ -215,6 +256,12 @@ namespace BeatBind.Infrastructure.Services
             return $"https://accounts.spotify.com/authorize?{query}";
         }
 
+        /// <summary>
+        /// Waits for and processes the OAuth callback from Spotify.
+        /// Displays a success page to the user and validates the callback parameters.
+        /// </summary>
+        /// <param name="expectedState">The expected state value for validation.</param>
+        /// <returns>An AuthenticationResult containing the authorization code or error information.</returns>
         private async Task<AuthenticationResult> WaitForCallbackAsync(string expectedState)
         {
             try
@@ -260,6 +307,12 @@ namespace BeatBind.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// Exchanges an authorization code for access and refresh tokens.
+        /// </summary>
+        /// <param name="code">The authorization code received from the callback.</param>
+        /// <param name="config">The application configuration containing client credentials.</param>
+        /// <returns>An AuthenticationResult containing the access and refresh tokens.</returns>
         private async Task<AuthenticationResult> ExchangeCodeForTokenAsync(string code, ApplicationConfiguration config)
         {
             try
@@ -272,7 +325,7 @@ namespace BeatBind.Infrastructure.Services
                 };
 
                 var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{config.ClientId}:{config.ClientSecret}"));
-                
+
                 var url = "https://accounts.spotify.com/api/token";
                 _logger.LogInformation("POST {Url} (authorization_code)", url);
                 var request = new HttpRequestMessage(HttpMethod.Post, url);

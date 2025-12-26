@@ -19,7 +19,7 @@ namespace BeatBind.Tests.Application.Services
             _mockAuthService = new Mock<IAuthenticationService>();
             _mockConfigService = new Mock<IConfigurationService>();
             _mockLogger = new Mock<ILogger<AuthenticationApplicationService>>();
-            
+
             _service = new AuthenticationApplicationService(
                 _mockAuthService.Object,
                 _mockConfigService.Object,
@@ -93,10 +93,10 @@ namespace BeatBind.Tests.Application.Services
                 ClientSecret = "client-secret"
             };
             _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
-            _mockAuthService.Setup(x => x.AuthenticateAsync()).ReturnsAsync(new AuthenticationResult 
-            { 
-                Success = false, 
-                Error = "Authentication failed" 
+            _mockAuthService.Setup(x => x.AuthenticateAsync()).ReturnsAsync(new AuthenticationResult
+            {
+                Success = false,
+                Error = "Authentication failed"
             });
 
             // Act

@@ -22,8 +22,8 @@ public static class CardFactory
         var card = new Panel
         {
             Dock = DockStyle.Fill,
-            Margin = style == CardStyle.Compact 
-                ? new Padding(0, 0, 0, 8) 
+            Margin = style == CardStyle.Compact
+                ? new Padding(0, 0, 0, 8)
                 : new Padding(0, 0, 0, 15),
             BackColor = Theme.CardBackground,
             BorderStyle = BorderStyle.None
@@ -46,7 +46,7 @@ public static class CardFactory
         };
 
         int headerHeight = style == CardStyle.Compact ? 30 : 40;
-        var headerFont = style == CardStyle.Compact 
+        var headerFont = style == CardStyle.Compact
             ? new Font("Segoe UI", 10f, FontStyle.Bold)
             : new Font("Segoe UI", 12f, FontStyle.Bold);
         var headerPadding = style == CardStyle.Compact
@@ -75,7 +75,7 @@ public static class CardFactory
     /// <param name="title">The title text displayed in the card header</param>
     /// <param name="content">The control to display in the card body</param>
     /// <returns>A styled card panel with compact header</returns>
-    public static Panel CreateCompactCard(string title, Control content) 
+    public static Panel CreateCompactCard(string title, Control content)
         => CreateCard(title, content, CardStyle.Compact);
 
     /// <summary>
@@ -85,7 +85,7 @@ public static class CardFactory
     /// <param name="content">The control to display in the card body</param>
     /// <param name="fixedHeight">Optional fixed height for the card</param>
     /// <returns>A styled card panel with modern header</returns>
-    public static Panel CreateModernCard(string title, Control content, int? fixedHeight = null) 
+    public static Panel CreateModernCard(string title, Control content, int? fixedHeight = null)
         => CreateCard(title, content, CardStyle.Modern, fixedHeight);
 
     /// <summary>
@@ -141,7 +141,7 @@ public enum CardStyle
 {
     /// <summary>Compact style with 30px header - for settings and configuration</summary>
     Compact,
-    
+
     /// <summary>Modern style with 40px header - for main content areas</summary>
     Modern
 }

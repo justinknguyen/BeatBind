@@ -1,6 +1,5 @@
 using BeatBind.Core.Common;
 using FluentAssertions;
-using Xunit;
 
 namespace BeatBind.Tests.Core
 {

@@ -163,7 +163,7 @@ namespace BeatBind.Tests.Core.Entities
         [InlineData(HotkeyAction.PreviousTrack)]
         [InlineData(HotkeyAction.VolumeUp)]
         [InlineData(HotkeyAction.VolumeDown)]
-        [InlineData(HotkeyAction.Mute)]
+        [InlineData(HotkeyAction.MuteUnmute)]
         [InlineData(HotkeyAction.SaveTrack)]
         [InlineData(HotkeyAction.RemoveTrack)]
         [InlineData(HotkeyAction.ToggleShuffle)]
