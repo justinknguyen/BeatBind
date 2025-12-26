@@ -69,7 +69,7 @@ public partial class HotkeysPanel : BasePanelControl
 
     private Control CreateLastHotkeyContent()
     {
-        var panel = new Panel { Height = 40, Dock = DockStyle.Top };
+        var panel = new Panel { Height = 30, Dock = DockStyle.Top };
 
         // Use ControlFactory for consistent control creation
         _lastHotkeyLabel = ControlFactory.CreateMaterialLabel("No hotkey triggered yet", highEmphasis: false);

@@ -121,10 +121,10 @@ namespace BeatBind.Presentation
 
             // Form settings
             Text = "BeatBind - Spotify Global Hotkeys";
-            Size = new Size(700, 650);
+            Size = new Size(700, 800);
             StartPosition = FormStartPosition.CenterScreen;
             FormBorderStyle = FormBorderStyle.Sizable;
-            MinimumSize = new Size(650, 600);
+            MinimumSize = new Size(650, 700);
 
             // Create MaterialTabControl
             _mainTabControl = new MaterialTabControl
