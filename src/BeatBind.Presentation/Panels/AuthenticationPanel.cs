@@ -70,7 +70,7 @@ public partial class AuthenticationPanel : BasePanelControl
         _clientIdTextBox = ControlFactory.CreateMaterialTextBox("Enter your Spotify Client ID");
 
         var clientSecretLabel = ControlFactory.CreateLabel("Client Secret", bold: true);
-        _clientSecretTextBox = ControlFactory.CreateMaterialTextBox("Enter your Spotify Client Secret", isPassword: true);
+        _clientSecretTextBox = ControlFactory.CreateMaterialTextBox("Enter your Spotify Client Secret");
         _clientSecretTextBox.Margin = new Padding(0, 0, 0, 0);
 
         layout.Controls.Add(clientIdLabel, 0, 0);

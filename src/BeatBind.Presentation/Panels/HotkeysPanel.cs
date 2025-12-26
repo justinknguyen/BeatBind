@@ -46,31 +46,25 @@ public partial class HotkeysPanel : BasePanelControl
 
     protected override void InitializeUI()
     {
-        var scrollPanel = new Panel
+        var mainLayout = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            AutoScroll = true,
+            ColumnCount = 1,
+            RowCount = 2,
             BackColor = Theme.CardBackground
         };
 
-        var mainLayout = new TableLayoutPanel
-        {
-            Dock = DockStyle.Top,
-            ColumnCount = 1,
-            RowCount = 2,
-            AutoSize = true,
-            BackColor = Theme.CardBackground
-        };
+        mainLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         // Use CardFactory for consistent card creation
         var lastHotkeyCard = CardFactory.CreateModernCard("Last Triggered Hotkey", CreateLastHotkeyContent());
         mainLayout.Controls.Add(lastHotkeyCard);
 
-        var hotkeyCard = CardFactory.CreateModernCard("Hotkey Management", CreateHotkeyManagementContent(), fixedHeight: 460);
+        var hotkeyCard = CardFactory.CreateModernCard("Hotkey Management", CreateHotkeyManagementContent());
         mainLayout.Controls.Add(hotkeyCard);
 
-        scrollPanel.Controls.Add(mainLayout);
-        Controls.Add(scrollPanel);
+        Controls.Add(mainLayout);
     }
 
     private Control CreateLastHotkeyContent()
@@ -86,7 +80,7 @@ public partial class HotkeysPanel : BasePanelControl
 
     private Control CreateHotkeyManagementContent()
     {
-        var panel = new Panel { Height = 400, Dock = DockStyle.Top };
+        var panel = new Panel { Dock = DockStyle.Fill };
 
         // Use ControlFactory for consistent button creation
         _addHotkeyButton = ControlFactory.CreateMaterialButton("ADD NEW HOTKEY", 180, 40);
@@ -147,7 +141,6 @@ public partial class HotkeysPanel : BasePanelControl
             }
 
             AddHotkeyEntryToUI(hotkey);
-            _hotkeyApplicationService?.AddHotkey(hotkey);
             HotkeyAdded?.Invoke(this, EventArgs.Empty);
         }
     }

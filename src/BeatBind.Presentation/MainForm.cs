@@ -241,7 +241,6 @@ namespace BeatBind.Presentation
             if (hotkeyDialog.ShowDialog() == DialogResult.OK)
             {
                 var updatedHotkey = hotkeyDialog.Hotkey;
-                _hotkeyApplicationService?.UpdateHotkey(updatedHotkey);
                 _hotkeysPanel?.UpdateHotkeyEntry(updatedHotkey);
             }
         }
@@ -250,7 +249,6 @@ namespace BeatBind.Presentation
         {
             if (MessageBoxHelper.ConfirmDelete(hotkey.Action.ToString(), "hotkey"))
             {
-                _hotkeyApplicationService?.RemoveHotkey(hotkey.Id);
                 _hotkeysPanel?.RemoveHotkeyEntry(hotkey.Id);
             }
         }
@@ -311,6 +309,9 @@ namespace BeatBind.Presentation
                 config.Hotkeys = _hotkeysPanel.GetHotkeysFromUI();
 
                 _configurationService.SaveConfiguration(config);
+
+                // Reload hotkeys to ensure they're properly registered
+                _hotkeyApplicationService?.ReloadHotkeys();
 
                 MessageBoxHelper.ShowSuccess("Configuration saved successfully!");
             }

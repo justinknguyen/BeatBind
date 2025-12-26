@@ -95,6 +95,15 @@ namespace BeatBind.Application.Services
             }
         }
 
+        public void ReloadHotkeys()
+        {
+            // Unregister all current hotkeys
+            _hotkeyService.UnregisterAllHotkeys();
+
+            // Re-initialize from configuration
+            InitializeHotkeys();
+        }
+
         private void OnHotkeyPressed(object? sender, Hotkey hotkey)
         {
             try

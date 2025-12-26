@@ -372,7 +372,7 @@ namespace BeatBind.Presentation.Components
             _altCheckBox.Checked = hotkey.Modifiers.HasFlag(DomainModifierKeys.Alt);
             _shiftCheckBox.Checked = hotkey.Modifiers.HasFlag(DomainModifierKeys.Shift);
             _winCheckBox.Checked = hotkey.Modifiers.HasFlag(DomainModifierKeys.Windows);
-            _keyComboBox.SelectedItem = (Keys)hotkey.KeyCode;
+            _keyComboBox.SelectedValue = (Keys)hotkey.KeyCode;
             _enabledCheckBox.Checked = hotkey.IsEnabled;
             UpdatePreview();
         }
@@ -391,7 +391,7 @@ namespace BeatBind.Presentation.Components
                 Hotkey.Action = _actionComboBox.SelectedValue is HotkeyAction action
                     ? action
                     : HotkeyAction.PlayPause; // or another default/fallback action
-                Hotkey.KeyCode = _keyComboBox.SelectedItem is Keys key ? (int)key : 0;
+                Hotkey.KeyCode = _keyComboBox.SelectedValue is Keys key ? (int)key : 0;
                 Hotkey.IsEnabled = _enabledCheckBox.Checked;
 
                 var modifiers = DomainModifierKeys.None;

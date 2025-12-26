@@ -170,7 +170,7 @@ namespace BeatBind.Presentation.Components
             if (hotkey.Modifiers.HasFlag(DomainModifierKeys.Windows))
                 parts.Add("Win");
 
-            parts.Add(((Keys)hotkey.KeyCode).ToString());
+            parts.Add(Hotkey.GetKeyDisplayName(hotkey.KeyCode));
 
             return string.Join(" + ", parts);
         }
