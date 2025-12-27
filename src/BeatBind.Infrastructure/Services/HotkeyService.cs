@@ -38,7 +38,7 @@ namespace BeatBind.Infrastructure.Services
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
 
-        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+        protected delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
         public event EventHandler<Hotkey>? HotkeyPressed;
 
@@ -55,7 +55,7 @@ namespace BeatBind.Infrastructure.Services
             _hookCallback = HookCallback;
 
             // Set up low-level keyboard hook
-            _hookId = SetHook(_hookCallback);
+            _hookId = InstallHook(_hookCallback);
             _logger.LogInformation("Keyboard hook installed");
         }
 
@@ -145,7 +145,7 @@ namespace BeatBind.Infrastructure.Services
         {
             if (_hookId != IntPtr.Zero)
             {
-                UnhookWindowsHookEx(_hookId);
+                UninstallHook(_hookId);
                 _hookId = IntPtr.Zero;
                 _logger.LogInformation("Keyboard hook paused");
             }
@@ -158,7 +158,7 @@ namespace BeatBind.Infrastructure.Services
         {
             if (_hookId == IntPtr.Zero)
             {
-                _hookId = SetHook(_hookCallback);
+                _hookId = InstallHook(_hookCallback);
                 _logger.LogInformation("Keyboard hook resumed");
             }
         }
@@ -168,11 +168,20 @@ namespace BeatBind.Infrastructure.Services
         /// </summary>
         /// <param name="proc">The callback procedure for the hook.</param>
         /// <returns>A handle to the installed hook.</returns>
-        private IntPtr SetHook(LowLevelKeyboardProc proc)
+        protected virtual IntPtr InstallHook(LowLevelKeyboardProc proc)
         {
             using var curProcess = System.Diagnostics.Process.GetCurrentProcess();
             using var curModule = curProcess.MainModule;
             return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule?.ModuleName ?? ""), 0);
+        }
+
+        /// <summary>
+        /// Uninstalls the low-level keyboard hook.
+        /// </summary>
+        /// <param name="hookId">The handle to the hook to uninstall.</param>
+        protected virtual void UninstallHook(IntPtr hookId)
+        {
+            UnhookWindowsHookEx(hookId);
         }
 
         /// <summary>
@@ -361,7 +370,7 @@ namespace BeatBind.Infrastructure.Services
 
                 if (_hookId != IntPtr.Zero)
                 {
-                    UnhookWindowsHookEx(_hookId);
+                    UninstallHook(_hookId);
                     _hookId = IntPtr.Zero;
                     _logger.LogInformation("Keyboard hook uninstalled");
                 }

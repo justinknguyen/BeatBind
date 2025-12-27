@@ -9,6 +9,7 @@ namespace BeatBind.Core.Entities
         public List<Hotkey> Hotkeys { get; set; } = new();
         public bool StartWithWindows { get; set; }
         public bool StartMinimized { get; set; } = true;
+        public bool MinimizeToTray { get; set; } = true;
 
         // Audio Control Settings
         public bool PreviousTrackRewindToStart { get; set; } = true;

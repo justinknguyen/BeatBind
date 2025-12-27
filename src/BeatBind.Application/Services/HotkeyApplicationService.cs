@@ -199,6 +199,12 @@ namespace BeatBind.Application.Services
                 case HotkeyAction.PlayPause:
                     await _musicControlService.PlayPauseAsync();
                     break;
+                case HotkeyAction.Play:
+                    await _musicControlService.PlayAsync();
+                    break;
+                case HotkeyAction.Pause:
+                    await _musicControlService.PauseAsync();
+                    break;
                 case HotkeyAction.NextTrack:
                     await _musicControlService.NextTrackAsync();
                     break;
@@ -212,7 +218,13 @@ namespace BeatBind.Application.Services
                     await _musicControlService.VolumeDownAsync();
                     break;
                 case HotkeyAction.MuteUnmute:
+                    await _musicControlService.ToggleMuteAsync();
+                    break;
+                case HotkeyAction.Mute:
                     await _musicControlService.MuteAsync();
+                    break;
+                case HotkeyAction.Unmute:
+                    await _musicControlService.UnmuteAsync();
                     break;
                 case HotkeyAction.SaveTrack:
                     await _musicControlService.SaveTrackAsync();

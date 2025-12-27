@@ -88,6 +88,34 @@ namespace BeatBind.Tests.Application.Services
         }
 
         [Fact]
+        public async Task PlayAsync_ShouldCallSpotifyService()
+        {
+            // Arrange
+            _mockSpotifyService.Setup(x => x.PlayAsync()).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.PlayAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task PauseAsync_ShouldCallSpotifyService()
+        {
+            // Arrange
+            _mockSpotifyService.Setup(x => x.PauseAsync()).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PauseAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.PauseAsync(), Times.Once);
+        }
+
+        [Fact]
         public async Task NextTrackAsync_ShouldCallSpotifyService()
         {
             // Arrange
@@ -239,6 +267,58 @@ namespace BeatBind.Tests.Application.Services
         }
 
         [Fact]
+        public async Task ToggleMuteAsync_WhenNotMuted_ShouldMute()
+        {
+            // Arrange
+            var playbackState = new PlaybackState
+            {
+                IsPlaying = true,
+                Volume = 50,
+                ProgressMs = 1000,
+                DurationMs = 200000,
+                ShuffleState = false,
+                RepeatState = RepeatMode.Off,
+                CurrentTrack = new Track { Id = "track1", Name = "Test Track", Artist = "Artist" }
+            };
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+            _mockSpotifyService.Setup(x => x.SetVolumeAsync(0)).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.ToggleMuteAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.SetVolumeAsync(0), Times.Once);
+        }
+
+        [Fact]
+        public async Task ToggleMuteAsync_WhenMuted_ShouldUnmute()
+        {
+            // Arrange - First mute
+            var playbackState1 = new PlaybackState
+            {
+                IsPlaying = true,
+                Volume = 50,
+                ProgressMs = 1000,
+                DurationMs = 200000
+            };
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState1);
+            _mockSpotifyService.Setup(x => x.SetVolumeAsync(It.IsAny<int>())).ReturnsAsync(true);
+            await _service.ToggleMuteAsync(); // Store the volume
+
+            // Arrange - Then unmute
+            var playbackState2 = new PlaybackState { IsPlaying = true, Volume = 0, ProgressMs = 2000, DurationMs = 200000 };
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState2);
+
+            // Act
+            var result = await _service.ToggleMuteAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.SetVolumeAsync(50), Times.Once);
+        }
+
+        [Fact]
         public async Task MuteAsync_WhenNotMuted_ShouldMute()
         {
             // Arrange
@@ -264,9 +344,33 @@ namespace BeatBind.Tests.Application.Services
         }
 
         [Fact]
-        public async Task MuteAsync_WhenMuted_ShouldUnmute()
+        public async Task MuteAsync_WhenAlreadyMuted_ShouldDoNothing()
         {
-            // Arrange - First mute
+            // Arrange
+            var playbackState = new PlaybackState
+            {
+                IsPlaying = true,
+                Volume = 0,
+                ProgressMs = 1000,
+                DurationMs = 200000,
+                ShuffleState = false,
+                RepeatState = RepeatMode.Off,
+                CurrentTrack = new Track { Id = "track1", Name = "Test Track", Artist = "Artist" }
+            };
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+
+            // Act
+            var result = await _service.MuteAsync();
+
+            // Assert
+            result.Should().BeFalse();
+            _mockSpotifyService.Verify(x => x.SetVolumeAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UnmuteAsync_WhenMuted_ShouldUnmute()
+        {
+            // Arrange - First mute to set last volume
             var playbackState1 = new PlaybackState
             {
                 IsPlaying = true,
@@ -276,18 +380,42 @@ namespace BeatBind.Tests.Application.Services
             };
             _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState1);
             _mockSpotifyService.Setup(x => x.SetVolumeAsync(It.IsAny<int>())).ReturnsAsync(true);
-            await _service.MuteAsync(); // Store the volume
+            await _service.ToggleMuteAsync(); // Store the volume
 
             // Arrange - Then unmute
             var playbackState2 = new PlaybackState { IsPlaying = true, Volume = 0, ProgressMs = 2000, DurationMs = 200000 };
             _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState2);
 
             // Act
-            var result = await _service.MuteAsync();
+            var result = await _service.UnmuteAsync();
 
             // Assert
             result.Should().BeTrue();
             _mockSpotifyService.Verify(x => x.SetVolumeAsync(50), Times.Once);
+        }
+
+        [Fact]
+        public async Task UnmuteAsync_WhenNotMuted_ShouldDoNothing()
+        {
+            // Arrange
+            var playbackState = new PlaybackState
+            {
+                IsPlaying = true,
+                Volume = 50,
+                ProgressMs = 1000,
+                DurationMs = 200000,
+                ShuffleState = false,
+                RepeatState = RepeatMode.Off,
+                CurrentTrack = new Track { Id = "track1", Name = "Test Track", Artist = "Artist" }
+            };
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+
+            // Act
+            var result = await _service.UnmuteAsync();
+
+            // Assert
+            result.Should().BeFalse();
+            _mockSpotifyService.Verify(x => x.SetVolumeAsync(It.IsAny<int>()), Times.Never);
         }
 
         [Fact]
