@@ -12,7 +12,6 @@ using MaterialSkin.Controls;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Win32;
 
 namespace BeatBind.Presentation
 {
@@ -129,9 +128,6 @@ namespace BeatBind.Presentation
             // Subscribe to hotkey triggered events
             _hotkeyApplicationService.HotkeyTriggered += OnHotkeyTriggered;
 
-            // Subscribe to power mode changes to handle sleep/wake
-            SystemEvents.PowerModeChanged += OnPowerModeChanged;
-
             // Initialize hotkeys from configuration once the service is set
             _hotkeyApplicationService.InitializeHotkeys();
         }
@@ -146,27 +142,31 @@ namespace BeatBind.Presentation
             _hotkeysPanel?.UpdateLastHotkeyLabel($"{hotkey.Action}");
         }
 
-        /// <summary>
-        /// Handles power mode changes (sleep/resume) to pause/resume hotkey service.
-        /// </summary>
-        private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
-        {
-            if (_hotkeyApplicationService == null)
-            {
-                return;
-            }
+        private const int WM_POWERBROADCAST = 0x218;
+        private const int PBT_APMSUSPEND = 0x4;
+        private const int PBT_APMRESUMEAUTOMATIC = 0x12;
 
-            switch (e.Mode)
+        /// <summary>
+        /// Overrides WndProc to handle power mode changes (sleep/resume) directly from the message loop.
+        /// This ensures the hook is removed/added on the correct thread and at the right time.
+        /// </summary>
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == WM_POWERBROADCAST)
             {
-                case PowerModes.Suspend:
-                    _logger.LogInformation("System suspending, pausing hotkey service");
-                    _hotkeyApplicationService.Pause();
-                    break;
-                case PowerModes.Resume:
-                    _logger.LogInformation("System resuming, resuming hotkey service");
-                    _hotkeyApplicationService.Resume();
-                    break;
+                switch (m.WParam.ToInt32())
+                {
+                    case PBT_APMSUSPEND:
+                        _logger.LogInformation("System suspending (WM_POWERBROADCAST), pausing hotkey service");
+                        _hotkeyApplicationService?.Pause();
+                        break;
+                    case PBT_APMRESUMEAUTOMATIC:
+                        _logger.LogInformation("System resuming (WM_POWERBROADCAST), resuming hotkey service");
+                        _hotkeyApplicationService?.Resume();
+                        break;
+                }
             }
+            base.WndProc(ref m);
         }
 
         /// <summary>
@@ -544,7 +544,6 @@ namespace BeatBind.Presentation
 
             if (_hotkeyApplicationService != null)
             {
-                SystemEvents.PowerModeChanged -= OnPowerModeChanged;
                 _hotkeyApplicationService.HotkeyTriggered -= OnHotkeyTriggered;
                 _hotkeyApplicationService.Dispose();
             }
