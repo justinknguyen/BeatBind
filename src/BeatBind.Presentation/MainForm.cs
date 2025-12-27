@@ -535,7 +535,8 @@ namespace BeatBind.Presentation
         /// <param name="e">Form closing event arguments</param>
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            if (e.CloseReason == CloseReason.UserClosing && !_isExiting)
+            var config = _configurationService.GetConfiguration();
+            if (e.CloseReason == CloseReason.UserClosing && !_isExiting && config.MinimizeToTray)
             {
                 e.Cancel = true;
                 Hide();

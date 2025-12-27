@@ -14,6 +14,7 @@ public partial class SettingsPanel : BasePanelControl
 
     private MaterialCheckbox _startupCheckBox = null!;
     private MaterialCheckbox _minimizeCheckBox = null!;
+    private MaterialCheckbox _minimizeToTrayCheckBox = null!;
     private MaterialCheckbox _rewindCheckBox = null!;
     private NumericUpDown _volumeStepsNumeric = null!;
     private NumericUpDown _seekMillisecondsNumeric = null!;
@@ -96,8 +97,10 @@ public partial class SettingsPanel : BasePanelControl
         var checkboxPanel1 = ControlFactory.CreateFlowPanel();
         _startupCheckBox = ControlFactory.CreateMaterialCheckbox("Start with Windows");
         _minimizeCheckBox = ControlFactory.CreateMaterialCheckbox("Start minimized");
+        _minimizeToTrayCheckBox = ControlFactory.CreateMaterialCheckbox("Minimize to Tray");
         checkboxPanel1.Controls.Add(_startupCheckBox);
         checkboxPanel1.Controls.Add(_minimizeCheckBox);
+        checkboxPanel1.Controls.Add(_minimizeToTrayCheckBox);
         layout.Controls.Add(checkboxPanel1, 0, 1);
         layout.SetColumnSpan(checkboxPanel1, 2);
 
@@ -212,6 +215,7 @@ public partial class SettingsPanel : BasePanelControl
             _startupCheckBox.Checked = isInStartup || config.StartWithWindows;
 
             _minimizeCheckBox.Checked = config.StartMinimized;
+            _minimizeToTrayCheckBox.Checked = config.MinimizeToTray;
             _rewindCheckBox.Checked = config.PreviousTrackRewindToStart;
             _volumeStepsNumeric.Value = config.VolumeSteps;
             _seekMillisecondsNumeric.Value = config.SeekMilliseconds;
@@ -230,6 +234,7 @@ public partial class SettingsPanel : BasePanelControl
     {
         config.StartWithWindows = _startupCheckBox.Checked;
         config.StartMinimized = _minimizeCheckBox.Checked;
+        config.MinimizeToTray = _minimizeToTrayCheckBox.Checked;
         config.PreviousTrackRewindToStart = _rewindCheckBox.Checked;
         config.VolumeSteps = (int)_volumeStepsNumeric.Value;
         config.SeekMilliseconds = (int)_seekMillisecondsNumeric.Value;
