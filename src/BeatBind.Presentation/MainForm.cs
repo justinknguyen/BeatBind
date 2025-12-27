@@ -12,6 +12,7 @@ using MaterialSkin.Controls;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Win32;
 
 namespace BeatBind.Presentation
 {
@@ -128,6 +129,9 @@ namespace BeatBind.Presentation
             // Subscribe to hotkey triggered events
             _hotkeyApplicationService.HotkeyTriggered += OnHotkeyTriggered;
 
+            // Subscribe to power mode changes to handle sleep/wake
+            SystemEvents.PowerModeChanged += OnPowerModeChanged;
+
             // Initialize hotkeys from configuration once the service is set
             _hotkeyApplicationService.InitializeHotkeys();
         }
@@ -140,6 +144,27 @@ namespace BeatBind.Presentation
         private void OnHotkeyTriggered(object? sender, Hotkey hotkey)
         {
             _hotkeysPanel?.UpdateLastHotkeyLabel($"{hotkey.Action}");
+        }
+
+        /// <summary>
+        /// Handles power mode changes (sleep/resume) to pause/resume hotkey service.
+        /// </summary>
+        private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            if (_hotkeyApplicationService == null)
+                return;
+
+            switch (e.Mode)
+            {
+                case PowerModes.Suspend:
+                    _logger.LogInformation("System suspending, pausing hotkey service");
+                    _hotkeyApplicationService.Pause();
+                    break;
+                case PowerModes.Resume:
+                    _logger.LogInformation("System resuming, resuming hotkey service");
+                    _hotkeyApplicationService.Resume();
+                    break;
+            }
         }
 
         /// <summary>
@@ -517,6 +542,7 @@ namespace BeatBind.Presentation
 
             if (_hotkeyApplicationService != null)
             {
+                SystemEvents.PowerModeChanged -= OnPowerModeChanged;
                 _hotkeyApplicationService.HotkeyTriggered -= OnHotkeyTriggered;
                 _hotkeyApplicationService.Dispose();
             }

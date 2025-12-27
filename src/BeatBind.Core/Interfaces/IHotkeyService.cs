@@ -8,6 +8,8 @@ namespace BeatBind.Core.Interfaces
         bool UnregisterHotkey(int hotkeyId);
         void UnregisterAllHotkeys();
         bool IsHotkeyRegistered(int hotkeyId);
+        void Pause();
+        void Resume();
         event EventHandler<Hotkey>? HotkeyPressed;
     }
 }
