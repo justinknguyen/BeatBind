@@ -109,6 +109,8 @@ Access settings anytime by right-clicking the system tray icon.
 
 Your settings are saved to `%APPDATA%\BeatBind\config.json`. You can edit this file directly if needed, or use the in-app settings interface.
 
+Logs are saved to `%APPDATA%\BeatBind\`. The application keeps logs for the past 24 hours to help with troubleshooting.
+
 ## Contributing
 
 Contributions are welcome! This project follows Clean Architecture principles.

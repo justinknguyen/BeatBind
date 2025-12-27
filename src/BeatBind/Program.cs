@@ -8,6 +8,7 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace BeatBind
 {
@@ -105,21 +106,31 @@ namespace BeatBind
         private static IHostBuilder CreateHostBuilder()
         {
             return Host.CreateDefaultBuilder()
+                .UseSerilog((context, services, configuration) =>
+                {
+                    var appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BeatBind");
+                    var logPath = Path.Combine(appDataPath, "log-.txt");
+
+                    configuration
+                        .ReadFrom.Configuration(context.Configuration)
+                        .ReadFrom.Services(services)
+                        .Enrich.FromLogContext()
+                        .WriteTo.Console()
+                        .WriteTo.File(logPath,
+                            rollingInterval: RollingInterval.Day,
+                            retainedFileTimeLimit: TimeSpan.FromDays(1));
+
+#if DEBUG
+                    configuration.MinimumLevel.Information();
+#else
+                    configuration.MinimumLevel.Warning();
+#endif
+                })
                 .ConfigureServices((context, services) =>
                 {
                     ConfigureInfrastructure(services);
                     ConfigureApplication(services);
                     ConfigurePresentation(services);
-                })
-                .ConfigureLogging(logging =>
-                {
-                    logging.ClearProviders();
-                    logging.AddConsole();
-#if DEBUG
-                    logging.SetMinimumLevel(LogLevel.Information);
-#else
-                    logging.SetMinimumLevel(LogLevel.Warning);
-#endif
                 });
         }
 
