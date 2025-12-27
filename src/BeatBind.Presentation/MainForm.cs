@@ -2,7 +2,6 @@ using System.ComponentModel;
 using BeatBind.Application.Services;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
-using BeatBind.Infrastructure.Helpers;
 using BeatBind.Presentation.Components;
 using BeatBind.Presentation.Helpers;
 using BeatBind.Presentation.Panels;
@@ -24,6 +23,7 @@ namespace BeatBind.Presentation
         private readonly IMediator _mediator;
         private readonly IConfigurationService _configurationService;
         private readonly IGithubReleaseService _githubReleaseService;
+        private readonly IStartupService _startupService;
         private readonly ILogger<MainForm> _logger;
         private const string CURRENT_VERSION = "2.0.0";
 
@@ -52,6 +52,7 @@ namespace BeatBind.Presentation
             _mediator = null!;
             _configurationService = null!;
             _githubReleaseService = null!;
+            _startupService = null!;
             _logger = NullLogger<MainForm>.Instance;
 
             if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
@@ -72,6 +73,7 @@ namespace BeatBind.Presentation
         /// <param name="mediator">Mediator for command/query handling</param>
         /// <param name="configurationService">Service for configuration management</param>
         /// <param name="githubReleaseService">Service for checking GitHub releases</param>
+        /// <param name="startupService">Service for startup management</param>
         /// <param name="logger">Logger instance</param>
         public MainForm(
             MusicControlApplicationService musicControlService,
@@ -79,6 +81,7 @@ namespace BeatBind.Presentation
             IMediator mediator,
             IConfigurationService configurationService,
             IGithubReleaseService githubReleaseService,
+            IStartupService startupService,
             ILogger<MainForm> logger)
         {
             _musicControlService = musicControlService;
@@ -86,6 +89,7 @@ namespace BeatBind.Presentation
             _mediator = mediator;
             _configurationService = configurationService;
             _githubReleaseService = githubReleaseService;
+            _startupService = startupService;
             _logger = logger;
 
             // Initialize MaterialSkinManager
@@ -194,7 +198,7 @@ namespace BeatBind.Presentation
             // Create panels
             _authenticationPanel = new AuthenticationPanel(_authenticationService, _configurationService, NullLogger<AuthenticationPanel>.Instance);
             _hotkeysPanel = new HotkeysPanel(null, NullLogger<HotkeysPanel>.Instance);
-            _settingsPanel = new SettingsPanel(_configurationService, NullLogger<SettingsPanel>.Instance);
+            _settingsPanel = new SettingsPanel(_configurationService, _startupService, NullLogger<SettingsPanel>.Instance);
 
             // Wire up panel events
             _hotkeysPanel.HotkeyEditRequested += HotkeysPanel_HotkeyEditRequested;
@@ -482,7 +486,7 @@ namespace BeatBind.Presentation
                 _configurationService.SaveConfiguration(config);
 
                 // Apply Windows startup setting
-                StartupHelper.SetStartupWithWindows(config.StartWithWindows, _logger);
+                _startupService.SetStartupWithWindows(config.StartWithWindows);
 
                 // Reload hotkeys to ensure they're properly registered
                 _hotkeyApplicationService?.ReloadHotkeys();

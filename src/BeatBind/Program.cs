@@ -1,6 +1,7 @@
 using BeatBind.Application.Behaviors;
 using BeatBind.Application.Services;
 using BeatBind.Core.Interfaces;
+using BeatBind.Infrastructure.Helpers;
 using BeatBind.Infrastructure.Services;
 using BeatBind.Presentation;
 using FluentValidation;
@@ -144,6 +145,8 @@ namespace BeatBind
             services.AddHttpClient<ISpotifyService, SpotifyService>();
             services.AddHttpClient<IAuthenticationService, AuthenticationService>();
             services.AddHttpClient<IGithubReleaseService, GithubReleaseService>();
+            services.AddSingleton<IRegistryWrapper, RegistryWrapper>();
+            services.AddSingleton<IStartupService, StartupService>();
         }
 
         /// <summary>

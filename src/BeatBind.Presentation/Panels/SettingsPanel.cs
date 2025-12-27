@@ -1,6 +1,5 @@
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
-using BeatBind.Infrastructure.Helpers;
 using BeatBind.Presentation.Helpers;
 using BeatBind.Presentation.Themes;
 using MaterialSkin.Controls;
@@ -11,6 +10,7 @@ namespace BeatBind.Presentation.Panels;
 public partial class SettingsPanel : BasePanelControl
 {
     private readonly IConfigurationService _configurationService;
+    private readonly IStartupService _startupService;
 
     private MaterialCheckbox _startupCheckBox = null!;
     private MaterialCheckbox _minimizeCheckBox = null!;
@@ -33,11 +33,13 @@ public partial class SettingsPanel : BasePanelControl
     /// Initializes a new instance of the SettingsPanel with dependency injection.
     /// </summary>
     /// <param name="configurationService">Service for configuration management</param>
+    /// <param name="startupService">Service for startup management</param>
     /// <param name="logger">Logger instance</param>
-    public SettingsPanel(IConfigurationService configurationService, ILogger<SettingsPanel> logger)
+    public SettingsPanel(IConfigurationService configurationService, IStartupService startupService, ILogger<SettingsPanel> logger)
         : base(logger)
     {
         _configurationService = configurationService;
+        _startupService = startupService;
     }
 
     /// <summary>
@@ -46,6 +48,7 @@ public partial class SettingsPanel : BasePanelControl
     public SettingsPanel() : base()
     {
         _configurationService = null!;
+        _startupService = null!;
     }
 
     /// <summary>
@@ -230,7 +233,7 @@ public partial class SettingsPanel : BasePanelControl
             var config = _configurationService.GetConfiguration();
 
             // Sync the StartWithWindows checkbox with actual registry state
-            var isInStartup = StartupHelper.IsInStartup(Logger);
+            var isInStartup = _startupService.IsInStartup();
             _startupCheckBox.Checked = isInStartup || config.StartWithWindows;
 
             _minimizeCheckBox.Checked = config.StartMinimized;
