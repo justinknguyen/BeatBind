@@ -139,6 +139,31 @@ namespace BeatBind.Infrastructure.Services
         }
 
         /// <summary>
+        /// Pauses the hotkey service by removing the keyboard hook.
+        /// </summary>
+        public void Pause()
+        {
+            if (_hookId != IntPtr.Zero)
+            {
+                UnhookWindowsHookEx(_hookId);
+                _hookId = IntPtr.Zero;
+                _logger.LogInformation("Keyboard hook paused");
+            }
+        }
+
+        /// <summary>
+        /// Resumes the hotkey service by reinstalling the keyboard hook.
+        /// </summary>
+        public void Resume()
+        {
+            if (_hookId == IntPtr.Zero)
+            {
+                _hookId = SetHook(_hookCallback);
+                _logger.LogInformation("Keyboard hook resumed");
+            }
+        }
+
+        /// <summary>
         /// Installs a low-level keyboard hook to intercept keyboard events.
         /// </summary>
         /// <param name="proc">The callback procedure for the hook.</param>
