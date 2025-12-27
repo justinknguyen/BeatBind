@@ -12,7 +12,6 @@ using MaterialSkin.Controls;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Win32;
 
 namespace BeatBind.Presentation
 {
