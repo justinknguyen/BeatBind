@@ -107,6 +107,22 @@ namespace BeatBind.Application.Services
         }
 
         /// <summary>
+        /// Pauses the hotkey service.
+        /// </summary>
+        public void Pause()
+        {
+            _hotkeyService.Pause();
+        }
+
+        /// <summary>
+        /// Resumes the hotkey service.
+        /// </summary>
+        public void Resume()
+        {
+            _hotkeyService.Resume();
+        }
+
+        /// <summary>
         /// Updates an existing hotkey, unregistering the old version and registering the new one if enabled.
         /// </summary>
         /// <param name="hotkey">The hotkey with updated values.</param>

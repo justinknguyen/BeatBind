@@ -142,6 +142,33 @@ namespace BeatBind.Presentation
             _hotkeysPanel?.UpdateLastHotkeyLabel($"{hotkey.Action}");
         }
 
+        private const int WM_POWERBROADCAST = 0x218;
+        private const int PBT_APMSUSPEND = 0x4;
+        private const int PBT_APMRESUMEAUTOMATIC = 0x12;
+
+        /// <summary>
+        /// Overrides WndProc to handle power mode changes (sleep/resume) directly from the message loop.
+        /// This ensures the hook is removed/added on the correct thread and at the right time.
+        /// </summary>
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == WM_POWERBROADCAST)
+            {
+                switch (m.WParam.ToInt32())
+                {
+                    case PBT_APMSUSPEND:
+                        _logger.LogInformation("System suspending (WM_POWERBROADCAST), pausing hotkey service");
+                        _hotkeyApplicationService?.Pause();
+                        break;
+                    case PBT_APMRESUMEAUTOMATIC:
+                        _logger.LogInformation("System resuming (WM_POWERBROADCAST), resuming hotkey service");
+                        _hotkeyApplicationService?.Resume();
+                        break;
+                }
+            }
+            base.WndProc(ref m);
+        }
+
         /// <summary>
         /// Initializes all form components and creates the UI layout.
         /// </summary>
