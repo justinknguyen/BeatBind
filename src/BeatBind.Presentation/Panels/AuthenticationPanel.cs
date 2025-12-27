@@ -1,4 +1,5 @@
 using BeatBind.Application.Services;
+using BeatBind.Core.Common;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
 using BeatBind.Presentation.Helpers;
@@ -168,17 +169,29 @@ public partial class AuthenticationPanel : BasePanelControl
 
             var result = await _authenticationService.AuthenticateUserAsync();
 
-            _isAuthenticated = result.IsSuccess;
-            UpdateAuthenticationStatus();
+            void HandleResult()
+            {
+                _isAuthenticated = result.IsSuccess;
+                UpdateAuthenticationStatus();
 
-            // Use MessageBoxHelper for consistent messaging
-            MessageBoxHelper.ShowResult(
-                result.IsSuccess,
-                "Authentication successful!",
-                $"Authentication failed. {result.Error}"
-            );
+                // Use MessageBoxHelper for consistent messaging
+                MessageBoxHelper.ShowResult(
+                    result.IsSuccess,
+                    "Authentication successful!",
+                    $"Authentication failed. {result.Error}"
+                );
 
-            AuthenticationStatusChanged?.Invoke(this, EventArgs.Empty);
+                AuthenticationStatusChanged?.Invoke(this, EventArgs.Empty);
+            }
+
+            if (InvokeRequired)
+            {
+                Invoke(new Action(HandleResult));
+            }
+            else
+            {
+                HandleResult();
+            }
         }
         catch (Exception ex)
         {
@@ -187,7 +200,14 @@ public partial class AuthenticationPanel : BasePanelControl
         }
         finally
         {
-            _authenticateButton.Enabled = true;
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => _authenticateButton.Enabled = true));
+            }
+            else
+            {
+                _authenticateButton.Enabled = true;
+            }
             // Button text is set by UpdateAuthenticationStatus() based on auth state
         }
     }
@@ -257,6 +277,12 @@ public partial class AuthenticationPanel : BasePanelControl
     /// </summary>
     public void UpdateAuthenticationStatus()
     {
+        if (InvokeRequired)
+        {
+            Invoke(new Action(UpdateAuthenticationStatus));
+            return;
+        }
+
         bool hasStoredAuth = CheckStoredAuthentication();
         _isAuthenticated = hasStoredAuth;
 
