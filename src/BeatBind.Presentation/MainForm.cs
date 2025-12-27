@@ -152,7 +152,9 @@ namespace BeatBind.Presentation
         private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
             if (_hotkeyApplicationService == null)
+            {
                 return;
+            }
 
             switch (e.Mode)
             {
