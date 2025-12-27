@@ -19,8 +19,14 @@ public partial class AuthenticationPanel : BasePanelControl
     private MaterialButton _authenticateButton = null!;
     private MaterialLabel _statusLabel = null!;
     private bool _isAuthenticated;
+    private bool _isLoading;
+
+    private string _originalClientId = string.Empty;
+    private string _originalClientSecret = string.Empty;
+    private string _originalRedirectPort = string.Empty;
 
     public event EventHandler? AuthenticationStatusChanged;
+    public event EventHandler? ConfigurationChanged;
 
     public bool IsAuthenticated => _isAuthenticated;
 
@@ -99,6 +105,11 @@ public partial class AuthenticationPanel : BasePanelControl
         layout.Controls.Add(redirectPortLabel, 0, 4);
         layout.Controls.Add(_redirectPortTextBox, 0, 5);
 
+        // Subscribe to changes
+        _clientIdTextBox.TextChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
+        _clientSecretTextBox.TextChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
+        _redirectPortTextBox.TextChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
+
         panel.Controls.Add(layout);
         return panel;
     }
@@ -157,17 +168,29 @@ public partial class AuthenticationPanel : BasePanelControl
 
             var result = await _authenticationService.AuthenticateUserAsync();
 
-            _isAuthenticated = result.IsSuccess;
-            UpdateAuthenticationStatus();
+            void HandleResult()
+            {
+                _isAuthenticated = result.IsSuccess;
+                UpdateAuthenticationStatus();
 
-            // Use MessageBoxHelper for consistent messaging
-            MessageBoxHelper.ShowResult(
-                result.IsSuccess,
-                "Authentication successful!",
-                $"Authentication failed. {result.Error}"
-            );
+                // Use MessageBoxHelper for consistent messaging
+                MessageBoxHelper.ShowResult(
+                    result.IsSuccess,
+                    "Authentication successful!",
+                    $"Authentication failed. {result.Error}"
+                );
 
-            AuthenticationStatusChanged?.Invoke(this, EventArgs.Empty);
+                AuthenticationStatusChanged?.Invoke(this, EventArgs.Empty);
+            }
+
+            if (InvokeRequired)
+            {
+                Invoke(new Action(HandleResult));
+            }
+            else
+            {
+                HandleResult();
+            }
         }
         catch (Exception ex)
         {
@@ -176,7 +199,14 @@ public partial class AuthenticationPanel : BasePanelControl
         }
         finally
         {
-            _authenticateButton.Enabled = true;
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => _authenticateButton.Enabled = true));
+            }
+            else
+            {
+                _authenticateButton.Enabled = true;
+            }
             // Button text is set by UpdateAuthenticationStatus() based on auth state
         }
     }
@@ -186,6 +216,7 @@ public partial class AuthenticationPanel : BasePanelControl
     /// </summary>
     public void LoadConfiguration()
     {
+        _isLoading = true;
         try
         {
             var config = _configurationService.GetConfiguration();
@@ -193,12 +224,32 @@ public partial class AuthenticationPanel : BasePanelControl
             _clientSecretTextBox.Text = config.ClientSecret;
             _redirectPortTextBox.Text = config.RedirectPort.ToString();
 
+            // Save original values
+            _originalClientId = config.ClientId ?? string.Empty;
+            _originalClientSecret = config.ClientSecret ?? string.Empty;
+            _originalRedirectPort = config.RedirectPort.ToString();
+
             UpdateAuthenticationStatus();
         }
         catch (Exception ex)
         {
             LogError(ex, "Failed to load configuration");
         }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    /// <summary>
+    /// Checks if there are any unsaved changes in the panel.
+    /// </summary>
+    /// <returns>True if there are unsaved changes, false otherwise</returns>
+    public bool HasUnsavedChanges()
+    {
+        return _clientIdTextBox.Text != _originalClientId ||
+               _clientSecretTextBox.Text != _originalClientSecret ||
+               _redirectPortTextBox.Text != _originalRedirectPort;
     }
 
     /// <summary>
@@ -225,6 +276,12 @@ public partial class AuthenticationPanel : BasePanelControl
     /// </summary>
     public void UpdateAuthenticationStatus()
     {
+        if (InvokeRequired)
+        {
+            Invoke(new Action(UpdateAuthenticationStatus));
+            return;
+        }
+
         bool hasStoredAuth = CheckStoredAuthentication();
         _isAuthenticated = hasStoredAuth;
 

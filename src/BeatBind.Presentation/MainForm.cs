@@ -2,7 +2,6 @@ using System.ComponentModel;
 using BeatBind.Application.Services;
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
-using BeatBind.Infrastructure.Helpers;
 using BeatBind.Presentation.Components;
 using BeatBind.Presentation.Helpers;
 using BeatBind.Presentation.Panels;
@@ -24,6 +23,7 @@ namespace BeatBind.Presentation
         private readonly IMediator _mediator;
         private readonly IConfigurationService _configurationService;
         private readonly IGithubReleaseService _githubReleaseService;
+        private readonly IStartupService _startupService;
         private readonly ILogger<MainForm> _logger;
         private const string CURRENT_VERSION = "2.0.0";
 
@@ -52,6 +52,7 @@ namespace BeatBind.Presentation
             _mediator = null!;
             _configurationService = null!;
             _githubReleaseService = null!;
+            _startupService = null!;
             _logger = NullLogger<MainForm>.Instance;
 
             if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
@@ -72,6 +73,7 @@ namespace BeatBind.Presentation
         /// <param name="mediator">Mediator for command/query handling</param>
         /// <param name="configurationService">Service for configuration management</param>
         /// <param name="githubReleaseService">Service for checking GitHub releases</param>
+        /// <param name="startupService">Service for startup management</param>
         /// <param name="logger">Logger instance</param>
         public MainForm(
             MusicControlApplicationService musicControlService,
@@ -79,6 +81,7 @@ namespace BeatBind.Presentation
             IMediator mediator,
             IConfigurationService configurationService,
             IGithubReleaseService githubReleaseService,
+            IStartupService startupService,
             ILogger<MainForm> logger)
         {
             _musicControlService = musicControlService;
@@ -86,6 +89,7 @@ namespace BeatBind.Presentation
             _mediator = mediator;
             _configurationService = configurationService;
             _githubReleaseService = githubReleaseService;
+            _startupService = startupService;
             _logger = logger;
 
             // Initialize MaterialSkinManager
@@ -139,7 +143,7 @@ namespace BeatBind.Presentation
         /// <param name="hotkey">The hotkey that was triggered</param>
         private void OnHotkeyTriggered(object? sender, Hotkey hotkey)
         {
-            _hotkeysPanel?.UpdateLastHotkeyLabel($"{hotkey.Action}");
+            _hotkeysPanel?.UpdateLastHotkeyLabel($"{Hotkey.GetActionDisplayName(hotkey.Action)}");
         }
 
         private const int WM_POWERBROADCAST = 0x218;
@@ -194,12 +198,16 @@ namespace BeatBind.Presentation
             // Create panels
             _authenticationPanel = new AuthenticationPanel(_authenticationService, _configurationService, NullLogger<AuthenticationPanel>.Instance);
             _hotkeysPanel = new HotkeysPanel(null, NullLogger<HotkeysPanel>.Instance);
-            _settingsPanel = new SettingsPanel(_configurationService, NullLogger<SettingsPanel>.Instance);
+            _settingsPanel = new SettingsPanel(_configurationService, _startupService, NullLogger<SettingsPanel>.Instance);
 
             // Wire up panel events
             _hotkeysPanel.HotkeyEditRequested += HotkeysPanel_HotkeyEditRequested;
             _hotkeysPanel.HotkeyDeleteRequested += HotkeysPanel_HotkeyDeleteRequested;
             _hotkeysPanel.HotkeyAdded += HotkeysPanel_HotkeyAdded;
+
+            _hotkeysPanel.ConfigurationChanged += OnConfigurationChanged;
+            _authenticationPanel.ConfigurationChanged += OnConfigurationChanged;
+            _settingsPanel.ConfigurationChanged += OnConfigurationChanged;
 
             // Create tabs
             var hotkeysTab = new TabPage("⌨️ Hotkeys")
@@ -274,7 +282,8 @@ namespace BeatBind.Presentation
                 Anchor = AnchorStyles.None,
                 UseAccentColor = false,
                 AutoSize = false,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Enabled = false
             };
             _saveConfigButton.Click += SaveConfigButton_Click;
 
@@ -477,11 +486,17 @@ namespace BeatBind.Presentation
                 _configurationService.SaveConfiguration(config);
 
                 // Apply Windows startup setting
-                StartupHelper.SetStartupWithWindows(config.StartWithWindows, _logger);
+                _startupService.SetStartupWithWindows(config.StartWithWindows);
 
                 // Reload hotkeys to ensure they're properly registered
                 _hotkeyApplicationService?.ReloadHotkeys();
 
+                // Update original values in panels to match saved config
+                _authenticationPanel.LoadConfiguration();
+                _settingsPanel.LoadConfiguration();
+                _hotkeysPanel.LoadHotkeys(config.Hotkeys);
+
+                _saveConfigButton.Enabled = false;
                 MessageBoxHelper.ShowSuccess("Configuration saved successfully!");
             }
             catch (Exception ex)
@@ -489,6 +504,16 @@ namespace BeatBind.Presentation
                 _logger.LogError(ex, "Failed to save configuration");
                 MessageBoxHelper.ShowException(ex, "saving configuration");
             }
+        }
+
+        /// <summary>
+        /// Handles configuration changes from any panel.
+        /// </summary>
+        private void OnConfigurationChanged(object? sender, EventArgs e)
+        {
+            _saveConfigButton.Enabled = _hotkeysPanel.HasUnsavedChanges() ||
+                                      _authenticationPanel.HasUnsavedChanges() ||
+                                      _settingsPanel.HasUnsavedChanges();
         }
 
         /// <summary>
@@ -535,7 +560,8 @@ namespace BeatBind.Presentation
         /// <param name="e">Form closing event arguments</param>
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            if (e.CloseReason == CloseReason.UserClosing && !_isExiting)
+            var config = _configurationService.GetConfiguration();
+            if (e.CloseReason == CloseReason.UserClosing && !_isExiting && config.MinimizeToTray)
             {
                 e.Cancel = true;
                 Hide();

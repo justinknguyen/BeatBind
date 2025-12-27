@@ -51,6 +51,40 @@ namespace BeatBind.Application.Services
         }
 
         /// <summary>
+        /// Starts playback.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
+        public async Task<bool> PlayAsync()
+        {
+            try
+            {
+                return await _spotifyService.PlayAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to start playback");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Pauses playback.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
+        public async Task<bool> PauseAsync()
+        {
+            try
+            {
+                return await _spotifyService.PauseAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to pause playback");
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Skips to the next track in the playback queue.
         /// </summary>
         /// <returns>True if the operation was successful; otherwise, false.</returns>
@@ -148,7 +182,7 @@ namespace BeatBind.Application.Services
         /// Toggles mute state by setting volume to 0 or restoring the previous volume level.
         /// </summary>
         /// <returns>True if the operation was successful; otherwise, false.</returns>
-        public async Task<bool> MuteAsync()
+        public async Task<bool> ToggleMuteAsync()
         {
             try
             {
@@ -172,6 +206,51 @@ namespace BeatBind.Application.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to toggle mute");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Mutes the volume by setting it to 0.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
+        public async Task<bool> MuteAsync()
+        {
+            try
+            {
+                var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
+                if (playbackState != null && playbackState.Volume > 0)
+                {
+                    _lastVolume = playbackState.Volume;
+                    return await _spotifyService.SetVolumeAsync(0);
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to mute");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Unmutes the volume by restoring the previous volume level.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
+        public async Task<bool> UnmuteAsync()
+        {
+            try
+            {
+                var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
+                if (playbackState != null && playbackState.Volume == 0)
+                {
+                    return await _spotifyService.SetVolumeAsync(_lastVolume);
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to unmute");
                 return false;
             }
         }

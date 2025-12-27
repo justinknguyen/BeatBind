@@ -16,10 +16,12 @@ public partial class HotkeysPanel : BasePanelControl
     private FlowLayoutPanel _hotkeyFlowPanel = null!;
     private MaterialButton _addHotkeyButton = null!;
     private readonly Dictionary<string, HotkeyListItem> _hotkeyEntries = new();
+    private List<Hotkey> _originalHotkeys = new();
 
     public event EventHandler<Hotkey>? HotkeyEditRequested;
     public event EventHandler<Hotkey>? HotkeyDeleteRequested;
     public event EventHandler? HotkeyAdded;
+    public event EventHandler? ConfigurationChanged;
 
     /// <summary>
     /// Initializes a new instance of the HotkeysPanel with dependency injection.
@@ -168,6 +170,7 @@ public partial class HotkeysPanel : BasePanelControl
 
             AddHotkeyEntryToUI(hotkey);
             HotkeyAdded?.Invoke(this, EventArgs.Empty);
+            ConfigurationChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -188,6 +191,16 @@ public partial class HotkeysPanel : BasePanelControl
         _hotkeyEntries.Clear();
 
         LogInfo($"Loading {hotkeys.Count} hotkeys");
+
+        // Deep copy for original state
+        _originalHotkeys = hotkeys.Select(h => new Hotkey
+        {
+            Id = h.Id,
+            Action = h.Action,
+            KeyCode = h.KeyCode,
+            Modifiers = h.Modifiers,
+            IsEnabled = h.IsEnabled
+        }).ToList();
 
         foreach (var hotkey in hotkeys)
         {
@@ -225,6 +238,7 @@ public partial class HotkeysPanel : BasePanelControl
         if (_hotkeyEntries.TryGetValue(hotkey.Id.ToString(), out var entry))
         {
             entry.UpdateHotkey(hotkey);
+            ConfigurationChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -239,6 +253,7 @@ public partial class HotkeysPanel : BasePanelControl
             _hotkeyFlowPanel.Controls.Remove(entry);
             _hotkeyEntries.Remove(hotkeyId.ToString());
             entry.Dispose();
+            ConfigurationChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -249,6 +264,44 @@ public partial class HotkeysPanel : BasePanelControl
     public List<Hotkey> GetHotkeysFromUI()
     {
         return _hotkeyEntries.Values.Select(entry => entry.Hotkey).ToList();
+    }
+
+    /// <summary>
+    /// Checks if there are any unsaved changes in the panel.
+    /// </summary>
+    /// <returns>True if there are unsaved changes, false otherwise</returns>
+    public bool HasUnsavedChanges()
+    {
+        var currentHotkeys = GetHotkeysFromUI();
+        if (currentHotkeys.Count != _originalHotkeys.Count)
+        {
+            return true;
+        }
+
+        foreach (var original in _originalHotkeys)
+        {
+            var current = currentHotkeys.FirstOrDefault(h => h.Id == original.Id);
+            if (current == null)
+            {
+                return true; // Deleted
+            }
+
+            if (current.Action != original.Action ||
+                current.KeyCode != original.KeyCode ||
+                current.Modifiers != original.Modifiers ||
+                current.IsEnabled != original.IsEnabled)
+            {
+                return true; // Modified
+            }
+        }
+
+        // Check for new hotkeys
+        if (currentHotkeys.Any(c => !_originalHotkeys.Any(o => o.Id == c.Id)))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>

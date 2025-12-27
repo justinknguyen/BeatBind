@@ -60,11 +60,15 @@ namespace BeatBind.Core.Entities
             return action switch
             {
                 HotkeyAction.PlayPause => "Play/Pause",
+                HotkeyAction.Play => "Play",
+                HotkeyAction.Pause => "Pause",
                 HotkeyAction.NextTrack => "Next Track",
                 HotkeyAction.PreviousTrack => "Previous Track",
                 HotkeyAction.VolumeUp => "Volume Up",
                 HotkeyAction.VolumeDown => "Volume Down",
                 HotkeyAction.MuteUnmute => "Mute/Unmute",
+                HotkeyAction.Mute => "Mute",
+                HotkeyAction.Unmute => "Unmute",
                 HotkeyAction.SeekForward => "Seek Forward",
                 HotkeyAction.SeekBackward => "Seek Backward",
                 HotkeyAction.SaveTrack => "Save Track",
@@ -178,11 +182,15 @@ namespace BeatBind.Core.Entities
     public enum HotkeyAction
     {
         PlayPause,
+        Play,
+        Pause,
         NextTrack,
         PreviousTrack,
         VolumeUp,
         VolumeDown,
         MuteUnmute,
+        Mute,
+        Unmute,
         SeekForward,
         SeekBackward,
         SaveTrack,

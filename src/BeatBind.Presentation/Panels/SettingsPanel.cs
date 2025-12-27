@@ -1,6 +1,5 @@
 using BeatBind.Core.Entities;
 using BeatBind.Core.Interfaces;
-using BeatBind.Infrastructure.Helpers;
 using BeatBind.Presentation.Helpers;
 using BeatBind.Presentation.Themes;
 using MaterialSkin.Controls;
@@ -11,22 +10,36 @@ namespace BeatBind.Presentation.Panels;
 public partial class SettingsPanel : BasePanelControl
 {
     private readonly IConfigurationService _configurationService;
+    private readonly IStartupService _startupService;
 
     private MaterialCheckbox _startupCheckBox = null!;
     private MaterialCheckbox _minimizeCheckBox = null!;
+    private MaterialCheckbox _minimizeToTrayCheckBox = null!;
     private MaterialCheckbox _rewindCheckBox = null!;
     private NumericUpDown _volumeStepsNumeric = null!;
     private NumericUpDown _seekMillisecondsNumeric = null!;
+    private bool _isLoading;
+
+    private bool _originalStartup;
+    private bool _originalMinimize;
+    private bool _originalMinimizeToTray;
+    private bool _originalRewind;
+    private int _originalVolumeSteps;
+    private int _originalSeekMilliseconds;
+
+    public event EventHandler? ConfigurationChanged;
 
     /// <summary>
     /// Initializes a new instance of the SettingsPanel with dependency injection.
     /// </summary>
     /// <param name="configurationService">Service for configuration management</param>
+    /// <param name="startupService">Service for startup management</param>
     /// <param name="logger">Logger instance</param>
-    public SettingsPanel(IConfigurationService configurationService, ILogger<SettingsPanel> logger)
+    public SettingsPanel(IConfigurationService configurationService, IStartupService startupService, ILogger<SettingsPanel> logger)
         : base(logger)
     {
         _configurationService = configurationService;
+        _startupService = startupService;
     }
 
     /// <summary>
@@ -35,6 +48,7 @@ public partial class SettingsPanel : BasePanelControl
     public SettingsPanel() : base()
     {
         _configurationService = null!;
+        _startupService = null!;
     }
 
     /// <summary>
@@ -96,8 +110,10 @@ public partial class SettingsPanel : BasePanelControl
         var checkboxPanel1 = ControlFactory.CreateFlowPanel();
         _startupCheckBox = ControlFactory.CreateMaterialCheckbox("Start with Windows");
         _minimizeCheckBox = ControlFactory.CreateMaterialCheckbox("Start minimized");
+        _minimizeToTrayCheckBox = ControlFactory.CreateMaterialCheckbox("Minimize to Tray");
         checkboxPanel1.Controls.Add(_startupCheckBox);
         checkboxPanel1.Controls.Add(_minimizeCheckBox);
+        checkboxPanel1.Controls.Add(_minimizeToTrayCheckBox);
         layout.Controls.Add(checkboxPanel1, 0, 1);
         layout.SetColumnSpan(checkboxPanel1, 2);
 
@@ -158,6 +174,14 @@ public partial class SettingsPanel : BasePanelControl
         layout.Controls.Add(controlsPanel, 0, 4);
         layout.SetColumnSpan(controlsPanel, 2);
 
+        // Subscribe to changes
+        _startupCheckBox.CheckedChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
+        _minimizeCheckBox.CheckedChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
+        _minimizeToTrayCheckBox.CheckedChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
+        _rewindCheckBox.CheckedChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
+        _volumeStepsNumeric.ValueChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
+        _seekMillisecondsNumeric.ValueChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
+
         panel.Controls.Add(layout);
         return panel;
     }
@@ -203,23 +227,51 @@ public partial class SettingsPanel : BasePanelControl
     /// </summary>
     public void LoadConfiguration()
     {
+        _isLoading = true;
         try
         {
             var config = _configurationService.GetConfiguration();
 
             // Sync the StartWithWindows checkbox with actual registry state
-            var isInStartup = StartupHelper.IsInStartup(Logger);
+            var isInStartup = _startupService.IsInStartup();
             _startupCheckBox.Checked = isInStartup || config.StartWithWindows;
 
             _minimizeCheckBox.Checked = config.StartMinimized;
+            _minimizeToTrayCheckBox.Checked = config.MinimizeToTray;
             _rewindCheckBox.Checked = config.PreviousTrackRewindToStart;
             _volumeStepsNumeric.Value = config.VolumeSteps;
             _seekMillisecondsNumeric.Value = config.SeekMilliseconds;
+
+            // Save original values
+            _originalStartup = _startupCheckBox.Checked;
+            _originalMinimize = config.StartMinimized;
+            _originalMinimizeToTray = config.MinimizeToTray;
+            _originalRewind = config.PreviousTrackRewindToStart;
+            _originalVolumeSteps = config.VolumeSteps;
+            _originalSeekMilliseconds = config.SeekMilliseconds;
         }
         catch (Exception ex)
         {
             LogError(ex, "Failed to load configuration");
         }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    /// <summary>
+    /// Checks if there are any unsaved changes in the panel.
+    /// </summary>
+    /// <returns>True if there are unsaved changes, false otherwise</returns>
+    public bool HasUnsavedChanges()
+    {
+        return _startupCheckBox.Checked != _originalStartup ||
+               _minimizeCheckBox.Checked != _originalMinimize ||
+               _minimizeToTrayCheckBox.Checked != _originalMinimizeToTray ||
+               _rewindCheckBox.Checked != _originalRewind ||
+               _volumeStepsNumeric.Value != _originalVolumeSteps ||
+               _seekMillisecondsNumeric.Value != _originalSeekMilliseconds;
     }
 
     /// <summary>
@@ -230,6 +282,7 @@ public partial class SettingsPanel : BasePanelControl
     {
         config.StartWithWindows = _startupCheckBox.Checked;
         config.StartMinimized = _minimizeCheckBox.Checked;
+        config.MinimizeToTray = _minimizeToTrayCheckBox.Checked;
         config.PreviousTrackRewindToStart = _rewindCheckBox.Checked;
         config.VolumeSteps = (int)_volumeStepsNumeric.Value;
         config.SeekMilliseconds = (int)_seekMillisecondsNumeric.Value;
