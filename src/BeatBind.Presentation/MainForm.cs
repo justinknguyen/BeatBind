@@ -143,7 +143,7 @@ namespace BeatBind.Presentation
         /// <param name="hotkey">The hotkey that was triggered</param>
         private void OnHotkeyTriggered(object? sender, Hotkey hotkey)
         {
-            _hotkeysPanel?.UpdateLastHotkeyLabel($"{hotkey.Action}");
+            _hotkeysPanel?.UpdateLastHotkeyLabel($"{Hotkey.GetActionDisplayName(hotkey.Action)}");
         }
 
         private const int WM_POWERBROADCAST = 0x218;
