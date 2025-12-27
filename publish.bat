@@ -24,7 +24,7 @@ if exist "publish" (
 :: Run Publish Command
 echo [INFO] Publishing application...
 echo.
-dotnet publish src/BeatBind/BeatBind.csproj -c Release -o publish
+dotnet publish src/BeatBind/BeatBind.csproj --configuration Release --runtime win-x64 --self-contained true --output ./publish -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=none -p:DebugSymbols=false
 
 if %errorlevel% neq 0 (
     echo.
