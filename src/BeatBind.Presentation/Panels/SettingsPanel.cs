@@ -18,6 +18,16 @@ public partial class SettingsPanel : BasePanelControl
     private MaterialCheckbox _rewindCheckBox = null!;
     private NumericUpDown _volumeStepsNumeric = null!;
     private NumericUpDown _seekMillisecondsNumeric = null!;
+    private bool _isLoading;
+
+    private bool _originalStartup;
+    private bool _originalMinimize;
+    private bool _originalMinimizeToTray;
+    private bool _originalRewind;
+    private int _originalVolumeSteps;
+    private int _originalSeekMilliseconds;
+
+    public event EventHandler? ConfigurationChanged;
 
     /// <summary>
     /// Initializes a new instance of the SettingsPanel with dependency injection.
@@ -161,6 +171,14 @@ public partial class SettingsPanel : BasePanelControl
         layout.Controls.Add(controlsPanel, 0, 4);
         layout.SetColumnSpan(controlsPanel, 2);
 
+        // Subscribe to changes
+        _startupCheckBox.CheckedChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
+        _minimizeCheckBox.CheckedChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
+        _minimizeToTrayCheckBox.CheckedChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
+        _rewindCheckBox.CheckedChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
+        _volumeStepsNumeric.ValueChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
+        _seekMillisecondsNumeric.ValueChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
+
         panel.Controls.Add(layout);
         return panel;
     }
@@ -206,6 +224,7 @@ public partial class SettingsPanel : BasePanelControl
     /// </summary>
     public void LoadConfiguration()
     {
+        _isLoading = true;
         try
         {
             var config = _configurationService.GetConfiguration();
@@ -219,11 +238,37 @@ public partial class SettingsPanel : BasePanelControl
             _rewindCheckBox.Checked = config.PreviousTrackRewindToStart;
             _volumeStepsNumeric.Value = config.VolumeSteps;
             _seekMillisecondsNumeric.Value = config.SeekMilliseconds;
+
+            // Save original values
+            _originalStartup = _startupCheckBox.Checked;
+            _originalMinimize = config.StartMinimized;
+            _originalMinimizeToTray = config.MinimizeToTray;
+            _originalRewind = config.PreviousTrackRewindToStart;
+            _originalVolumeSteps = config.VolumeSteps;
+            _originalSeekMilliseconds = config.SeekMilliseconds;
         }
         catch (Exception ex)
         {
             LogError(ex, "Failed to load configuration");
         }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    /// <summary>
+    /// Checks if there are any unsaved changes in the panel.
+    /// </summary>
+    /// <returns>True if there are unsaved changes, false otherwise</returns>
+    public bool HasUnsavedChanges()
+    {
+        return _startupCheckBox.Checked != _originalStartup ||
+               _minimizeCheckBox.Checked != _originalMinimize ||
+               _minimizeToTrayCheckBox.Checked != _originalMinimizeToTray ||
+               _rewindCheckBox.Checked != _originalRewind ||
+               _volumeStepsNumeric.Value != _originalVolumeSteps ||
+               _seekMillisecondsNumeric.Value != _originalSeekMilliseconds;
     }
 
     /// <summary>

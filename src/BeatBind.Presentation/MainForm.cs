@@ -201,6 +201,10 @@ namespace BeatBind.Presentation
             _hotkeysPanel.HotkeyDeleteRequested += HotkeysPanel_HotkeyDeleteRequested;
             _hotkeysPanel.HotkeyAdded += HotkeysPanel_HotkeyAdded;
 
+            _hotkeysPanel.ConfigurationChanged += OnConfigurationChanged;
+            _authenticationPanel.ConfigurationChanged += OnConfigurationChanged;
+            _settingsPanel.ConfigurationChanged += OnConfigurationChanged;
+
             // Create tabs
             var hotkeysTab = new TabPage("⌨️ Hotkeys")
             {
@@ -274,7 +278,8 @@ namespace BeatBind.Presentation
                 Anchor = AnchorStyles.None,
                 UseAccentColor = false,
                 AutoSize = false,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Enabled = false
             };
             _saveConfigButton.Click += SaveConfigButton_Click;
 
@@ -482,6 +487,12 @@ namespace BeatBind.Presentation
                 // Reload hotkeys to ensure they're properly registered
                 _hotkeyApplicationService?.ReloadHotkeys();
 
+                // Update original values in panels to match saved config
+                _authenticationPanel.LoadConfiguration();
+                _settingsPanel.LoadConfiguration();
+                _hotkeysPanel.LoadHotkeys(config.Hotkeys);
+
+                _saveConfigButton.Enabled = false;
                 MessageBoxHelper.ShowSuccess("Configuration saved successfully!");
             }
             catch (Exception ex)
@@ -489,6 +500,16 @@ namespace BeatBind.Presentation
                 _logger.LogError(ex, "Failed to save configuration");
                 MessageBoxHelper.ShowException(ex, "saving configuration");
             }
+        }
+
+        /// <summary>
+        /// Handles configuration changes from any panel.
+        /// </summary>
+        private void OnConfigurationChanged(object? sender, EventArgs e)
+        {
+            _saveConfigButton.Enabled = _hotkeysPanel.HasUnsavedChanges() ||
+                                      _authenticationPanel.HasUnsavedChanges() ||
+                                      _settingsPanel.HasUnsavedChanges();
         }
 
         /// <summary>
