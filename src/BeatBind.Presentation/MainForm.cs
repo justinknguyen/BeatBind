@@ -618,6 +618,12 @@ namespace BeatBind.Presentation
                 return;
             }
 
+            // Prevent duplicate notifications
+            if (_updateNotificationPanel != null)
+            {
+                return;
+            }
+
             // Create update notification panel
             _updateNotificationPanel = new Panel
             {
