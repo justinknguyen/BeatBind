@@ -110,6 +110,7 @@ namespace BeatBind
                 .UseSerilog((context, services, configuration) =>
                 {
                     var appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BeatBind");
+                    Directory.CreateDirectory(appDataPath);
                     var logPath = Path.Combine(appDataPath, "log-.txt");
 
                     configuration
@@ -119,13 +120,9 @@ namespace BeatBind
                         .WriteTo.Console()
                         .WriteTo.File(logPath,
                             rollingInterval: RollingInterval.Day,
-                            retainedFileTimeLimit: TimeSpan.FromDays(1));
+                            retainedFileTimeLimit: TimeSpan.FromDays(2));
 
-#if DEBUG
                     configuration.MinimumLevel.Information();
-#else
-                    configuration.MinimumLevel.Warning();
-#endif
                 })
                 .ConfigureServices((context, services) =>
                 {
