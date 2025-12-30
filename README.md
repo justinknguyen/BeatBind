@@ -33,7 +33,7 @@ Control Spotify from anywhere on Windows using global hotkeys. No more alt-tabbi
 - Spotify Premium account
 - Internet connection
 
-> **Note:** This app uses Spotify's Web API, which requires Premium. It sends commands to Spotify over the internet, so expect a slight delay based on your connection speed.
+> **Note:** This app uses Spotify's Web API, which requires Premium. It sends commands to Spotify over the internet, so expect a slight delay based on your connection speed and Spotify's.
 >
 > Why use Spotify's Web API? Other solutions will send hotkey commands to your local Spotify app, which would allow Free and Premium users to have global hotkey control. However, with Spotify's frequent app updates, this approach eventually stops working. The goal of BeatBind is to be a long-running solution.
 
