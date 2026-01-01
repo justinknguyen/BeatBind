@@ -485,6 +485,7 @@ namespace BeatBind.Presentation
                 _authenticationPanel.LoadConfiguration();
                 _settingsPanel.LoadConfiguration();
                 _hotkeysPanel.LoadHotkeys(config.Hotkeys);
+                _hotkeysPanel.ClearAllPendingStates();
 
                 _saveConfigButton.Enabled = false;
                 MessageBoxHelper.ShowSuccess("Configuration saved successfully!");
