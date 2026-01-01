@@ -1,4 +1,4 @@
-# BeatBind
+# BeatBind - Spotify Global Hotkeys
 
 [![build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/justinknguyen/BeatBind)
 [![version](https://img.shields.io/badge/version-2.0.0-blue)](https://github.com/justinknguyen/BeatBind/releases)
@@ -33,7 +33,9 @@ Control Spotify from anywhere on Windows using global hotkeys. No more alt-tabbi
 - Spotify Premium account
 - Internet connection
 
-> **Note:** This app uses Spotify's Web API, which requires Premium. It sends commands to Spotify over the internet, so expect a slight delay based on your connection speed.
+> **Note:** This app uses Spotify's Web API, which requires Premium. It sends commands to Spotify over the internet, so expect a slight delay based on your connection speed and Spotify's.
+>
+> Why use Spotify's Web API? Other solutions will send hotkey commands to your local Spotify app, which would allow Free and Premium users to have global hotkey control. However, with Spotify's frequent app updates, this approach eventually stops working. The goal of BeatBind is to be a long-running solution.
 
 ## Installation
 
@@ -109,7 +111,7 @@ Access settings anytime by right-clicking the system tray icon.
 
 Your settings are saved to `%APPDATA%\BeatBind\config.json`. You can edit this file directly if needed, or use the in-app settings interface.
 
-Logs are saved to `%APPDATA%\BeatBind\`. The application keeps logs for the past 24 hours to help with troubleshooting.
+Logs are saved to `%APPDATA%\BeatBind\`. The application keeps logs for the past 48 hours to help with troubleshooting.
 
 ## Contributing
 

@@ -1,13 +1,3 @@
-# IMPORTANT NEWS
-
-I no longer use Spotify, but it doesn't mean I won't continue maintaining this app. I'll try my best to resolve any issues, but I can't guarantee I'll be able to solve all of them. Some issues may require Spotify Premium to resolve. 
-
-**I will not add additional features in the meantime.**
-
-Thanks for all of the love and support <3
-
-Note: I'm working on rewriting this project into C# to solve the false virus flags. It'll also have a far better UI/UX design! Check out the dev branch for progress updates.
-
 # <img src="./icon.ico" width="4%" height="5%"> BeatBind - Spotify Global Hotkeys
 
 ![build](https://img.shields.io/badge/build-passing-brightgreen)

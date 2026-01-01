@@ -89,7 +89,7 @@ public partial class SettingsPanel : BasePanelControl
         {
             Dock = DockStyle.Fill,
             ColumnCount = 2,
-            RowCount = 5,
+            RowCount = 6,
             Padding = new Padding(5),
             BackColor = Theme.CardBackground
         };
@@ -101,6 +101,7 @@ public partial class SettingsPanel : BasePanelControl
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Audio Settings header  
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Audio checkboxes
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Numeric controls
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Folder link
 
         // General Settings - Use ControlFactory
         var generalLabel = ControlFactory.CreateHeaderLabel("General Settings");
@@ -109,7 +110,7 @@ public partial class SettingsPanel : BasePanelControl
 
         var checkboxPanel1 = ControlFactory.CreateFlowPanel();
         _startupCheckBox = ControlFactory.CreateMaterialCheckbox("Start with Windows");
-        _minimizeCheckBox = ControlFactory.CreateMaterialCheckbox("Start minimized");
+        _minimizeCheckBox = ControlFactory.CreateMaterialCheckbox("Start Minimized");
         _minimizeToTrayCheckBox = ControlFactory.CreateMaterialCheckbox("Minimize to Tray");
         checkboxPanel1.Controls.Add(_startupCheckBox);
         checkboxPanel1.Controls.Add(_minimizeCheckBox);
@@ -119,10 +120,11 @@ public partial class SettingsPanel : BasePanelControl
 
         // Audio Control Settings - Use ControlFactory
         var audioLabel = ControlFactory.CreateHeaderLabel("Audio Control Settings");
+        audioLabel.Margin = new Padding(0, 15, 0, 0);
         layout.Controls.Add(audioLabel, 0, 2);
         layout.SetColumnSpan(audioLabel, 2);
 
-        _rewindCheckBox = ControlFactory.CreateMaterialCheckbox("Previous Track: rewind to start", isChecked: true);
+        _rewindCheckBox = ControlFactory.CreateMaterialCheckbox("Previous Track: restart if playback exceeds 5 seconds", isChecked: true);
         _rewindCheckBox.Margin = new Padding(0, 0, 0, 8);
         layout.Controls.Add(_rewindCheckBox, 0, 3);
         layout.SetColumnSpan(_rewindCheckBox, 2);
@@ -173,6 +175,47 @@ public partial class SettingsPanel : BasePanelControl
 
         layout.Controls.Add(controlsPanel, 0, 4);
         layout.SetColumnSpan(controlsPanel, 2);
+
+        // Folder link for config and log files
+        var appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "BeatBind");
+        var folderLink = new LinkLabel
+        {
+            Text = "View config and log files folder",
+            Font = new Font("Segoe UI", 9f),
+            LinkColor = Color.LightBlue,
+            ActiveLinkColor = Color.DeepSkyBlue,
+            VisitedLinkColor = Color.CornflowerBlue,
+            AutoSize = true,
+            Margin = new Padding(0, 60, 0, 5),
+            TextAlign = ContentAlignment.MiddleLeft
+        };
+        folderLink.Links.Clear();
+        folderLink.Links.Add(0, folderLink.Text.Length, appDataPath);
+        folderLink.LinkClicked += (s, e) =>
+        {
+            if (e.Link?.LinkData is string path)
+            {
+                try
+                {
+                    if (!Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = path,
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    LogError(ex, "Failed to open folder");
+                    MessageBoxHelper.ShowError($"Failed to open folder:\n{ex.Message}");
+                }
+            }
+        };
+        layout.Controls.Add(folderLink, 0, 5);
+        layout.SetColumnSpan(folderLink, 2);
 
         // Subscribe to changes
         _startupCheckBox.CheckedChanged += (s, e) => { if (!_isLoading) { ConfigurationChanged?.Invoke(this, EventArgs.Empty); } };
