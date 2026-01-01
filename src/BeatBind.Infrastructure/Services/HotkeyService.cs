@@ -189,7 +189,7 @@ namespace BeatBind.Infrastructure.Services
         /// <param name="nCode">The hook code.</param>
         /// <param name="wParam">The message identifier.</param>
         /// <param name="lParam">A pointer to keyboard event information.</param>
-        /// <returns>The result of the next hook in the chain.</returns>
+        /// <returns>The result of the next hook in the chain, or 1 to suppress the key event.</returns>
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0)
@@ -199,11 +199,15 @@ namespace BeatBind.Infrastructure.Services
                 if (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN)
                 {
                     _pressedKeys.Add(vkCode);
-                    CheckHotkeys();
-                }
-                else if (wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)WM_SYSKEYUP)
-                {
-                    _pressedKeys.Remove(vkCode);
+
+                    // Check if this key press triggers a hotkey
+                    bool hotkeyTriggered = CheckHotkeys();
+
+                    // If a hotkey was triggered, suppress the key event from propagating
+                    if (hotkeyTriggered)
+                    {
+                        return (IntPtr)1;
+                    }
                 }
                 else if (wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)WM_SYSKEYUP)
                 {
@@ -212,16 +216,18 @@ namespace BeatBind.Infrastructure.Services
                 }
             }
 
-            // IMPORTANT: Always call next hook to NOT block the key event
+            // Allow the key event to propagate if no hotkey was triggered
             return CallNextHookEx(_hookId, nCode, wParam, lParam);
         }
 
         /// <summary>
         /// Checks all registered hotkeys against currently pressed keys and executes matching hotkey actions.
         /// </summary>
-        private void CheckHotkeys()
+        /// <returns>True if a hotkey was triggered; otherwise, false.</returns>
+        private bool CheckHotkeys()
         {
             var currentModifiers = GetCurrentModifiers();
+            bool hotkeyTriggered = false;
 
             foreach (var (hotkeyId, hotkeyInfo) in _registeredHotkeys)
             {
@@ -255,7 +261,10 @@ namespace BeatBind.Infrastructure.Services
 
                 // Hotkey matched! Execute action off the UI thread for responsiveness
                 _ = Task.Run(() => ExecuteHotkeyAsync(hotkeyId, hotkeyInfo));
+                hotkeyTriggered = true;
             }
+
+            return hotkeyTriggered;
         }
 
         /// <summary>
