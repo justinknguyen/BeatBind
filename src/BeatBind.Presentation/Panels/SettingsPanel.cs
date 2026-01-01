@@ -120,6 +120,7 @@ public partial class SettingsPanel : BasePanelControl
 
         // Audio Control Settings - Use ControlFactory
         var audioLabel = ControlFactory.CreateHeaderLabel("Audio Control Settings");
+        audioLabel.Margin = new Padding(0, 15, 0, 0);
         layout.Controls.Add(audioLabel, 0, 2);
         layout.SetColumnSpan(audioLabel, 2);
 
