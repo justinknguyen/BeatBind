@@ -143,17 +143,17 @@ namespace BeatBind.Tests.Core.Entities
         }
 
         [Theory]
-        [InlineData(186, "; (Semicolon)")]
+        [InlineData(186, "; (Semicolon / Ö / Ä)")]
         [InlineData(187, "= (Plus)")]
         [InlineData(188, ", (Comma)")]
         [InlineData(189, "- (Minus)")]
         [InlineData(190, ". (Period)")]
         [InlineData(191, "/ (Slash)")]
-        [InlineData(192, "` (Tilde)")]
-        [InlineData(219, "[ (Open Bracket)")]
+        [InlineData(192, "` (Tilde / Ø)")]
+        [InlineData(219, "[ (Open Bracket / Å)")]
         [InlineData(220, "\\ (Backslash)")]
         [InlineData(221, "] (Close Bracket)")]
-        [InlineData(222, "' (Quote)")]
+        [InlineData(222, "' (Quote / Æ)")]
         public void GetKeyDisplayName_ShouldReturnCorrectName_ForPunctuationKeys(int keyCode, string expectedName)
         {
             // Act
