@@ -109,7 +109,7 @@ public partial class SettingsPanel : BasePanelControl
 
         var checkboxPanel1 = ControlFactory.CreateFlowPanel();
         _startupCheckBox = ControlFactory.CreateMaterialCheckbox("Start with Windows");
-        _minimizeCheckBox = ControlFactory.CreateMaterialCheckbox("Start minimized");
+        _minimizeCheckBox = ControlFactory.CreateMaterialCheckbox("Start Minimized");
         _minimizeToTrayCheckBox = ControlFactory.CreateMaterialCheckbox("Minimize to Tray");
         checkboxPanel1.Controls.Add(_startupCheckBox);
         checkboxPanel1.Controls.Add(_minimizeCheckBox);
@@ -122,7 +122,7 @@ public partial class SettingsPanel : BasePanelControl
         layout.Controls.Add(audioLabel, 0, 2);
         layout.SetColumnSpan(audioLabel, 2);
 
-        _rewindCheckBox = ControlFactory.CreateMaterialCheckbox("Previous Track: rewind to start", isChecked: true);
+        _rewindCheckBox = ControlFactory.CreateMaterialCheckbox("Previous Track: restart if playback exceeds 5 seconds", isChecked: true);
         _rewindCheckBox.Margin = new Padding(0, 0, 0, 8);
         layout.Controls.Add(_rewindCheckBox, 0, 3);
         layout.SetColumnSpan(_rewindCheckBox, 2);

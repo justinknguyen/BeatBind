@@ -1,4 +1,3 @@
-using BeatBind.Application.Services;
 using BeatBind.Core.Entities;
 using BeatBind.Presentation.Components;
 using BeatBind.Presentation.Helpers;
@@ -10,8 +9,6 @@ namespace BeatBind.Presentation.Panels;
 
 public partial class HotkeysPanel : BasePanelControl
 {
-    private readonly HotkeyApplicationService? _hotkeyApplicationService;
-
     private MaterialLabel _lastHotkeyLabel = null!;
     private FlowLayoutPanel _hotkeyFlowPanel = null!;
     private MaterialButton _addHotkeyButton = null!;
@@ -28,10 +25,8 @@ public partial class HotkeysPanel : BasePanelControl
     /// </summary>
     /// <param name="hotkeyApplicationService">Service for hotkey management operations</param>
     /// <param name="logger">Logger instance</param>
-    public HotkeysPanel(HotkeyApplicationService? hotkeyApplicationService, ILogger<HotkeysPanel> logger)
-        : base(logger)
+    public HotkeysPanel(ILogger<HotkeysPanel> logger) : base(logger)
     {
-        _hotkeyApplicationService = hotkeyApplicationService;
     }
 
     /// <summary>
@@ -39,7 +34,6 @@ public partial class HotkeysPanel : BasePanelControl
     /// </summary>
     public HotkeysPanel() : base()
     {
-        _hotkeyApplicationService = null;
     }
 
     /// <summary>

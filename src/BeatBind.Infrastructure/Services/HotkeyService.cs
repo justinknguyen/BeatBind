@@ -9,7 +9,6 @@ namespace BeatBind.Infrastructure.Services
     {
         private readonly ILogger<HotkeyService> _logger;
         private readonly Dictionary<int, (Hotkey Hotkey, Action Action)> _registeredHotkeys;
-        private readonly Form _parentForm;
         private bool _disposed;
         private IntPtr _hookId = IntPtr.Zero;
         private readonly HashSet<int> _pressedKeys = new();
@@ -47,9 +46,8 @@ namespace BeatBind.Infrastructure.Services
         /// </summary>
         /// <param name="parentForm">The parent form for hotkey registration.</param>
         /// <param name="logger">The logger instance.</param>
-        public HotkeyService(Form parentForm, ILogger<HotkeyService> logger)
+        public HotkeyService(ILogger<HotkeyService> logger)
         {
-            _parentForm = parentForm;
             _logger = logger;
             _registeredHotkeys = new Dictionary<int, (Hotkey, Action)>();
             _hookCallback = HookCallback;

@@ -9,14 +9,12 @@ namespace BeatBind.Tests.Infrastructure.Services
     public class HotkeyServiceTests
     {
         private readonly Mock<ILogger<HotkeyService>> _mockLogger;
-        private readonly Mock<Form> _mockForm;
         private readonly TestableHotkeyService _service;
 
         public HotkeyServiceTests()
         {
             _mockLogger = new Mock<ILogger<HotkeyService>>();
-            _mockForm = new Mock<Form>();
-            _service = new TestableHotkeyService(_mockForm.Object, _mockLogger.Object);
+            _service = new TestableHotkeyService(_mockLogger.Object);
         }
 
         [Fact]
@@ -118,8 +116,8 @@ namespace BeatBind.Tests.Infrastructure.Services
         {
             public bool IsHookInstalled { get; private set; }
 
-            public TestableHotkeyService(Form parentForm, ILogger<HotkeyService> logger)
-                : base(parentForm, logger)
+            public TestableHotkeyService(ILogger<HotkeyService> logger)
+                : base(logger)
             {
             }
 

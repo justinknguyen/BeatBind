@@ -8,7 +8,6 @@ using BeatBind.Presentation.Panels;
 using BeatBind.Presentation.Themes;
 using MaterialSkin;
 using MaterialSkin.Controls;
-using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -16,13 +15,11 @@ namespace BeatBind.Presentation
 {
     public partial class MainForm : MaterialForm
     {
-        public const string CURRENT_VERSION = "2.0.0";
+        public const string CURRENT_VERSION = "2.0.1";
 
         private readonly MaterialSkinManager _materialSkinManager;
-        private readonly MusicControlApplicationService _musicControlService;
         private readonly AuthenticationApplicationService _authenticationService;
         private HotkeyApplicationService _hotkeyApplicationService = null!;
-        private readonly IMediator _mediator;
         private readonly IConfigurationService _configurationService;
         private readonly IGithubReleaseService _githubReleaseService;
         private readonly IStartupService _startupService;
@@ -48,9 +45,7 @@ namespace BeatBind.Presentation
         public MainForm()
         {
             _materialSkinManager = MaterialSkinManager.Instance;
-            _musicControlService = null!;
             _authenticationService = null!;
-            _mediator = null!;
             _configurationService = null!;
             _githubReleaseService = null!;
             _startupService = null!;
@@ -69,25 +64,19 @@ namespace BeatBind.Presentation
         /// <summary>
         /// Initializes a new instance of the MainForm with dependency injection.
         /// </summary>
-        /// <param name="musicControlService">Service for music control operations</param>
         /// <param name="authenticationService">Service for authentication operations</param>
-        /// <param name="mediator">Mediator for command/query handling</param>
         /// <param name="configurationService">Service for configuration management</param>
         /// <param name="githubReleaseService">Service for checking GitHub releases</param>
         /// <param name="startupService">Service for startup management</param>
         /// <param name="logger">Logger instance</param>
         public MainForm(
-            MusicControlApplicationService musicControlService,
             AuthenticationApplicationService authenticationService,
-            IMediator mediator,
             IConfigurationService configurationService,
             IGithubReleaseService githubReleaseService,
             IStartupService startupService,
             ILogger<MainForm> logger)
         {
-            _musicControlService = musicControlService;
             _authenticationService = authenticationService;
-            _mediator = mediator;
             _configurationService = configurationService;
             _githubReleaseService = githubReleaseService;
             _startupService = startupService;
@@ -198,7 +187,7 @@ namespace BeatBind.Presentation
 
             // Create panels
             _authenticationPanel = new AuthenticationPanel(_authenticationService, _configurationService, NullLogger<AuthenticationPanel>.Instance);
-            _hotkeysPanel = new HotkeysPanel(null, NullLogger<HotkeysPanel>.Instance);
+            _hotkeysPanel = new HotkeysPanel(NullLogger<HotkeysPanel>.Instance);
             _settingsPanel = new SettingsPanel(_configurationService, _startupService, NullLogger<SettingsPanel>.Instance);
 
             // Wire up panel events

@@ -182,7 +182,7 @@ namespace BeatBind
             {
                 var mainForm = sp.GetRequiredService<MainForm>();
                 var logger = sp.GetRequiredService<ILogger<HotkeyService>>();
-                return new HotkeyService(mainForm, logger);
+                return new HotkeyService(logger);
             });
 
             services.AddSingleton<IHostedService, Startup>();
