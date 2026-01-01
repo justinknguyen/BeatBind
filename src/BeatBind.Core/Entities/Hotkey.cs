@@ -97,17 +97,17 @@ namespace BeatBind.Core.Entities
                 57 => "9",
 
                 // Punctuation & Symbols
-                186 => "; (Semicolon)",
+                186 => "; (Semicolon / Ö / Ä)",
                 187 => "= (Plus)",
                 188 => ", (Comma)",
                 189 => "- (Minus)",
                 190 => ". (Period)",
                 191 => "/ (Slash)",
-                192 => "` (Tilde)",
-                219 => "[ (Open Bracket)",
+                192 => "` (Tilde / Ø)",
+                219 => "[ (Open Bracket / Å)",
                 220 => "\\ (Backslash)",
                 221 => "] (Close Bracket)",
-                222 => "' (Quote)",
+                222 => "' (Quote / Æ)",
 
                 // Numpad (96-105)
                 96 => "Numpad 0",

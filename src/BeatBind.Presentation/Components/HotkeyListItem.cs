@@ -13,11 +13,29 @@ namespace BeatBind.Presentation.Components
         private Button _deleteButton = null!;
         private Label _descriptionLabel = null!;
         private Label _keysLabel = null!;
+        private Panel _cardPanel = null!;
+        private bool _isPending;
 
         public event EventHandler? EditRequested;
         public event EventHandler? DeleteRequested;
 
         public Hotkey Hotkey => _hotkey;
+
+        /// <summary>
+        /// Gets or sets whether this hotkey has unsaved changes.
+        /// </summary>
+        public bool IsPending
+        {
+            get => _isPending;
+            set
+            {
+                if (_isPending != value)
+                {
+                    _isPending = value;
+                    UpdatePendingState();
+                }
+            }
+        }
 
         /// <summary>
         /// Parameterless constructor for WinForms designer support.
@@ -67,22 +85,34 @@ namespace BeatBind.Presentation.Components
             Margin = new Padding(0, 0, 0, 8);
 
             // Card container with shadow effect
-            var cardPanel = new Panel
+            _cardPanel = new Panel
             {
                 Dock = DockStyle.Fill,
                 BackColor = Theme.CardBackground,
-                Padding = new Padding(1)
+                Padding = new Padding(2)
             };
 
-            // Add shadow effect
-            cardPanel.Paint += (s, e) =>
+            // Add shadow effect with pending state support
+            _cardPanel.Paint += (s, e) =>
             {
-                var rect = cardPanel.ClientRectangle;
+                var rect = _cardPanel.ClientRectangle;
                 rect.Width -= 1;
                 rect.Height -= 1;
-                using (var shadowPen = new Pen(Theme.Border))
+
+                // Draw border - thicker and colored if pending
+                if (_isPending)
                 {
-                    e.Graphics.DrawRectangle(shadowPen, rect);
+                    using (var pen = new Pen(Theme.PendingHighlight, 3))
+                    {
+                        e.Graphics.DrawRectangle(pen, rect);
+                    }
+                }
+                else
+                {
+                    using (var shadowPen = new Pen(Theme.Border))
+                    {
+                        e.Graphics.DrawRectangle(shadowPen, rect);
+                    }
                 }
             };
 
@@ -141,8 +171,8 @@ namespace BeatBind.Presentation.Components
             layout.Controls.Add(_deleteButton, 3, 0);
 
             contentPanel.Controls.Add(layout);
-            cardPanel.Controls.Add(contentPanel);
-            Controls.Add(cardPanel);
+            _cardPanel.Controls.Add(contentPanel);
+            Controls.Add(_cardPanel);
         }
 
         /// <summary>
@@ -174,6 +204,17 @@ namespace BeatBind.Presentation.Components
             _descriptionLabel.ForeColor = Theme.PrimaryText;
             _keysLabel.ForeColor = Theme.SecondaryText;
             _keysLabel.BackColor = Theme.InputFieldBackground;
+        }
+
+        /// <summary>
+        /// Updates the visual appearance based on pending state.
+        /// </summary>
+        private void UpdatePendingState()
+        {
+            if (_cardPanel != null)
+            {
+                _cardPanel.Invalidate(); // Trigger repaint to show/hide pending border
+            }
         }
 
         /// <summary>

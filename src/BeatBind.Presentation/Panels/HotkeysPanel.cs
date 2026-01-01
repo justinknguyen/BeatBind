@@ -1,4 +1,3 @@
-using BeatBind.Application.Services;
 using BeatBind.Core.Entities;
 using BeatBind.Presentation.Components;
 using BeatBind.Presentation.Helpers;
@@ -10,8 +9,6 @@ namespace BeatBind.Presentation.Panels;
 
 public partial class HotkeysPanel : BasePanelControl
 {
-    private readonly HotkeyApplicationService? _hotkeyApplicationService;
-
     private MaterialLabel _lastHotkeyLabel = null!;
     private FlowLayoutPanel _hotkeyFlowPanel = null!;
     private MaterialButton _addHotkeyButton = null!;
@@ -28,10 +25,8 @@ public partial class HotkeysPanel : BasePanelControl
     /// </summary>
     /// <param name="hotkeyApplicationService">Service for hotkey management operations</param>
     /// <param name="logger">Logger instance</param>
-    public HotkeysPanel(HotkeyApplicationService? hotkeyApplicationService, ILogger<HotkeysPanel> logger)
-        : base(logger)
+    public HotkeysPanel(ILogger<HotkeysPanel> logger) : base(logger)
     {
-        _hotkeyApplicationService = hotkeyApplicationService;
     }
 
     /// <summary>
@@ -39,7 +34,6 @@ public partial class HotkeysPanel : BasePanelControl
     /// </summary>
     public HotkeysPanel() : base()
     {
-        _hotkeyApplicationService = null;
     }
 
     /// <summary>
@@ -168,7 +162,7 @@ public partial class HotkeysPanel : BasePanelControl
                 return;
             }
 
-            AddHotkeyEntryToUI(hotkey);
+            AddHotkeyEntryToUI(hotkey, markAsPending: true);
             HotkeyAdded?.Invoke(this, EventArgs.Empty);
             ConfigurationChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -215,14 +209,21 @@ public partial class HotkeysPanel : BasePanelControl
     /// Adds a hotkey entry to the UI display.
     /// </summary>
     /// <param name="hotkey">The hotkey to add</param>
-    public void AddHotkeyEntryToUI(Hotkey hotkey)
+    /// <param name="markAsPending">Whether to mark the hotkey as having unsaved changes</param>
+    public void AddHotkeyEntryToUI(Hotkey hotkey, bool markAsPending = false)
     {
         var entry = new HotkeyListItem(hotkey);
         entry.EditRequested += (s, e) => HotkeyEditRequested?.Invoke(this, hotkey);
         entry.DeleteRequested += (s, e) => HotkeyDeleteRequested?.Invoke(this, hotkey);
+        entry.IsPending = markAsPending;
 
         _hotkeyEntries[hotkey.Id.ToString()] = entry;
         entry.Visible = true;
+
+        // Calculate and set the correct width based on the current panel size
+        var scrollbarWidth = _hotkeyFlowPanel.VerticalScroll.Visible ? SystemInformation.VerticalScrollBarWidth : 0;
+        var availableWidth = _hotkeyFlowPanel.ClientSize.Width - _hotkeyFlowPanel.Padding.Horizontal - scrollbarWidth - 5;
+        entry.Width = Math.Max(400, availableWidth);
 
         _hotkeyFlowPanel.Controls.Add(entry);
 
@@ -238,6 +239,7 @@ public partial class HotkeysPanel : BasePanelControl
         if (_hotkeyEntries.TryGetValue(hotkey.Id.ToString(), out var entry))
         {
             entry.UpdateHotkey(hotkey);
+            entry.IsPending = true; // Mark as pending after edit
             ConfigurationChanged?.Invoke(this, EventArgs.Empty);
         }
     }
@@ -264,6 +266,17 @@ public partial class HotkeysPanel : BasePanelControl
     public List<Hotkey> GetHotkeysFromUI()
     {
         return _hotkeyEntries.Values.Select(entry => entry.Hotkey).ToList();
+    }
+
+    /// <summary>
+    /// Clears the pending state from all hotkey entries (called after save).
+    /// </summary>
+    public void ClearAllPendingStates()
+    {
+        foreach (var entry in _hotkeyEntries.Values)
+        {
+            entry.IsPending = false;
+        }
     }
 
     /// <summary>

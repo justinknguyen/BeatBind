@@ -56,6 +56,7 @@ namespace BeatBind.Presentation.Themes
 
         // Oranges
         public static readonly Argb Orange600 = new(255, 140, 0);
+        public static readonly Argb Orange400 = new(255, 167, 38);
     }
 
     public static class Theme
@@ -89,5 +90,8 @@ namespace BeatBind.Presentation.Themes
         public static Color SecondaryButton => Colors.Gray600.ToColor();
         public static Color DangerButton => Colors.Red600.ToColor();
         public static Color EditButton => Colors.Orange600.ToColor();
+
+        // State Colors
+        public static Color PendingHighlight => Colors.Orange400.ToColor();
     }
 }
