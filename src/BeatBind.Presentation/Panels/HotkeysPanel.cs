@@ -218,6 +218,11 @@ public partial class HotkeysPanel : BasePanelControl
         _hotkeyEntries[hotkey.Id.ToString()] = entry;
         entry.Visible = true;
 
+        // Calculate and set the correct width based on the current panel size
+        var scrollbarWidth = _hotkeyFlowPanel.VerticalScroll.Visible ? SystemInformation.VerticalScrollBarWidth : 0;
+        var availableWidth = _hotkeyFlowPanel.ClientSize.Width - _hotkeyFlowPanel.Padding.Horizontal - scrollbarWidth - 5;
+        entry.Width = Math.Max(400, availableWidth);
+
         _hotkeyFlowPanel.Controls.Add(entry);
 
         LogInfo($"Added hotkey to UI: {hotkey.Action} with ID {hotkey.Id}");
