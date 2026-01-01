@@ -1,7 +1,7 @@
 # BeatBind - Spotify Global Hotkeys
 
 [![build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/justinknguyen/BeatBind)
-[![version](https://img.shields.io/badge/version-2.0.0-blue)](https://github.com/justinknguyen/BeatBind/releases)
+[![version](https://img.shields.io/badge/version-2.0.1-blue)](https://github.com/justinknguyen/BeatBind/releases)
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/justinknguyen/BeatBind/issues)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
