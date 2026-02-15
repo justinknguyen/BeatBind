@@ -133,7 +133,6 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for project structure and [src/README.md]
 ## Support
 
 - 🐛 [Report a bug](https://github.com/justinknguyen/BeatBind/issues/new)
-- 💡 [Request a feature](https://github.com/justinknguyen/BeatBind/issues/new)
 - ⭐ Star this repo if you find it useful!
 
 ## License
