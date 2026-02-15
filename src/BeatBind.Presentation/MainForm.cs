@@ -15,7 +15,7 @@ namespace BeatBind.Presentation
 {
     public partial class MainForm : MaterialForm
     {
-        public const string CURRENT_VERSION = "2.0.1";
+        public const string CURRENT_VERSION = "2.0.2";
 
         private readonly MaterialSkinManager _materialSkinManager;
         private readonly AuthenticationApplicationService _authenticationService;
@@ -465,7 +465,7 @@ namespace BeatBind.Presentation
         /// </summary>
         /// <param name="sender">Event sender</param>
         /// <param name="e">Event arguments</param>
-        private async void SaveConfigButton_Click(object? sender, EventArgs e)
+        private void SaveConfigButton_Click(object? sender, EventArgs e)
         {
             try
             {

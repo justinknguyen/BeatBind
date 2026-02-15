@@ -128,14 +128,14 @@ namespace BeatBind.Tests.Application.Services
         }
 
         [Fact]
-        public async Task UpdateClientCredentialsAsync_WithValidCredentials_ShouldReturnSuccess()
+        public void UpdateClientCredentialsAsync_WithValidCredentials_ShouldReturnSuccess()
         {
             // Arrange
             var config = new ApplicationConfiguration();
             _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
 
             // Act
-            var result = await _service.UpdateClientCredentialsAsync("new-client-id", "new-secret");
+            var result = _service.UpdateClientCredentials("new-client-id", "new-secret");
 
             // Assert
             result.IsSuccess.Should().BeTrue();
@@ -143,10 +143,10 @@ namespace BeatBind.Tests.Application.Services
         }
 
         [Fact]
-        public async Task UpdateClientCredentialsAsync_WithEmptyClientId_ShouldReturnFailure()
+        public void UpdateClientCredentialsAsync_WithEmptyClientId_ShouldReturnFailure()
         {
             // Act
-            var result = await _service.UpdateClientCredentialsAsync("", "secret");
+            var result = _service.UpdateClientCredentials("", "secret");
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -154,10 +154,10 @@ namespace BeatBind.Tests.Application.Services
         }
 
         [Fact]
-        public async Task UpdateClientCredentialsAsync_WithEmptyClientSecret_ShouldReturnFailure()
+        public void UpdateClientCredentialsAsync_WithEmptyClientSecret_ShouldReturnFailure()
         {
             // Act
-            var result = await _service.UpdateClientCredentialsAsync("client-id", "");
+            var result = _service.UpdateClientCredentials("client-id", "");
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -165,13 +165,13 @@ namespace BeatBind.Tests.Application.Services
         }
 
         [Fact]
-        public async Task UpdateClientCredentialsAsync_WhenExceptionThrown_ShouldReturnFailure()
+        public void UpdateClientCredentialsAsync_WhenExceptionThrown_ShouldReturnFailure()
         {
             // Arrange
             _mockConfigService.Setup(x => x.GetConfiguration()).Throws(new Exception("Config error"));
 
             // Act
-            var result = await _service.UpdateClientCredentialsAsync("client-id", "secret");
+            var result = _service.UpdateClientCredentials("client-id", "secret");
 
             // Assert
             result.IsSuccess.Should().BeFalse();

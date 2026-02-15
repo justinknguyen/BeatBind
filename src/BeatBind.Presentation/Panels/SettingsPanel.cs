@@ -239,7 +239,7 @@ public partial class SettingsPanel : BasePanelControl
 
         var aboutLabel = new LinkLabel
         {
-            Text = $"BeatBind v{MainForm.CURRENT_VERSION}\nGlobal hotkeys for Spotify\n\nhttps://github.com/justinknguyen/BeatBind",
+            Text = $"BeatBind v{MainForm.CURRENT_VERSION}\nGlobal Hotkeys for Spotify\n\nhttps://github.com/justinknguyen/BeatBind",
             Dock = DockStyle.Fill,
             Font = new Font("Segoe UI", 9f),
             LinkColor = Color.LightBlue,

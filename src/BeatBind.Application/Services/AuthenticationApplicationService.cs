@@ -68,7 +68,7 @@ namespace BeatBind.Application.Services
         /// <param name="clientId">The Spotify application client ID.</param>
         /// <param name="clientSecret">The Spotify application client secret.</param>
         /// <returns>A Result indicating success or failure with error details.</returns>
-        public async Task<Result> UpdateClientCredentialsAsync(string clientId, string clientSecret)
+        public Result UpdateClientCredentials(string clientId, string clientSecret)
         {
             try
             {

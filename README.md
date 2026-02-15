@@ -1,12 +1,14 @@
 # BeatBind - Spotify Global Hotkeys
 
 [![build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/justinknguyen/BeatBind)
-[![version](https://img.shields.io/badge/version-2.0.1-blue)](https://github.com/justinknguyen/BeatBind/releases)
+[![version](https://img.shields.io/badge/version-2.0.2-blue)](https://github.com/justinknguyen/BeatBind/releases)
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/justinknguyen/BeatBind/issues)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.txt)
 
-> **📢 Version 2.0.0 is a complete rewrite!** This version is built from the ground up in C# with a modern UI and improved performance. Looking for the old Python version? See the [legacy README](README_LEGACY.md).
+> **📢 Version 2.0.0 is a complete rewrite!** This version is built from the ground up in C# with a modern UI and improved performance. Looking for the old Python version? See the [legacy README](README_LEGACY.md). 
+<br> <br>
+Since I don't use Spotify anymore, new features will not be added, however, please report any bugs. Thank you!
 
 Control Spotify from anywhere on Windows using global hotkeys. No more alt-tabbing while gaming or working—adjust volume, skip tracks, and manage playback without switching windows.
 
@@ -66,9 +68,10 @@ BeatBind needs Spotify API credentials to control your music. This takes about 5
 2. Log in with your Spotify account
 3. Click **Create App**
 4. Fill in the form:
-   - **App name:** BeatBind (or any name)
-   - **App description:** Personal hotkey control
+   - **App name:** e.g., BeatBind
+   - **App description:** e.g., hotkeys
    - **Redirect URI:** `http://127.0.0.1:8888/callback` (change port if needed)
+   - **Which API/SDKs are you planning to use?** Web API
 5. Click **Save**
 
 <p align="center">
