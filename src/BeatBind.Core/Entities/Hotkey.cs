@@ -13,6 +13,7 @@ namespace BeatBind.Core.Entities
         {
             // Function Keys
             112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, // F1-F12
+            124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, // F13-F24
             
             // Letters
             65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, // A-M
@@ -150,8 +151,8 @@ namespace BeatBind.Core.Entities
                 // Letters (65-90 = A-Z)
                 >= 65 and <= 90 => ((char)keyCode).ToString(),
 
-                // Function Keys (112-123 = F1-F12)
-                >= 112 and <= 123 => $"F{keyCode - 111}",
+                // Function Keys (112-135 = F1-F24)
+                >= 112 and <= 135 => $"F{keyCode - 111}",
 
                 // Special Keys
                 32 => "Space",
