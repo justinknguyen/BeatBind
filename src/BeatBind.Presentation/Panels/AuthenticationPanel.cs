@@ -163,7 +163,7 @@ public partial class AuthenticationPanel : BasePanelControl
             // Save credentials first if provided
             if (!string.IsNullOrEmpty(_clientIdTextBox.Text) && !string.IsNullOrEmpty(_clientSecretTextBox.Text))
             {
-                await _authenticationService.UpdateClientCredentialsAsync(_clientIdTextBox.Text, _clientSecretTextBox.Text);
+                _authenticationService.UpdateClientCredentials(_clientIdTextBox.Text, _clientSecretTextBox.Text);
             }
 
             var result = await _authenticationService.AuthenticateUserAsync();
