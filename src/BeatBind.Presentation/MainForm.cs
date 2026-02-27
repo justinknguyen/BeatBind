@@ -15,7 +15,7 @@ namespace BeatBind.Presentation
 {
     public partial class MainForm : MaterialForm
     {
-        public const string CURRENT_VERSION = "2.0.2";
+        public const string CURRENT_VERSION = "2.0.3";
 
         private readonly MaterialSkinManager _materialSkinManager;
         private readonly AuthenticationApplicationService _authenticationService;
