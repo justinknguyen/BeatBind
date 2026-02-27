@@ -435,8 +435,8 @@ namespace BeatBind.Infrastructure.Services
                     return false;
                 }
 
-                var url = "https://api.spotify.com/v1/me/tracks";
-                var json = JsonSerializer.Serialize(new { ids = new[] { playback.CurrentTrack.Id } });
+                var url = "https://api.spotify.com/v1/me/library";
+                var json = JsonSerializer.Serialize(new { uris = new[] { playback.CurrentTrack.Uri } });
 
                 return await SendPlayerCommandAsync(url, HttpMethod.Put, json, useFullUrl: true);
             }
@@ -461,8 +461,8 @@ namespace BeatBind.Infrastructure.Services
                     return false;
                 }
 
-                var url = "https://api.spotify.com/v1/me/tracks";
-                var json = JsonSerializer.Serialize(new { ids = new[] { playback.CurrentTrack.Id } });
+                var url = "https://api.spotify.com/v1/me/library";
+                var json = JsonSerializer.Serialize(new { uris = new[] { playback.CurrentTrack.Uri } });
 
                 return await SendPlayerCommandAsync(url, HttpMethod.Delete, json, useFullUrl: true);
             }
