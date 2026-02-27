@@ -6,7 +6,7 @@
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/justinknguyen/BeatBind/issues)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.txt)
 
-> **📢 Version 2.0.0 is a complete rewrite!** This version is built from the ground up in C# with a modern UI and improved performance. Looking for the old Python version? See the [legacy README](README_LEGACY.md). 
+> **📢 Version 2.0.0+ is a complete rewrite!** This version is built from the ground up in C# with a modern UI and improved performance. Looking for the old Python version? See the [legacy README](README_LEGACY.md). 
 <br> <br>
 Since I don't use Spotify anymore, new features will not be added, however, please report any bugs. Thank you!
 
