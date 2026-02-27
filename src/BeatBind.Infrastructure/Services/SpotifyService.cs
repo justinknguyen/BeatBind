@@ -435,10 +435,10 @@ namespace BeatBind.Infrastructure.Services
                     return false;
                 }
 
-                var url = "https://api.spotify.com/v1/me/library";
-                var json = JsonSerializer.Serialize(new { uris = new[] { playback.CurrentTrack.Uri } });
+                var uri = Uri.EscapeDataString(playback.CurrentTrack.Uri);
+                var url = $"https://api.spotify.com/v1/me/library?uris={uri}";
 
-                return await SendPlayerCommandAsync(url, HttpMethod.Put, json, useFullUrl: true);
+                return await SendPlayerCommandAsync(url, HttpMethod.Put, body: null, useFullUrl: true);
             }
             catch (Exception ex)
             {
@@ -461,10 +461,10 @@ namespace BeatBind.Infrastructure.Services
                     return false;
                 }
 
-                var url = "https://api.spotify.com/v1/me/library";
-                var json = JsonSerializer.Serialize(new { uris = new[] { playback.CurrentTrack.Uri } });
+                var uri = Uri.EscapeDataString(playback.CurrentTrack.Uri);
+                var url = $"https://api.spotify.com/v1/me/library?uris={uri}";
 
-                return await SendPlayerCommandAsync(url, HttpMethod.Delete, json, useFullUrl: true);
+                return await SendPlayerCommandAsync(url, HttpMethod.Delete, body: null, useFullUrl: true);
             }
             catch (Exception ex)
             {
