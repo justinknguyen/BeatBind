@@ -240,7 +240,7 @@ namespace BeatBind.Infrastructure.Services
         /// <returns>The complete authorization URL.</returns>
         private static string BuildAuthorizationUrl(string clientId, string redirectUri, string state)
         {
-            var scopes = "user-read-playback-state,user-modify-playback-state,user-read-currently-playing,user-library-read,user-library-modify";
+            var scopes = "user-read-playback-state,user-modify-playback-state,user-read-currently-playing,user-library-read,user-library-modify,user-follow-modify,playlist-modify-public";
 
             var parameters = new NameValueCollection
             {
