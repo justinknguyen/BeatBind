@@ -15,7 +15,7 @@ namespace BeatBind.Presentation
 {
     public partial class MainForm : MaterialForm
     {
-        public const string CURRENT_VERSION = "2.0.3";
+        public const string CURRENT_VERSION = "2.0.4";
 
         private readonly MaterialSkinManager _materialSkinManager;
         private readonly AuthenticationApplicationService _authenticationService;
@@ -124,6 +124,19 @@ namespace BeatBind.Presentation
 
             // Initialize hotkeys from configuration once the service is set
             _hotkeyApplicationService.InitializeHotkeys();
+
+            // The keyboard hook is installed before Application.Run() starts the message pump.
+            // On login, other programs generate keyboard events during that gap, causing Windows
+            // to time out the hook (LowLevelHooksTimeout). Reinstall it on the first idle tick
+            // after the message loop is fully running so it is guaranteed to be active.
+            System.Windows.Forms.Application.Idle += ReinitializeHookOnFirstIdle;
+        }
+
+        private void ReinitializeHookOnFirstIdle(object? sender, EventArgs e)
+        {
+            System.Windows.Forms.Application.Idle -= ReinitializeHookOnFirstIdle;
+            _hotkeyApplicationService?.Pause();
+            _hotkeyApplicationService?.Resume();
         }
 
         /// <summary>

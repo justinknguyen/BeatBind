@@ -111,10 +111,46 @@ namespace BeatBind.Tests.Infrastructure.Services
             _service.IsHookInstalled.Should().BeTrue();
         }
 
+        // Verifies the Pause+Resume cycle used by the startup timing fix in MainForm:
+        // the hook is reinstalled on the first Application.Idle tick to replace any
+        // hook that Windows may have timed out before the message loop started.
+        [Fact]
+        public void PauseThenResume_ShouldReinstallHook()
+        {
+            // Constructor installs hook once (InstallCallCount = 1)
+            _service.Pause();
+            _service.Resume();
+
+            _service.IsHookInstalled.Should().BeTrue();
+            _service.InstallCallCount.Should().Be(2); // ctor + Resume
+            _service.UninstallCallCount.Should().Be(1);
+        }
+
+        [Fact]
+        public void Resume_WhenHookAlreadyInstalled_ShouldNotInstallAgain()
+        {
+            // Hook is installed from constructor — calling Resume again should be a no-op
+            _service.Resume();
+
+            _service.IsHookInstalled.Should().BeTrue();
+            _service.InstallCallCount.Should().Be(1); // only from ctor
+        }
+
+        [Fact]
+        public void Pause_WhenHookAlreadyPaused_ShouldNotUninstallAgain()
+        {
+            _service.Pause();
+            _service.Pause(); // second call should be a no-op
+
+            _service.UninstallCallCount.Should().Be(1);
+        }
+
         // Testable subclass to bypass P/Invoke
         private class TestableHotkeyService : HotkeyService
         {
             public bool IsHookInstalled { get; private set; }
+            public int InstallCallCount { get; private set; }
+            public int UninstallCallCount { get; private set; }
 
             public TestableHotkeyService(ILogger<HotkeyService> logger)
                 : base(logger)
@@ -124,12 +160,14 @@ namespace BeatBind.Tests.Infrastructure.Services
             protected override IntPtr InstallHook(LowLevelKeyboardProc proc)
             {
                 IsHookInstalled = true;
+                InstallCallCount++;
                 return new IntPtr(123); // Dummy handle
             }
 
             protected override void UninstallHook(IntPtr hookId)
             {
                 IsHookInstalled = false;
+                UninstallCallCount++;
             }
         }
     }
