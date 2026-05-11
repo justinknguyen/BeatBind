@@ -117,7 +117,7 @@ namespace BeatBind.Infrastructure.Services
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var jsonDoc = JsonDocument.Parse(content);
+                    using var jsonDoc = JsonDocument.Parse(content);
                     var root = jsonDoc.RootElement;
 
                     return new AuthenticationResult
@@ -337,7 +337,7 @@ namespace BeatBind.Infrastructure.Services
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var jsonDoc = JsonDocument.Parse(content);
+                    using var jsonDoc = JsonDocument.Parse(content);
                     var root = jsonDoc.RootElement;
 
                     return new AuthenticationResult
