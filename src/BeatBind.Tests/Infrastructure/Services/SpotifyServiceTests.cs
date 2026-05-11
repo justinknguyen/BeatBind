@@ -373,6 +373,23 @@ namespace BeatBind.Tests.Infrastructure.Services
         }
 
         [Fact]
+        public async Task GetCurrentPlaybackAsync_WithEmptyArtistsArray_ShouldReturnPlaybackWithEmptyArtist()
+        {
+            // Arrange — podcasts and local files can return an empty artists array
+            await SetupAuthenticatedService();
+            var json = GetPlaybackJson(artistsJson: "[]");
+            SetupHttpResponse(HttpStatusCode.OK, json);
+
+            // Act
+            var result = await _service.GetCurrentPlaybackAsync();
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.CurrentTrack.Should().NotBeNull();
+            result.CurrentTrack!.Artist.Should().BeEmpty();
+        }
+
+        [Fact]
         public async Task GetCurrentPlaybackAsync_WhenNoActiveDevice_ShouldReturnNull()
         {
             // Arrange
@@ -701,7 +718,7 @@ namespace BeatBind.Tests.Infrastructure.Services
             SetupHttpResponse(HttpStatusCode.OK, playbackJson);
         }
 
-        private string GetPlaybackJson(bool isPlaying = true, bool shuffleState = false, string repeatState = "off")
+        private string GetPlaybackJson(bool isPlaying = true, bool shuffleState = false, string repeatState = "off", string artistsJson = """[{"name": "Test Artist"}]""")
         {
             return $$"""
             {
@@ -721,7 +738,7 @@ namespace BeatBind.Tests.Infrastructure.Services
                 "item": {
                     "id": "track1",
                     "name": "Test Track",
-                    "artists": [{"name": "Test Artist"}],
+                    "artists": {{artistsJson}},
                     "album": {"name": "Test Album"},
                     "uri": "spotify:track:123",
                     "duration_ms": 180000
