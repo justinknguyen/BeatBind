@@ -54,7 +54,10 @@ namespace BeatBind.Infrastructure.Services
 
             // Set up low-level keyboard hook
             _hookId = InstallHook(_hookCallback);
-            _logger.LogInformation("Keyboard hook installed");
+            if (_hookId == IntPtr.Zero)
+                _logger.LogError("Keyboard hook failed to install (SetWindowsHookEx returned null)");
+            else
+                _logger.LogInformation("Keyboard hook installed");
         }
 
         /// <summary>
@@ -157,7 +160,10 @@ namespace BeatBind.Infrastructure.Services
             if (_hookId == IntPtr.Zero)
             {
                 _hookId = InstallHook(_hookCallback);
-                _logger.LogInformation("Keyboard hook resumed");
+                if (_hookId == IntPtr.Zero)
+                    _logger.LogError("Keyboard hook failed to resume (SetWindowsHookEx returned null)");
+                else
+                    _logger.LogInformation("Keyboard hook resumed");
             }
         }
 
