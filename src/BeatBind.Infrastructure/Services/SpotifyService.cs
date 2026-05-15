@@ -171,10 +171,8 @@ namespace BeatBind.Infrastructure.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var jsonDoc = JsonDocument.Parse(content);
-                    var root = jsonDoc.RootElement;
-
-                    return ParsePlaybackState(root);
+                    using var jsonDoc = JsonDocument.Parse(content);
+                    return ParsePlaybackState(jsonDoc.RootElement);
                 }
 
                 return null;
@@ -208,7 +206,7 @@ namespace BeatBind.Infrastructure.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var jsonDoc = JsonDocument.Parse(content);
+                    using var jsonDoc = JsonDocument.Parse(content);
                     var devices = new List<Device>();
 
                     if (jsonDoc.RootElement.TryGetProperty("devices", out var devicesArray))
@@ -607,7 +605,9 @@ namespace BeatBind.Infrastructure.Services
                     Name = item.GetProperty("name").GetString() ?? string.Empty,
                     Uri = item.GetProperty("uri").GetString() ?? string.Empty,
                     DurationMs = durationMs,
-                    Artist = item.GetProperty("artists")[0].GetProperty("name").GetString() ?? string.Empty,
+                    Artist = item.GetProperty("artists").GetArrayLength() > 0
+                        ? item.GetProperty("artists")[0].GetProperty("name").GetString() ?? string.Empty
+                        : string.Empty,
                     Album = item.GetProperty("album").GetProperty("name").GetString() ?? string.Empty,
                     IsPlaying = playbackState.IsPlaying,
                     ProgressMs = playbackState.ProgressMs
