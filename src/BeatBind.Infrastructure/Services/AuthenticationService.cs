@@ -14,16 +14,18 @@ namespace BeatBind.Infrastructure.Services
     {
         // Treat tokens as expired slightly early so a request sent close to the
         // boundary doesn't go out with a token that is dead on arrival.
-        private static readonly TimeSpan TokenExpiryMargin = TimeSpan.FromSeconds(60);
+        private static readonly TimeSpan _tokenExpiryMargin = TimeSpan.FromSeconds(60);
 
         // How long to wait for the user to complete the browser authorization
         // before giving up and releasing the callback listener.
-        private static readonly TimeSpan CallbackTimeout = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan _callbackTimeout = TimeSpan.FromMinutes(5);
 
         private readonly ILogger<AuthenticationService> _logger;
         private readonly IConfigurationService _configurationService;
         private readonly HttpClient _httpClient;
         private HttpListener? _httpListener;
+
+        public event EventHandler<AuthenticationResult>? AuthenticationSaved;
 
         /// <summary>
         /// Initializes a new instance of the AuthenticationService class.
@@ -159,7 +161,7 @@ namespace BeatBind.Infrastructure.Services
         {
             return authResult != null &&
                    !string.IsNullOrEmpty(authResult.AccessToken) &&
-                   DateTime.UtcNow < authResult.ExpiresAt - TokenExpiryMargin;
+                   DateTime.UtcNow < authResult.ExpiresAt - _tokenExpiryMargin;
         }
 
         /// <summary>
@@ -209,6 +211,11 @@ namespace BeatBind.Infrastructure.Services
                 _configurationService.SaveConfiguration(config);
 
                 _logger.LogInformation("Authentication tokens saved successfully");
+
+                // Let long-lived consumers (the Spotify service) adopt the new
+                // tokens immediately — a UI re-auth to a different account must
+                // not leave hotkeys running on the old account's still-valid token
+                AuthenticationSaved?.Invoke(this, authResult);
             }
             catch (Exception ex)
             {
@@ -259,7 +266,10 @@ namespace BeatBind.Infrastructure.Services
                 ["response_type"] = "code",
                 ["redirect_uri"] = redirectUri,
                 ["state"] = state,
-                ["scope"] = scopes
+                ["scope"] = scopes,
+                // Always show the account/consent dialog so users can switch
+                // Spotify accounts or re-consent from within the app
+                ["show_dialog"] = "true"
             };
 
             var query = string.Join("&", parameters.AllKeys.Select(key => $"{key}={HttpUtility.UrlEncode(parameters[key])}"));
@@ -299,7 +309,7 @@ namespace BeatBind.Infrastructure.Services
             try
             {
                 var contextTask = _httpListener!.GetContextAsync();
-                var completedTask = await Task.WhenAny(contextTask, Task.Delay(CallbackTimeout));
+                var completedTask = await Task.WhenAny(contextTask, Task.Delay(_callbackTimeout));
 
                 if (completedTask != contextTask)
                 {
@@ -307,7 +317,7 @@ namespace BeatBind.Infrastructure.Services
                     // the fault GetContextAsync raises when the caller closes the
                     // listener so it doesn't surface as an unobserved task exception.
                     _ = contextTask.ContinueWith(t => _ = t.Exception, TaskContinuationOptions.OnlyOnFaulted);
-                    _logger.LogWarning("Timed out waiting for the authorization callback after {Timeout}", CallbackTimeout);
+                    _logger.LogWarning("Timed out waiting for the authorization callback after {Timeout}", _callbackTimeout);
                     return new AuthenticationResult { Success = false, Error = "Timed out waiting for the authorization callback. Please try again." };
                 }
 

@@ -9,14 +9,15 @@ namespace BeatBind.Application.Services
         // How long a fetched playback state stays fresh. Within this window,
         // repeated hotkey presses (e.g. mashing volume up) reuse the cached state
         // and send only the command request, halving the round trips per press.
-        private static readonly TimeSpan PlaybackCacheDuration = TimeSpan.FromSeconds(2);
+        private static readonly TimeSpan _playbackCacheDuration = TimeSpan.FromSeconds(2);
 
         private readonly ISpotifyService _spotifyService;
         private readonly IConfigurationService _configurationService;
         private readonly ILogger<MusicControlApplicationService> _logger;
 
-        // Serializes read-modify-write command sequences so rapid presses compute
-        // successive steps (e.g. 50 -> 60 -> 70) instead of racing on the same base value.
+        // Serializes command sequences so rapid presses compute successive steps
+        // (e.g. 50 -> 60 -> 70) instead of racing on the same base value. Every
+        // read or write of _cachedPlayback must happen while holding this lock.
         private readonly SemaphoreSlim _playbackLock = new(1, 1);
         private PlaybackState? _cachedPlayback;
         private DateTime _cachedPlaybackAtUtc;
@@ -53,16 +54,22 @@ namespace BeatBind.Application.Services
                         return await _spotifyService.PlayAsync();
                     }
 
-                    var success = playbackState.IsPlaying
-                        ? await _spotifyService.PauseAsync()
-                        : await _spotifyService.PlayAsync();
-
-                    if (success)
+                    if (await TogglePlaybackAsync(playbackState))
                     {
-                        playbackState.IsPlaying = !playbackState.IsPlaying;
+                        return true;
                     }
 
-                    return success;
+                    // The command can fail because the cached state is stale — e.g.
+                    // playback ended on its own, so pausing was rejected. Refetch
+                    // the real state and retry once
+                    InvalidatePlaybackCache();
+                    playbackState = await GetPlaybackStateCachedAsync();
+                    if (playbackState == null)
+                    {
+                        return await _spotifyService.PlayAsync();
+                    }
+
+                    return await TogglePlaybackAsync(playbackState);
                 }
                 finally
                 {
@@ -80,66 +87,27 @@ namespace BeatBind.Application.Services
         /// Starts playback.
         /// </summary>
         /// <returns>True if the operation was successful; otherwise, false.</returns>
-        public async Task<bool> PlayAsync()
+        public Task<bool> PlayAsync()
         {
-            try
-            {
-                var result = await _spotifyService.PlayAsync();
-                if (result)
-                {
-                    InvalidatePlaybackCache();
-                }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to start playback");
-                return false;
-            }
+            return ExecuteInvalidatingCommandAsync("start playback", _spotifyService.PlayAsync);
         }
 
         /// <summary>
         /// Pauses playback.
         /// </summary>
         /// <returns>True if the operation was successful; otherwise, false.</returns>
-        public async Task<bool> PauseAsync()
+        public Task<bool> PauseAsync()
         {
-            try
-            {
-                var result = await _spotifyService.PauseAsync();
-                if (result)
-                {
-                    InvalidatePlaybackCache();
-                }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to pause playback");
-                return false;
-            }
+            return ExecuteInvalidatingCommandAsync("pause playback", _spotifyService.PauseAsync);
         }
 
         /// <summary>
         /// Skips to the next track in the playback queue.
         /// </summary>
         /// <returns>True if the operation was successful; otherwise, false.</returns>
-        public async Task<bool> NextTrackAsync()
+        public Task<bool> NextTrackAsync()
         {
-            try
-            {
-                var result = await _spotifyService.NextTrackAsync();
-                if (result)
-                {
-                    InvalidatePlaybackCache();
-                }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to skip to next track");
-                return false;
-            }
+            return ExecuteInvalidatingCommandAsync("skip to next track", _spotifyService.NextTrackAsync);
         }
 
         /// <summary>
@@ -150,23 +118,23 @@ namespace BeatBind.Application.Services
         {
             try
             {
-                var config = _configurationService.GetConfiguration();
-
                 await _playbackLock.WaitAsync();
                 try
                 {
+                    var config = _configurationService.GetConfiguration();
                     if (config.PreviousTrackRewindToStart)
                     {
                         var playbackState = await GetPlaybackStateCachedAsync();
                         if (playbackState != null && playbackState.ProgressMs > 5000) // 5 seconds
                         {
                             // Rewind to start of current track
-                            if (await _spotifyService.SeekToPositionAsync(0))
+                            if (!await _spotifyService.SeekToPositionAsync(0))
                             {
-                                playbackState.ProgressMs = 0;
-                                return true;
+                                return false;
                             }
-                            return false;
+
+                            playbackState.ProgressMs = 0;
+                            return true;
                         }
                     }
 
@@ -193,205 +161,78 @@ namespace BeatBind.Application.Services
         /// Increases the playback volume by the configured volume step amount.
         /// </summary>
         /// <returns>True if the operation was successful; otherwise, false.</returns>
-        public async Task<bool> VolumeUpAsync()
+        public Task<bool> VolumeUpAsync()
         {
-            try
-            {
-                var config = _configurationService.GetConfiguration();
-
-                await _playbackLock.WaitAsync();
-                try
-                {
-                    var playbackState = await GetPlaybackStateCachedAsync();
-                    if (playbackState == null)
-                    {
-                        return false;
-                    }
-
-                    var newVolume = Math.Min(100, playbackState.Volume + config.VolumeSteps);
-                    if (!await _spotifyService.SetVolumeAsync(newVolume))
-                    {
-                        return false;
-                    }
-
-                    playbackState.Volume = newVolume;
-                    return true;
-                }
-                finally
-                {
-                    _playbackLock.Release();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to increase volume");
-                return false;
-            }
+            return AdjustVolumeAsync("increase volume", direction: +1);
         }
 
         /// <summary>
         /// Decreases the playback volume by the configured volume step amount.
         /// </summary>
         /// <returns>True if the operation was successful; otherwise, false.</returns>
-        public async Task<bool> VolumeDownAsync()
+        public Task<bool> VolumeDownAsync()
         {
-            try
-            {
-                var config = _configurationService.GetConfiguration();
-
-                await _playbackLock.WaitAsync();
-                try
-                {
-                    var playbackState = await GetPlaybackStateCachedAsync();
-                    if (playbackState == null)
-                    {
-                        return false;
-                    }
-
-                    var newVolume = Math.Max(0, playbackState.Volume - config.VolumeSteps);
-                    if (!await _spotifyService.SetVolumeAsync(newVolume))
-                    {
-                        return false;
-                    }
-
-                    playbackState.Volume = newVolume;
-                    return true;
-                }
-                finally
-                {
-                    _playbackLock.Release();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to decrease volume");
-                return false;
-            }
+            return AdjustVolumeAsync("decrease volume", direction: -1);
         }
 
         /// <summary>
         /// Toggles mute state by setting volume to 0 or restoring the previous volume level.
         /// </summary>
         /// <returns>True if the operation was successful; otherwise, false.</returns>
-        public async Task<bool> ToggleMuteAsync()
+        public Task<bool> ToggleMuteAsync()
         {
-            try
+            return ExecuteWithPlaybackStateAsync("toggle mute", async playbackState =>
             {
-                await _playbackLock.WaitAsync();
-                try
+                if (playbackState.Volume is not int volume)
                 {
-                    var playbackState = await GetPlaybackStateCachedAsync();
-                    if (playbackState == null)
-                    {
-                        return false;
-                    }
-
-                    int targetVolume;
-                    if (playbackState.Volume > 0)
-                    {
-                        // Muting: save current volume before muting
-                        _lastVolume = playbackState.Volume;
-                        targetVolume = 0;
-                    }
-                    else
-                    {
-                        // Unmuting: restore saved volume (don't update _lastVolume)
-                        targetVolume = _lastVolume;
-                    }
-
-                    if (!await _spotifyService.SetVolumeAsync(targetVolume))
-                    {
-                        return false;
-                    }
-
-                    playbackState.Volume = targetVolume;
-                    return true;
+                    return false;
                 }
-                finally
+
+                if (volume > 0)
                 {
-                    _playbackLock.Release();
+                    // Muting: save current volume before muting
+                    _lastVolume = volume;
+                    return await SetVolumeAndCacheAsync(playbackState, 0);
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to toggle mute");
-                return false;
-            }
+
+                // Unmuting: restore saved volume (don't update _lastVolume)
+                return await SetVolumeAndCacheAsync(playbackState, _lastVolume);
+            });
         }
 
         /// <summary>
         /// Mutes the volume by setting it to 0.
         /// </summary>
         /// <returns>True if the operation was successful; otherwise, false.</returns>
-        public async Task<bool> MuteAsync()
+        public Task<bool> MuteAsync()
         {
-            try
+            return ExecuteWithPlaybackStateAsync("mute", async playbackState =>
             {
-                await _playbackLock.WaitAsync();
-                try
+                if (playbackState.Volume is not int volume || volume <= 0)
                 {
-                    var playbackState = await GetPlaybackStateCachedAsync();
-                    if (playbackState == null || playbackState.Volume <= 0)
-                    {
-                        return false;
-                    }
-
-                    _lastVolume = playbackState.Volume;
-                    if (!await _spotifyService.SetVolumeAsync(0))
-                    {
-                        return false;
-                    }
-
-                    playbackState.Volume = 0;
-                    return true;
+                    return false;
                 }
-                finally
-                {
-                    _playbackLock.Release();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to mute");
-                return false;
-            }
+
+                _lastVolume = volume;
+                return await SetVolumeAndCacheAsync(playbackState, 0);
+            });
         }
 
         /// <summary>
         /// Unmutes the volume by restoring the previous volume level.
         /// </summary>
         /// <returns>True if the operation was successful; otherwise, false.</returns>
-        public async Task<bool> UnmuteAsync()
+        public Task<bool> UnmuteAsync()
         {
-            try
+            return ExecuteWithPlaybackStateAsync("unmute", async playbackState =>
             {
-                await _playbackLock.WaitAsync();
-                try
+                if (playbackState.Volume != 0)
                 {
-                    var playbackState = await GetPlaybackStateCachedAsync();
-                    if (playbackState == null || playbackState.Volume != 0)
-                    {
-                        return false;
-                    }
-
-                    if (!await _spotifyService.SetVolumeAsync(_lastVolume))
-                    {
-                        return false;
-                    }
-
-                    playbackState.Volume = _lastVolume;
-                    return true;
+                    return false;
                 }
-                finally
-                {
-                    _playbackLock.Release();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to unmute");
-                return false;
-            }
+
+                return await SetVolumeAndCacheAsync(playbackState, _lastVolume);
+            });
         }
 
         /// <summary>
@@ -432,162 +273,62 @@ namespace BeatBind.Application.Services
         /// Toggles shuffle mode for the current playback.
         /// </summary>
         /// <returns>True if the operation was successful; otherwise, false.</returns>
-        public async Task<bool> ToggleShuffleAsync()
+        public Task<bool> ToggleShuffleAsync()
         {
-            try
+            return ExecuteWithPlaybackStateAsync("toggle shuffle", async playbackState =>
             {
-                await _playbackLock.WaitAsync();
-                try
+                var newState = !playbackState.ShuffleState;
+                if (!await _spotifyService.SetShuffleAsync(newState))
                 {
-                    var playbackState = await GetPlaybackStateCachedAsync();
-                    if (playbackState == null)
-                    {
-                        return false;
-                    }
-
-                    var newState = !playbackState.ShuffleState;
-                    if (!await _spotifyService.SetShuffleAsync(newState))
-                    {
-                        return false;
-                    }
-
-                    playbackState.ShuffleState = newState;
-                    return true;
+                    return false;
                 }
-                finally
-                {
-                    _playbackLock.Release();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to toggle shuffle");
-                return false;
-            }
+
+                playbackState.ShuffleState = newState;
+                return true;
+            });
         }
 
         /// <summary>
         /// Cycles through repeat modes: Off -> Context -> Track -> Off.
         /// </summary>
         /// <returns>True if the operation was successful; otherwise, false.</returns>
-        public async Task<bool> ToggleRepeatAsync()
+        public Task<bool> ToggleRepeatAsync()
         {
-            try
+            return ExecuteWithPlaybackStateAsync("toggle repeat", async playbackState =>
             {
-                await _playbackLock.WaitAsync();
-                try
+                var newMode = playbackState.RepeatState switch
                 {
-                    var playbackState = await GetPlaybackStateCachedAsync();
-                    if (playbackState == null)
-                    {
-                        return false;
-                    }
+                    RepeatMode.Off => RepeatMode.Context,
+                    RepeatMode.Context => RepeatMode.Track,
+                    _ => RepeatMode.Off
+                };
 
-                    var newMode = playbackState.RepeatState switch
-                    {
-                        RepeatMode.Off => RepeatMode.Context,
-                        RepeatMode.Context => RepeatMode.Track,
-                        _ => RepeatMode.Off
-                    };
-
-                    if (!await _spotifyService.SetRepeatAsync(newMode))
-                    {
-                        return false;
-                    }
-
-                    playbackState.RepeatState = newMode;
-                    return true;
-                }
-                finally
+                if (!await _spotifyService.SetRepeatAsync(newMode))
                 {
-                    _playbackLock.Release();
+                    return false;
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to toggle repeat");
-                return false;
-            }
+
+                playbackState.RepeatState = newMode;
+                return true;
+            });
         }
 
         /// <summary>
         /// Seeks forward in the current track by the configured seek milliseconds amount.
         /// </summary>
         /// <returns>True if the operation was successful; otherwise, false.</returns>
-        public async Task<bool> SeekForwardAsync()
+        public Task<bool> SeekForwardAsync()
         {
-            try
-            {
-                var config = _configurationService.GetConfiguration();
-
-                await _playbackLock.WaitAsync();
-                try
-                {
-                    var playbackState = await GetPlaybackStateCachedAsync();
-                    if (playbackState == null)
-                    {
-                        return false;
-                    }
-
-                    var newPosition = Math.Min(playbackState.DurationMs, playbackState.ProgressMs + config.SeekMilliseconds);
-                    if (!await _spotifyService.SeekToPositionAsync(newPosition))
-                    {
-                        return false;
-                    }
-
-                    playbackState.ProgressMs = newPosition;
-                    return true;
-                }
-                finally
-                {
-                    _playbackLock.Release();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to seek forward");
-                return false;
-            }
+            return SeekByAsync("seek forward", direction: +1);
         }
 
         /// <summary>
         /// Seeks backward in the current track by the configured seek milliseconds amount.
         /// </summary>
         /// <returns>True if the operation was successful; otherwise, false.</returns>
-        public async Task<bool> SeekBackwardAsync()
+        public Task<bool> SeekBackwardAsync()
         {
-            try
-            {
-                var config = _configurationService.GetConfiguration();
-
-                await _playbackLock.WaitAsync();
-                try
-                {
-                    var playbackState = await GetPlaybackStateCachedAsync();
-                    if (playbackState == null)
-                    {
-                        return false;
-                    }
-
-                    var newPosition = Math.Max(0, playbackState.ProgressMs - config.SeekMilliseconds);
-                    if (!await _spotifyService.SeekToPositionAsync(newPosition))
-                    {
-                        return false;
-                    }
-
-                    playbackState.ProgressMs = newPosition;
-                    return true;
-                }
-                finally
-                {
-                    _playbackLock.Release();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to seek backward");
-                return false;
-            }
+            return SeekByAsync("seek backward", direction: -1);
         }
 
         /// <summary>
@@ -609,6 +350,140 @@ namespace BeatBind.Application.Services
         }
 
         /// <summary>
+        /// Sends play or pause based on the given state and flips the cached
+        /// IsPlaying flag on success.
+        /// </summary>
+        private async Task<bool> TogglePlaybackAsync(PlaybackState playbackState)
+        {
+            var success = playbackState.IsPlaying
+                ? await _spotifyService.PauseAsync()
+                : await _spotifyService.PlayAsync();
+
+            if (success)
+            {
+                playbackState.IsPlaying = !playbackState.IsPlaying;
+            }
+
+            return success;
+        }
+
+        /// <summary>
+        /// Changes the volume by the configured step in the given direction.
+        /// Does nothing when the device does not report its volume — an absolute
+        /// step from an assumed level could yank the real volume wildly.
+        /// </summary>
+        private Task<bool> AdjustVolumeAsync(string operation, int direction)
+        {
+            return ExecuteWithPlaybackStateAsync(operation, async playbackState =>
+            {
+                if (playbackState.Volume is not int volume)
+                {
+                    return false;
+                }
+
+                var steps = _configurationService.GetConfiguration().VolumeSteps;
+                var newVolume = Math.Clamp(volume + direction * steps, 0, 100);
+                return await SetVolumeAndCacheAsync(playbackState, newVolume);
+            });
+        }
+
+        /// <summary>
+        /// Seeks by the configured amount in the given direction, clamped to the track bounds.
+        /// </summary>
+        private Task<bool> SeekByAsync(string operation, int direction)
+        {
+            return ExecuteWithPlaybackStateAsync(operation, async playbackState =>
+            {
+                var seekMs = _configurationService.GetConfiguration().SeekMilliseconds;
+                var newPosition = Math.Clamp(playbackState.ProgressMs + direction * seekMs, 0, playbackState.DurationMs);
+                if (!await _spotifyService.SeekToPositionAsync(newPosition))
+                {
+                    return false;
+                }
+
+                playbackState.ProgressMs = newPosition;
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// Sets the volume and mirrors the new value into the cached playback state on success.
+        /// </summary>
+        private async Task<bool> SetVolumeAndCacheAsync(PlaybackState playbackState, int targetVolume)
+        {
+            if (!await _spotifyService.SetVolumeAsync(targetVolume))
+            {
+                return false;
+            }
+
+            playbackState.Volume = targetVolume;
+            return true;
+        }
+
+        /// <summary>
+        /// Runs an action against the (possibly cached) playback state while holding
+        /// the playback lock; returns false when no playback state is available.
+        /// Exceptions are logged with the operation name and reported as failure.
+        /// </summary>
+        private async Task<bool> ExecuteWithPlaybackStateAsync(string operation, Func<PlaybackState, Task<bool>> action)
+        {
+            try
+            {
+                await _playbackLock.WaitAsync();
+                try
+                {
+                    var playbackState = await GetPlaybackStateCachedAsync();
+                    if (playbackState == null)
+                    {
+                        return false;
+                    }
+
+                    return await action(playbackState);
+                }
+                finally
+                {
+                    _playbackLock.Release();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to {Operation}", operation);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Runs a command that changes what is playing, invalidating the cached
+        /// playback state on success. Holds the playback lock so the invalidation
+        /// cannot race a concurrent cached read.
+        /// </summary>
+        private async Task<bool> ExecuteInvalidatingCommandAsync(string operation, Func<Task<bool>> command)
+        {
+            try
+            {
+                await _playbackLock.WaitAsync();
+                try
+                {
+                    var result = await command();
+                    if (result)
+                    {
+                        InvalidatePlaybackCache();
+                    }
+                    return result;
+                }
+                finally
+                {
+                    _playbackLock.Release();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to {Operation}", operation);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Returns the cached playback state if it is still fresh; otherwise fetches
         /// a new one from the API. Must be called while holding the playback lock.
         /// Successful commands update the cached state optimistically, so ProgressMs
@@ -617,7 +492,7 @@ namespace BeatBind.Application.Services
         /// <returns>The playback state, or null if unavailable.</returns>
         private async Task<PlaybackState?> GetPlaybackStateCachedAsync()
         {
-            if (_cachedPlayback != null && DateTime.UtcNow - _cachedPlaybackAtUtc < PlaybackCacheDuration)
+            if (_cachedPlayback != null && DateTime.UtcNow - _cachedPlaybackAtUtc < _playbackCacheDuration)
             {
                 return _cachedPlayback;
             }
@@ -630,7 +505,8 @@ namespace BeatBind.Application.Services
 
         /// <summary>
         /// Discards the cached playback state after commands that change the track
-        /// or otherwise make the cached snapshot unreliable.
+        /// or otherwise make the cached snapshot unreliable. Must be called while
+        /// holding the playback lock.
         /// </summary>
         private void InvalidatePlaybackCache()
         {

@@ -174,7 +174,12 @@ namespace BeatBind
                 KeepAlivePingDelay = TimeSpan.FromSeconds(30),
                 KeepAlivePingTimeout = TimeSpan.FromSeconds(10),
                 KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always
-            });
+            })
+            {
+                // Hotkey commands serialize behind a lock, so a hung request must
+                // fail fast — the 100s default would freeze all hotkeys for minutes
+                Timeout = TimeSpan.FromSeconds(15)
+            };
         }
 
         /// <summary>

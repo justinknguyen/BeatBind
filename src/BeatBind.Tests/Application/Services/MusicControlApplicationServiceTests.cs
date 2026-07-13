@@ -808,6 +808,61 @@ namespace BeatBind.Tests.Application.Services
         }
 
         [Fact]
+        public async Task VolumeUpAsync_WhenDeviceVolumeUnknown_ShouldDoNothing()
+        {
+            // Arrange — Spotify reports volume_percent: null for some devices and
+            // during ads; stepping from an assumed level would yank the real volume
+            var config = new ApplicationConfiguration { VolumeSteps = 10 };
+            var playbackState = new PlaybackState { IsPlaying = true, Volume = null, ProgressMs = 1000, DurationMs = 200000 };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+
+            // Act
+            var result = await _service.VolumeUpAsync();
+
+            // Assert
+            result.Should().BeFalse();
+            _mockSpotifyService.Verify(x => x.SetVolumeAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ToggleMuteAsync_WhenDeviceVolumeUnknown_ShouldDoNothing()
+        {
+            // Arrange — an unknown volume must not be treated as muted
+            var playbackState = new PlaybackState { IsPlaying = true, Volume = null, ProgressMs = 1000, DurationMs = 200000 };
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+
+            // Act
+            var result = await _service.ToggleMuteAsync();
+
+            // Assert
+            result.Should().BeFalse();
+            _mockSpotifyService.Verify(x => x.SetVolumeAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task PlayPauseAsync_WhenCachedStateIsStale_ShouldRefetchAndRetry()
+        {
+            // Arrange — the cached state says playing, but playback ended on its
+            // own, so the pause is rejected; the service must refetch and retry
+            var staleState = new PlaybackState { IsPlaying = true, Volume = 50, ProgressMs = 1000, DurationMs = 200000 };
+            var freshState = new PlaybackState { IsPlaying = false, Volume = 50, ProgressMs = 0, DurationMs = 200000 };
+            _mockSpotifyService.SetupSequence(x => x.GetCurrentPlaybackAsync())
+                .ReturnsAsync(staleState)
+                .ReturnsAsync(freshState);
+            _mockSpotifyService.Setup(x => x.PauseAsync()).ReturnsAsync(false);
+            _mockSpotifyService.Setup(x => x.PlayAsync()).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayPauseAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.PauseAsync(), Times.Once);
+            _mockSpotifyService.Verify(x => x.PlayAsync(), Times.Once);
+        }
+
+        [Fact]
         public async Task VolumeUpAsync_WhenPressedRapidly_ShouldReuseCachedPlaybackState()
         {
             // Arrange — presses within the cache window should fetch the playback

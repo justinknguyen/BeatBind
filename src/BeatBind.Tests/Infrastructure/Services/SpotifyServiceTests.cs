@@ -686,7 +686,38 @@ namespace BeatBind.Tests.Infrastructure.Services
             result!.IsPlaying.Should().BeTrue();
             result.CurrentTrack.Should().BeNull();
             result.ProgressMs.Should().Be(0);
-            result.Volume.Should().Be(0);
+            result.Volume.Should().BeNull(); // unknown volume must not be treated as 0
+        }
+
+        [Fact]
+        public async Task Commands_AfterAuthenticationSavedEvent_ShouldUseNewToken()
+        {
+            // Arrange — a UI re-auth (possibly to a different account) saves new
+            // tokens; the singleton service must adopt them immediately
+            await SetupAuthenticatedService();
+            SetupHttpResponse(HttpStatusCode.NoContent);
+
+            var newAuth = new AuthenticationResult
+            {
+                Success = true,
+                AccessToken = "account-b-token",
+                RefreshToken = "account-b-refresh",
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            };
+            _mockAuthService.Raise(x => x.AuthenticationSaved += null, _mockAuthService.Object, newAuth);
+
+            // Act
+            var result = await _service.PauseAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockHttpMessageHandler.Protected().Verify(
+                "SendAsync",
+                Times.AtLeastOnce(),
+                ItExpr.Is<HttpRequestMessage>(req =>
+                    req.Headers.Authorization != null &&
+                    req.Headers.Authorization.Parameter == "account-b-token"),
+                ItExpr.IsAny<CancellationToken>());
         }
 
         [Fact]

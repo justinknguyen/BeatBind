@@ -33,6 +33,11 @@ namespace BeatBind.Infrastructure.Services
             _logger = logger;
             _authenticationService = authenticationService;
 
+            // Adopt tokens saved by any auth path (UI re-auth, refresh) immediately,
+            // so a switch to a different Spotify account takes effect on the next
+            // hotkey press instead of after the old token expires
+            _authenticationService.AuthenticationSaved += (_, authResult) => _currentAuth = authResult;
+
             // Try to load stored authentication on startup
             LoadStoredAuthentication();
 
@@ -172,7 +177,7 @@ namespace BeatBind.Infrastructure.Services
             try
             {
                 var url = "https://api.spotify.com/v1/me/player";
-                var response = await SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Get, url));
+                using var response = await SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Get, url));
                 if (response == null)
                 {
                     return null;
@@ -208,7 +213,7 @@ namespace BeatBind.Infrastructure.Services
             try
             {
                 var url = "https://api.spotify.com/v1/me/player/devices";
-                var response = await SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Get, url));
+                using var response = await SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Get, url));
                 if (response == null || !response.IsSuccessStatusCode)
                 {
                     return new List<Device>();
@@ -245,7 +250,7 @@ namespace BeatBind.Infrastructure.Services
             try
             {
                 var url = "https://api.spotify.com/v1/me/player/play";
-                var response = await SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Put, url));
+                using var response = await SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Put, url));
                 if (response == null)
                 {
                     return false;
@@ -269,7 +274,7 @@ namespace BeatBind.Infrastructure.Services
 
                     var transferBody = JsonSerializer.Serialize(new { device_ids = new[] { device.Id }, play = true });
                     var transferUrl = "https://api.spotify.com/v1/me/player";
-                    var transferResponse = await SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Put, transferUrl)
+                    using var transferResponse = await SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Put, transferUrl)
                     {
                         Content = new StringContent(transferBody, Encoding.UTF8, "application/json")
                     });
@@ -498,7 +503,9 @@ namespace BeatBind.Infrastructure.Services
         private async Task<HttpResponseMessage> SendWithBearerTokenAsync(Func<HttpRequestMessage> createRequest)
         {
             var request = createRequest();
-            _logger.LogDebug("{Method} {Url}", request.Method.Method, request.RequestUri);
+            // Information level on purpose: the rolling log file is the only
+            // artifact for diagnosing "my hotkey did nothing" reports
+            _logger.LogInformation("{Method} {Url}", request.Method.Method, request.RequestUri);
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _currentAuth!.AccessToken);
 
             // Prefer HTTP/2 so the handler's keep-alive pings apply and the
@@ -522,7 +529,7 @@ namespace BeatBind.Infrastructure.Services
             try
             {
                 var url = useFullUrl ? endpoint : $"https://api.spotify.com/v1/me/player/{endpoint}";
-                var response = await SendRequestAsync(() =>
+                using var response = await SendRequestAsync(() =>
                 {
                     var request = new HttpRequestMessage(method, url);
                     if (!string.IsNullOrEmpty(body))
@@ -593,10 +600,12 @@ namespace BeatBind.Infrastructure.Services
                 };
             }
 
-            // Parse device
+            // Parse device. Volume stays null when volume_percent is JSON null
+            // (ad breaks, casting/restricted devices) so volume and mute commands
+            // know the real level is unknown instead of treating it as 0
             if (root.TryGetProperty("device", out var device) && device.ValueKind == JsonValueKind.Object)
             {
-                playbackState.Volume = GetInt32OrDefault(device, "volume_percent");
+                playbackState.Volume = GetInt32OrNull(device, "volume_percent");
                 playbackState.Device = ParseDevice(device);
             }
 
@@ -630,6 +639,16 @@ namespace BeatBind.Infrastructure.Services
             return parent.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Number
                 ? value.GetInt32()
                 : 0;
+        }
+
+        /// <summary>
+        /// Reads an integer property that may be missing or JSON null, returning null in those cases.
+        /// </summary>
+        private static int? GetInt32OrNull(JsonElement parent, string propertyName)
+        {
+            return parent.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Number
+                ? value.GetInt32()
+                : null;
         }
 
         /// <summary>
