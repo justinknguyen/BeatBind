@@ -139,11 +139,35 @@ namespace BeatBind
         private static void ConfigureInfrastructure(IServiceCollection services)
         {
             services.AddSingleton<IConfigurationService, ConfigurationService>();
-            services.AddHttpClient<ISpotifyService, SpotifyService>();
-            services.AddHttpClient<IAuthenticationService, AuthenticationService>();
+
+            // SpotifyService and AuthenticationService carry authentication state, so
+            // they must be singletons — transient copies (the AddHttpClient default)
+            // would each hold and refresh their own tokens independently.
+            services.AddSingleton<IAuthenticationService>(sp => new AuthenticationService(
+                sp.GetRequiredService<ILogger<AuthenticationService>>(),
+                sp.GetRequiredService<IConfigurationService>(),
+                CreateLongLivedHttpClient()));
+            services.AddSingleton<ISpotifyService>(sp => new SpotifyService(
+                CreateLongLivedHttpClient(),
+                sp.GetRequiredService<ILogger<SpotifyService>>(),
+                sp.GetRequiredService<IAuthenticationService>()));
+
             services.AddHttpClient<IGithubReleaseService, GithubReleaseService>();
             services.AddSingleton<IRegistryWrapper, RegistryWrapper>();
             services.AddSingleton<IStartupService, StartupService>();
+        }
+
+        /// <summary>
+        /// Creates an HttpClient suitable for singleton services: pooled connections
+        /// are recycled periodically so long-lived clients still pick up DNS changes.
+        /// </summary>
+        /// <returns>A configured HttpClient</returns>
+        private static HttpClient CreateLongLivedHttpClient()
+        {
+            return new HttpClient(new SocketsHttpHandler
+            {
+                PooledConnectionLifetime = TimeSpan.FromMinutes(15)
+            });
         }
 
         /// <summary>
@@ -152,11 +176,12 @@ namespace BeatBind
         /// <param name="services">The service collection</param>
         private static void ConfigureApplication(IServiceCollection services)
         {
-            // Application Services
-            services.AddTransient<AuthenticationApplicationService>();
-            services.AddTransient<ConfigurationApplicationService>();
-            services.AddTransient<MusicControlApplicationService>();
-            services.AddTransient<HotkeyApplicationService>();
+            // Application Services — singletons so state like the playback cache and
+            // last pre-mute volume is shared by every consumer
+            services.AddSingleton<AuthenticationApplicationService>();
+            services.AddSingleton<ConfigurationApplicationService>();
+            services.AddSingleton<MusicControlApplicationService>();
+            services.AddSingleton<HotkeyApplicationService>();
 
             // MediatR
             services.AddMediatR(cfg =>
@@ -180,7 +205,6 @@ namespace BeatBind
 
             services.AddSingleton<IHotkeyService, HotkeyService>(sp =>
             {
-                var mainForm = sp.GetRequiredService<MainForm>();
                 var logger = sp.GetRequiredService<ILogger<HotkeyService>>();
                 return new HotkeyService(logger);
             });

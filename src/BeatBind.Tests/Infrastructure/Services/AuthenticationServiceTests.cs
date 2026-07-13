@@ -408,6 +408,25 @@ namespace BeatBind.Tests.Infrastructure.Services
             result.Should().BeFalse();
         }
 
+        [Fact]
+        public void IsTokenValid_WithTokenExpiringWithinSafetyMargin_ShouldReturnFalse()
+        {
+            // Arrange — a token expiring in 30 seconds is inside the 60-second safety
+            // margin and should be treated as expired so it is refreshed proactively
+            var authResult = new AuthenticationResult
+            {
+                Success = true,
+                AccessToken = "token",
+                ExpiresAt = DateTime.UtcNow.AddSeconds(30)
+            };
+
+            // Act
+            var result = _service.IsTokenValid(authResult);
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
         private void SetupHttpResponse(HttpStatusCode statusCode, string content)
         {
             _mockHttpMessageHandler.Protected()

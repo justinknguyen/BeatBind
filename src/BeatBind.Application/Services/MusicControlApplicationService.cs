@@ -6,9 +6,20 @@ namespace BeatBind.Application.Services
 {
     public class MusicControlApplicationService
     {
+        // How long a fetched playback state stays fresh. Within this window,
+        // repeated hotkey presses (e.g. mashing volume up) reuse the cached state
+        // and send only the command request, halving the round trips per press.
+        private static readonly TimeSpan PlaybackCacheDuration = TimeSpan.FromSeconds(2);
+
         private readonly ISpotifyService _spotifyService;
         private readonly IConfigurationService _configurationService;
         private readonly ILogger<MusicControlApplicationService> _logger;
+
+        // Serializes read-modify-write command sequences so rapid presses compute
+        // successive steps (e.g. 50 -> 60 -> 70) instead of racing on the same base value.
+        private readonly SemaphoreSlim _playbackLock = new(1, 1);
+        private PlaybackState? _cachedPlayback;
+        private DateTime _cachedPlaybackAtUtc;
         private int _lastVolume = 50;
 
         /// <summary>
@@ -32,16 +43,31 @@ namespace BeatBind.Application.Services
         {
             try
             {
-                var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
-                if (playbackState == null)
+                await _playbackLock.WaitAsync();
+                try
                 {
-                    _logger.LogInformation("No active playback, attempting to start playback");
-                    return await _spotifyService.PlayAsync();
-                }
+                    var playbackState = await GetPlaybackStateCachedAsync();
+                    if (playbackState == null)
+                    {
+                        _logger.LogInformation("No active playback, attempting to start playback");
+                        return await _spotifyService.PlayAsync();
+                    }
 
-                return playbackState.IsPlaying
-                    ? await _spotifyService.PauseAsync()
-                    : await _spotifyService.PlayAsync();
+                    var success = playbackState.IsPlaying
+                        ? await _spotifyService.PauseAsync()
+                        : await _spotifyService.PlayAsync();
+
+                    if (success)
+                    {
+                        playbackState.IsPlaying = !playbackState.IsPlaying;
+                    }
+
+                    return success;
+                }
+                finally
+                {
+                    _playbackLock.Release();
+                }
             }
             catch (Exception ex)
             {
@@ -58,7 +84,12 @@ namespace BeatBind.Application.Services
         {
             try
             {
-                return await _spotifyService.PlayAsync();
+                var result = await _spotifyService.PlayAsync();
+                if (result)
+                {
+                    InvalidatePlaybackCache();
+                }
+                return result;
             }
             catch (Exception ex)
             {
@@ -75,7 +106,12 @@ namespace BeatBind.Application.Services
         {
             try
             {
-                return await _spotifyService.PauseAsync();
+                var result = await _spotifyService.PauseAsync();
+                if (result)
+                {
+                    InvalidatePlaybackCache();
+                }
+                return result;
             }
             catch (Exception ex)
             {
@@ -92,7 +128,12 @@ namespace BeatBind.Application.Services
         {
             try
             {
-                return await _spotifyService.NextTrackAsync();
+                var result = await _spotifyService.NextTrackAsync();
+                if (result)
+                {
+                    InvalidatePlaybackCache();
+                }
+                return result;
             }
             catch (Exception ex)
             {
@@ -111,17 +152,35 @@ namespace BeatBind.Application.Services
             {
                 var config = _configurationService.GetConfiguration();
 
-                if (config.PreviousTrackRewindToStart)
+                await _playbackLock.WaitAsync();
+                try
                 {
-                    var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
-                    if (playbackState != null && playbackState.ProgressMs > 5000) // 5 seconds
+                    if (config.PreviousTrackRewindToStart)
                     {
-                        // Rewind to start of current track
-                        return await _spotifyService.SeekToPositionAsync(0);
+                        var playbackState = await GetPlaybackStateCachedAsync();
+                        if (playbackState != null && playbackState.ProgressMs > 5000) // 5 seconds
+                        {
+                            // Rewind to start of current track
+                            if (await _spotifyService.SeekToPositionAsync(0))
+                            {
+                                playbackState.ProgressMs = 0;
+                                return true;
+                            }
+                            return false;
+                        }
                     }
-                }
 
-                return await _spotifyService.PreviousTrackAsync();
+                    var result = await _spotifyService.PreviousTrackAsync();
+                    if (result)
+                    {
+                        InvalidatePlaybackCache();
+                    }
+                    return result;
+                }
+                finally
+                {
+                    _playbackLock.Release();
+                }
             }
             catch (Exception ex)
             {
@@ -139,13 +198,29 @@ namespace BeatBind.Application.Services
             try
             {
                 var config = _configurationService.GetConfiguration();
-                var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
-                if (playbackState != null)
+
+                await _playbackLock.WaitAsync();
+                try
                 {
+                    var playbackState = await GetPlaybackStateCachedAsync();
+                    if (playbackState == null)
+                    {
+                        return false;
+                    }
+
                     var newVolume = Math.Min(100, playbackState.Volume + config.VolumeSteps);
-                    return await _spotifyService.SetVolumeAsync(newVolume);
+                    if (!await _spotifyService.SetVolumeAsync(newVolume))
+                    {
+                        return false;
+                    }
+
+                    playbackState.Volume = newVolume;
+                    return true;
                 }
-                return false;
+                finally
+                {
+                    _playbackLock.Release();
+                }
             }
             catch (Exception ex)
             {
@@ -163,13 +238,29 @@ namespace BeatBind.Application.Services
             try
             {
                 var config = _configurationService.GetConfiguration();
-                var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
-                if (playbackState != null)
+
+                await _playbackLock.WaitAsync();
+                try
                 {
+                    var playbackState = await GetPlaybackStateCachedAsync();
+                    if (playbackState == null)
+                    {
+                        return false;
+                    }
+
                     var newVolume = Math.Max(0, playbackState.Volume - config.VolumeSteps);
-                    return await _spotifyService.SetVolumeAsync(newVolume);
+                    if (!await _spotifyService.SetVolumeAsync(newVolume))
+                    {
+                        return false;
+                    }
+
+                    playbackState.Volume = newVolume;
+                    return true;
                 }
-                return false;
+                finally
+                {
+                    _playbackLock.Release();
+                }
             }
             catch (Exception ex)
             {
@@ -186,22 +277,40 @@ namespace BeatBind.Application.Services
         {
             try
             {
-                var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
-                if (playbackState != null)
+                await _playbackLock.WaitAsync();
+                try
                 {
+                    var playbackState = await GetPlaybackStateCachedAsync();
+                    if (playbackState == null)
+                    {
+                        return false;
+                    }
+
+                    int targetVolume;
                     if (playbackState.Volume > 0)
                     {
                         // Muting: save current volume before muting
                         _lastVolume = playbackState.Volume;
-                        return await _spotifyService.SetVolumeAsync(0);
+                        targetVolume = 0;
                     }
                     else
                     {
                         // Unmuting: restore saved volume (don't update _lastVolume)
-                        return await _spotifyService.SetVolumeAsync(_lastVolume);
+                        targetVolume = _lastVolume;
                     }
+
+                    if (!await _spotifyService.SetVolumeAsync(targetVolume))
+                    {
+                        return false;
+                    }
+
+                    playbackState.Volume = targetVolume;
+                    return true;
                 }
-                return false;
+                finally
+                {
+                    _playbackLock.Release();
+                }
             }
             catch (Exception ex)
             {
@@ -218,13 +327,28 @@ namespace BeatBind.Application.Services
         {
             try
             {
-                var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
-                if (playbackState != null && playbackState.Volume > 0)
+                await _playbackLock.WaitAsync();
+                try
                 {
+                    var playbackState = await GetPlaybackStateCachedAsync();
+                    if (playbackState == null || playbackState.Volume <= 0)
+                    {
+                        return false;
+                    }
+
                     _lastVolume = playbackState.Volume;
-                    return await _spotifyService.SetVolumeAsync(0);
+                    if (!await _spotifyService.SetVolumeAsync(0))
+                    {
+                        return false;
+                    }
+
+                    playbackState.Volume = 0;
+                    return true;
                 }
-                return false;
+                finally
+                {
+                    _playbackLock.Release();
+                }
             }
             catch (Exception ex)
             {
@@ -241,12 +365,27 @@ namespace BeatBind.Application.Services
         {
             try
             {
-                var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
-                if (playbackState != null && playbackState.Volume == 0)
+                await _playbackLock.WaitAsync();
+                try
                 {
-                    return await _spotifyService.SetVolumeAsync(_lastVolume);
+                    var playbackState = await GetPlaybackStateCachedAsync();
+                    if (playbackState == null || playbackState.Volume != 0)
+                    {
+                        return false;
+                    }
+
+                    if (!await _spotifyService.SetVolumeAsync(_lastVolume))
+                    {
+                        return false;
+                    }
+
+                    playbackState.Volume = _lastVolume;
+                    return true;
                 }
-                return false;
+                finally
+                {
+                    _playbackLock.Release();
+                }
             }
             catch (Exception ex)
             {
@@ -297,7 +436,12 @@ namespace BeatBind.Application.Services
         {
             try
             {
-                return await _spotifyService.ToggleShuffleAsync();
+                var result = await _spotifyService.ToggleShuffleAsync();
+                if (result)
+                {
+                    InvalidatePlaybackCache();
+                }
+                return result;
             }
             catch (Exception ex)
             {
@@ -314,7 +458,12 @@ namespace BeatBind.Application.Services
         {
             try
             {
-                return await _spotifyService.ToggleRepeatAsync();
+                var result = await _spotifyService.ToggleRepeatAsync();
+                if (result)
+                {
+                    InvalidatePlaybackCache();
+                }
+                return result;
             }
             catch (Exception ex)
             {
@@ -332,13 +481,29 @@ namespace BeatBind.Application.Services
             try
             {
                 var config = _configurationService.GetConfiguration();
-                var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
-                if (playbackState != null)
+
+                await _playbackLock.WaitAsync();
+                try
                 {
+                    var playbackState = await GetPlaybackStateCachedAsync();
+                    if (playbackState == null)
+                    {
+                        return false;
+                    }
+
                     var newPosition = Math.Min(playbackState.DurationMs, playbackState.ProgressMs + config.SeekMilliseconds);
-                    return await _spotifyService.SeekToPositionAsync(newPosition);
+                    if (!await _spotifyService.SeekToPositionAsync(newPosition))
+                    {
+                        return false;
+                    }
+
+                    playbackState.ProgressMs = newPosition;
+                    return true;
                 }
-                return false;
+                finally
+                {
+                    _playbackLock.Release();
+                }
             }
             catch (Exception ex)
             {
@@ -356,13 +521,29 @@ namespace BeatBind.Application.Services
             try
             {
                 var config = _configurationService.GetConfiguration();
-                var playbackState = await _spotifyService.GetCurrentPlaybackAsync();
-                if (playbackState != null)
+
+                await _playbackLock.WaitAsync();
+                try
                 {
+                    var playbackState = await GetPlaybackStateCachedAsync();
+                    if (playbackState == null)
+                    {
+                        return false;
+                    }
+
                     var newPosition = Math.Max(0, playbackState.ProgressMs - config.SeekMilliseconds);
-                    return await _spotifyService.SeekToPositionAsync(newPosition);
+                    if (!await _spotifyService.SeekToPositionAsync(newPosition))
+                    {
+                        return false;
+                    }
+
+                    playbackState.ProgressMs = newPosition;
+                    return true;
                 }
-                return false;
+                finally
+                {
+                    _playbackLock.Release();
+                }
             }
             catch (Exception ex)
             {
@@ -373,6 +554,7 @@ namespace BeatBind.Application.Services
 
         /// <summary>
         /// Retrieves the current playback state including track and device information.
+        /// Always queries the API so UI consumers see fresh data.
         /// </summary>
         /// <returns>The current playback state, or null if unavailable.</returns>
         public async Task<PlaybackState?> GetCurrentPlaybackAsync()
@@ -386,6 +568,35 @@ namespace BeatBind.Application.Services
                 _logger.LogError(ex, "Failed to get current playback state");
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Returns the cached playback state if it is still fresh; otherwise fetches
+        /// a new one from the API. Must be called while holding the playback lock.
+        /// Successful commands update the cached state optimistically, so ProgressMs
+        /// may lag real playback by up to the cache duration.
+        /// </summary>
+        /// <returns>The playback state, or null if unavailable.</returns>
+        private async Task<PlaybackState?> GetPlaybackStateCachedAsync()
+        {
+            if (_cachedPlayback != null && DateTime.UtcNow - _cachedPlaybackAtUtc < PlaybackCacheDuration)
+            {
+                return _cachedPlayback;
+            }
+
+            var state = await _spotifyService.GetCurrentPlaybackAsync();
+            _cachedPlayback = state;
+            _cachedPlaybackAtUtc = DateTime.UtcNow;
+            return state;
+        }
+
+        /// <summary>
+        /// Discards the cached playback state after commands that change the track
+        /// or otherwise make the cached snapshot unreliable.
+        /// </summary>
+        private void InvalidatePlaybackCache()
+        {
+            _cachedPlayback = null;
         }
     }
 }

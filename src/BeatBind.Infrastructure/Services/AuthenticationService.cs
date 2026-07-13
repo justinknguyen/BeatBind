@@ -12,6 +12,14 @@ namespace BeatBind.Infrastructure.Services
 {
     public class AuthenticationService : IAuthenticationService
     {
+        // Treat tokens as expired slightly early so a request sent close to the
+        // boundary doesn't go out with a token that is dead on arrival.
+        private static readonly TimeSpan TokenExpiryMargin = TimeSpan.FromSeconds(60);
+
+        // How long to wait for the user to complete the browser authorization
+        // before giving up and releasing the callback listener.
+        private static readonly TimeSpan CallbackTimeout = TimeSpan.FromMinutes(5);
+
         private readonly ILogger<AuthenticationService> _logger;
         private readonly IConfigurationService _configurationService;
         private readonly HttpClient _httpClient;
@@ -82,8 +90,7 @@ namespace BeatBind.Infrastructure.Services
             }
             finally
             {
-                _httpListener?.Stop();
-                _httpListener?.Close();
+                StopCallbackListener();
             }
         }
 
@@ -152,7 +159,7 @@ namespace BeatBind.Infrastructure.Services
         {
             return authResult != null &&
                    !string.IsNullOrEmpty(authResult.AccessToken) &&
-                   DateTime.UtcNow < authResult.ExpiresAt;
+                   DateTime.UtcNow < authResult.ExpiresAt - TokenExpiryMargin;
         }
 
         /// <summary>
@@ -218,6 +225,10 @@ namespace BeatBind.Infrastructure.Services
         {
             try
             {
+                // Release any listener left over from a previous attempt so a
+                // second authentication doesn't fail on the occupied prefix
+                StopCallbackListener();
+
                 _httpListener = new HttpListener();
                 _httpListener.Prefixes.Add(redirectUri.EndsWith('/') ? redirectUri : redirectUri + "/");
                 _httpListener.Start();
@@ -248,8 +259,7 @@ namespace BeatBind.Infrastructure.Services
                 ["response_type"] = "code",
                 ["redirect_uri"] = redirectUri,
                 ["state"] = state,
-                ["scope"] = scopes,
-                ["show_dialog"] = "true"
+                ["scope"] = scopes
             };
 
             var query = string.Join("&", parameters.AllKeys.Select(key => $"{key}={HttpUtility.UrlEncode(parameters[key])}"));
@@ -262,11 +272,46 @@ namespace BeatBind.Infrastructure.Services
         /// </summary>
         /// <param name="expectedState">The expected state value for validation.</param>
         /// <returns>An AuthenticationResult containing the authorization code or error information.</returns>
+        /// <summary>
+        /// Stops and releases the callback listener if one is active.
+        /// </summary>
+        private void StopCallbackListener()
+        {
+            if (_httpListener == null)
+            {
+                return;
+            }
+
+            try
+            {
+                _httpListener.Close();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error stopping callback listener");
+            }
+
+            _httpListener = null;
+        }
+
         private async Task<AuthenticationResult> WaitForCallbackAsync(string expectedState)
         {
             try
             {
-                var context = await _httpListener!.GetContextAsync();
+                var contextTask = _httpListener!.GetContextAsync();
+                var completedTask = await Task.WhenAny(contextTask, Task.Delay(CallbackTimeout));
+
+                if (completedTask != contextTask)
+                {
+                    // The user likely closed the browser without authorizing. Observe
+                    // the fault GetContextAsync raises when the caller closes the
+                    // listener so it doesn't surface as an unobserved task exception.
+                    _ = contextTask.ContinueWith(t => _ = t.Exception, TaskContinuationOptions.OnlyOnFaulted);
+                    _logger.LogWarning("Timed out waiting for the authorization callback after {Timeout}", CallbackTimeout);
+                    return new AuthenticationResult { Success = false, Error = "Timed out waiting for the authorization callback. Please try again." };
+                }
+
+                var context = await contextTask;
                 var request = context.Request;
                 var response = context.Response;
 

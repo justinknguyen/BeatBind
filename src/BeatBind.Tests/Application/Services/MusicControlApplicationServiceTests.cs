@@ -748,6 +748,70 @@ namespace BeatBind.Tests.Application.Services
         }
 
         [Fact]
+        public async Task VolumeUpAsync_WhenPressedRapidly_ShouldReuseCachedPlaybackState()
+        {
+            // Arrange — presses within the cache window should fetch the playback
+            // state once and compute successive volume steps locally
+            var config = new ApplicationConfiguration { VolumeSteps = 10 };
+            var playbackState = new PlaybackState { IsPlaying = true, Volume = 50, ProgressMs = 1000, DurationMs = 200000 };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+            _mockSpotifyService.Setup(x => x.SetVolumeAsync(It.IsAny<int>())).ReturnsAsync(true);
+
+            // Act
+            var first = await _service.VolumeUpAsync();
+            var second = await _service.VolumeUpAsync();
+
+            // Assert
+            first.Should().BeTrue();
+            second.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.GetCurrentPlaybackAsync(), Times.Once);
+            _mockSpotifyService.Verify(x => x.SetVolumeAsync(60), Times.Once);
+            _mockSpotifyService.Verify(x => x.SetVolumeAsync(70), Times.Once);
+        }
+
+        [Fact]
+        public async Task NextTrackAsync_ShouldInvalidateCachedPlaybackState()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration { VolumeSteps = 10 };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync())
+                .ReturnsAsync(() => new PlaybackState { IsPlaying = true, Volume = 50, ProgressMs = 1000, DurationMs = 200000 });
+            _mockSpotifyService.Setup(x => x.SetVolumeAsync(It.IsAny<int>())).ReturnsAsync(true);
+            _mockSpotifyService.Setup(x => x.NextTrackAsync()).ReturnsAsync(true);
+
+            // Act — the skip changes the track, so the cached state must be discarded
+            await _service.VolumeUpAsync();
+            await _service.NextTrackAsync();
+            await _service.VolumeUpAsync();
+
+            // Assert
+            _mockSpotifyService.Verify(x => x.GetCurrentPlaybackAsync(), Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task PlayPauseAsync_WhenPressedTwiceRapidly_ShouldToggleBothWays()
+        {
+            // Arrange — the second press within the cache window must see the state
+            // left by the first press, not the original snapshot
+            var playbackState = new PlaybackState { IsPlaying = true, Volume = 50, ProgressMs = 1000, DurationMs = 200000 };
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+            _mockSpotifyService.Setup(x => x.PauseAsync()).ReturnsAsync(true);
+            _mockSpotifyService.Setup(x => x.PlayAsync()).ReturnsAsync(true);
+
+            // Act
+            var first = await _service.PlayPauseAsync();
+            var second = await _service.PlayPauseAsync();
+
+            // Assert
+            first.Should().BeTrue();
+            second.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.PauseAsync(), Times.Once);
+            _mockSpotifyService.Verify(x => x.PlayAsync(), Times.Once);
+        }
+
+        [Fact]
         public async Task PreviousTrackAsync_WhenRewindToStartAndNoPlaybackState_ShouldGoToPreviousTrack()
         {
             // Arrange

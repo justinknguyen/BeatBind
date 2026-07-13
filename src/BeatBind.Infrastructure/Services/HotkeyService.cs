@@ -159,6 +159,15 @@ namespace BeatBind.Infrastructure.Services
         {
             if (_hookId == IntPtr.Zero)
             {
+                // Keyups missed while the hook was uninstalled (sleep/resume, hook
+                // timeouts) would otherwise leave phantom pressed keys that block
+                // hotkey matching until the user presses the stuck key again
+                _pressedKeys.Clear();
+                lock (_activeLock)
+                {
+                    _activeHotkeys.Clear();
+                }
+
                 _hookId = InstallHook(_hookCallback);
                 if (_hookId == IntPtr.Zero)
                     _logger.LogError("Keyboard hook failed to resume (SetWindowsHookEx returned null)");

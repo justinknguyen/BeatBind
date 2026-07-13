@@ -682,6 +682,103 @@ namespace BeatBind.Tests.Infrastructure.Services
             result.Should().BeFalse();
         }
 
+        [Fact]
+        public async Task GetCurrentPlaybackAsync_WithNullItemDuringAd_ShouldReturnStateWithoutTrack()
+        {
+            // Arrange — "item", "progress_ms", and "volume_percent" are documented as
+            // nullable (e.g. during ad breaks or private sessions)
+            await SetupAuthenticatedService();
+            var json = """
+            {
+                "is_playing": true,
+                "device": {
+                    "id": "device1",
+                    "name": "Test Device",
+                    "type": "Computer",
+                    "is_active": true,
+                    "is_private_session": false,
+                    "is_restricted": false,
+                    "volume_percent": null
+                },
+                "shuffle_state": false,
+                "repeat_state": "off",
+                "progress_ms": null,
+                "item": null
+            }
+            """;
+            SetupHttpResponse(HttpStatusCode.OK, json);
+
+            // Act
+            var result = await _service.GetCurrentPlaybackAsync();
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.IsPlaying.Should().BeTrue();
+            result.CurrentTrack.Should().BeNull();
+            result.ProgressMs.Should().Be(0);
+            result.Volume.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task PlayAsync_WhenTokenRejected_ShouldRefreshAndRetryOnce()
+        {
+            // Arrange — a 401 before the token's expected expiry (revoked token,
+            // clock skew) should trigger one forced refresh and one retry
+            await SetupAuthenticatedService();
+            _mockAuthService.Setup(x => x.RefreshTokenAsync(It.IsAny<string>())).ReturnsAsync(new AuthenticationResult
+            {
+                Success = true,
+                AccessToken = "new-token",
+                RefreshToken = "refresh-token",
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            });
+
+            var sequence = _mockHttpMessageHandler.Protected()
+                .SetupSequence<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>());
+            sequence.ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.Unauthorized });
+            sequence.ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.NoContent });
+
+            // Act
+            var result = await _service.PlayAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockAuthService.Verify(x => x.RefreshTokenAsync(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task RefreshTokenAsync_WhenRefreshFails_ShouldKeepCurrentTokens()
+        {
+            // Arrange — a transient refresh failure must not wipe the refresh token,
+            // otherwise the session is broken until restart
+            await SetupAuthenticatedService();
+            _mockAuthService.Setup(x => x.RefreshTokenAsync(It.IsAny<string>())).ReturnsAsync(new AuthenticationResult
+            {
+                Success = false,
+                Error = "Service unavailable"
+            });
+
+            // Act
+            var firstAttempt = await _service.RefreshTokenAsync();
+
+            // A later attempt should still be able to use the original refresh token
+            _mockAuthService.Setup(x => x.RefreshTokenAsync("refresh-token")).ReturnsAsync(new AuthenticationResult
+            {
+                Success = true,
+                AccessToken = "new-token",
+                RefreshToken = "new-refresh-token",
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            });
+            var secondAttempt = await _service.RefreshTokenAsync();
+
+            // Assert
+            firstAttempt.Should().BeFalse();
+            secondAttempt.Should().BeTrue();
+        }
+
         private async Task SetupAuthenticatedService()
         {
             var authResult = new AuthenticationResult
