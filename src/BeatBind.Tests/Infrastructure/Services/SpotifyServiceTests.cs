@@ -174,20 +174,25 @@ namespace BeatBind.Tests.Infrastructure.Services
         }
 
         [Fact]
-        public async Task ToggleShuffleAsync_WhenAuthenticated_ShouldCallGetPlayback()
+        public async Task SetShuffleAsync_WhenAuthenticated_ShouldSendShuffleState()
         {
             // Arrange
             await SetupAuthenticatedService();
-            SetupPlaybackResponse(shuffleState: false);
+            SetupHttpResponse(HttpStatusCode.NoContent);
 
             // Act
-            var result = await _service.ToggleShuffleAsync();
+            var result = await _service.SetShuffleAsync(true);
 
-            // Assert - Verify it attempts to get playback state
+            // Assert
+            result.Should().BeTrue();
             _mockHttpMessageHandler.Protected().Verify(
                 "SendAsync",
                 Times.AtLeastOnce(),
-                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.Is<HttpRequestMessage>(req =>
+                    req.Method == HttpMethod.Put &&
+                    req.RequestUri != null &&
+                    req.RequestUri.ToString().Contains("/me/player/shuffle") &&
+                    req.RequestUri.ToString().Contains("state=true")),
                 ItExpr.IsAny<CancellationToken>());
         }
 
@@ -436,46 +441,17 @@ namespace BeatBind.Tests.Infrastructure.Services
         }
 
         [Fact]
-        public async Task ToggleShuffleAsync_WhenPlaybackAvailable_ShouldToggle()
+        public async Task SetShuffleAsync_WhenNotAuthenticated_ShouldReturnFalse()
         {
-            // Arrange
-            await SetupAuthenticatedService();
-            var sequence = _mockHttpMessageHandler.Protected()
-                .SetupSequence<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>());
-
-            sequence.ReturnsAsync(new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(GetPlaybackJson(true, false))
-            });
-            sequence.ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.NoContent });
-
             // Act
-            var result = await _service.ToggleShuffleAsync();
-
-            // Assert
-            result.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task ToggleShuffleAsync_WhenNoPlayback_ShouldReturnFalse()
-        {
-            // Arrange
-            await SetupAuthenticatedService();
-            SetupHttpResponse(HttpStatusCode.NoContent);
-
-            // Act
-            var result = await _service.ToggleShuffleAsync();
+            var result = await _service.SetShuffleAsync(true);
 
             // Assert
             result.Should().BeFalse();
         }
 
         [Fact]
-        public async Task ToggleShuffleAsync_WhenExceptionThrown_ShouldReturnFalse()
+        public async Task SetShuffleAsync_WhenExceptionThrown_ShouldReturnFalse()
         {
             // Arrange
             await SetupAuthenticatedService();
@@ -487,46 +463,40 @@ namespace BeatBind.Tests.Infrastructure.Services
                 .ThrowsAsync(new HttpRequestException("Network error"));
 
             // Act
-            var result = await _service.ToggleShuffleAsync();
+            var result = await _service.SetShuffleAsync(true);
 
             // Assert
             result.Should().BeFalse();
         }
 
         [Fact]
-        public async Task ToggleRepeatAsync_WhenRepeatOff_ShouldSetToContext()
-        {
-            // Arrange
-            await SetupAuthenticatedService();
-            var sequence = _mockHttpMessageHandler.Protected()
-                .SetupSequence<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>());
-
-            sequence.ReturnsAsync(new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(GetPlaybackJson(true, false, "off"))
-            });
-            sequence.ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.NoContent });
-
-            // Act
-            var result = await _service.ToggleRepeatAsync();
-
-            // Assert
-            result.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task ToggleRepeatAsync_WhenNoPlayback_ShouldReturnFalse()
+        public async Task SetRepeatAsync_WhenAuthenticated_ShouldSendRepeatState()
         {
             // Arrange
             await SetupAuthenticatedService();
             SetupHttpResponse(HttpStatusCode.NoContent);
 
             // Act
-            var result = await _service.ToggleRepeatAsync();
+            var result = await _service.SetRepeatAsync(RepeatMode.Context);
+
+            // Assert
+            result.Should().BeTrue();
+            _mockHttpMessageHandler.Protected().Verify(
+                "SendAsync",
+                Times.AtLeastOnce(),
+                ItExpr.Is<HttpRequestMessage>(req =>
+                    req.Method == HttpMethod.Put &&
+                    req.RequestUri != null &&
+                    req.RequestUri.ToString().Contains("/me/player/repeat") &&
+                    req.RequestUri.ToString().Contains("state=context")),
+                ItExpr.IsAny<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task SetRepeatAsync_WhenNotAuthenticated_ShouldReturnFalse()
+        {
+            // Act
+            var result = await _service.SetRepeatAsync(RepeatMode.Off);
 
             // Assert
             result.Should().BeFalse();

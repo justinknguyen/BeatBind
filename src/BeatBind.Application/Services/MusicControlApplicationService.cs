@@ -436,12 +436,28 @@ namespace BeatBind.Application.Services
         {
             try
             {
-                var result = await _spotifyService.ToggleShuffleAsync();
-                if (result)
+                await _playbackLock.WaitAsync();
+                try
                 {
-                    InvalidatePlaybackCache();
+                    var playbackState = await GetPlaybackStateCachedAsync();
+                    if (playbackState == null)
+                    {
+                        return false;
+                    }
+
+                    var newState = !playbackState.ShuffleState;
+                    if (!await _spotifyService.SetShuffleAsync(newState))
+                    {
+                        return false;
+                    }
+
+                    playbackState.ShuffleState = newState;
+                    return true;
                 }
-                return result;
+                finally
+                {
+                    _playbackLock.Release();
+                }
             }
             catch (Exception ex)
             {
@@ -458,12 +474,34 @@ namespace BeatBind.Application.Services
         {
             try
             {
-                var result = await _spotifyService.ToggleRepeatAsync();
-                if (result)
+                await _playbackLock.WaitAsync();
+                try
                 {
-                    InvalidatePlaybackCache();
+                    var playbackState = await GetPlaybackStateCachedAsync();
+                    if (playbackState == null)
+                    {
+                        return false;
+                    }
+
+                    var newMode = playbackState.RepeatState switch
+                    {
+                        RepeatMode.Off => RepeatMode.Context,
+                        RepeatMode.Context => RepeatMode.Track,
+                        _ => RepeatMode.Off
+                    };
+
+                    if (!await _spotifyService.SetRepeatAsync(newMode))
+                    {
+                        return false;
+                    }
+
+                    playbackState.RepeatState = newMode;
+                    return true;
                 }
-                return result;
+                finally
+                {
+                    _playbackLock.Release();
+                }
             }
             catch (Exception ex)
             {

@@ -166,7 +166,14 @@ namespace BeatBind
         {
             return new HttpClient(new SocketsHttpHandler
             {
-                PooledConnectionLifetime = TimeSpan.FromMinutes(15)
+                PooledConnectionLifetime = TimeSpan.FromMinutes(15),
+                // Keep the connection to the API warm between hotkey presses so a
+                // press after an idle stretch doesn't pay a new TCP + TLS handshake.
+                // The pings require HTTP/2, which SpotifyService requests per call.
+                PooledConnectionIdleTimeout = TimeSpan.FromMinutes(10),
+                KeepAlivePingDelay = TimeSpan.FromSeconds(30),
+                KeepAlivePingTimeout = TimeSpan.FromSeconds(10),
+                KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always
             });
         }
 

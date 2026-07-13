@@ -333,61 +333,32 @@ namespace BeatBind.Infrastructure.Services
         }
 
         /// <summary>
-        /// Toggles the shuffle mode for the current playback.
+        /// Sets the shuffle mode for the current playback.
         /// </summary>
-        /// <returns>True if shuffle mode was successfully toggled; otherwise, false.</returns>
-        public async Task<bool> ToggleShuffleAsync()
+        /// <param name="state">True to enable shuffle; false to disable it.</param>
+        /// <returns>True if shuffle mode was successfully set; otherwise, false.</returns>
+        public async Task<bool> SetShuffleAsync(bool state)
         {
-            try
-            {
-                var playback = await GetCurrentPlaybackAsync();
-                if (playback == null)
-                {
-                    return false;
-                }
-
-                var newShuffleState = !playback.ShuffleState;
-                var url = $"https://api.spotify.com/v1/me/player/shuffle?state={newShuffleState.ToString().ToLower()}";
-
-                return await SendPlayerCommandAsync(url, HttpMethod.Put, useFullUrl: true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error toggling shuffle");
-                return false;
-            }
+            var url = $"https://api.spotify.com/v1/me/player/shuffle?state={(state ? "true" : "false")}";
+            return await SendPlayerCommandAsync(url, HttpMethod.Put, useFullUrl: true);
         }
 
         /// <summary>
-        /// Cycles through repeat modes: Off -> Context -> Track -> Off.
+        /// Sets the repeat mode for the current playback.
         /// </summary>
-        /// <returns>True if repeat mode was successfully changed; otherwise, false.</returns>
-        public async Task<bool> ToggleRepeatAsync()
+        /// <param name="mode">The repeat mode to set.</param>
+        /// <returns>True if repeat mode was successfully set; otherwise, false.</returns>
+        public async Task<bool> SetRepeatAsync(RepeatMode mode)
         {
-            try
+            var state = mode switch
             {
-                var playback = await GetCurrentPlaybackAsync();
-                if (playback == null)
-                {
-                    return false;
-                }
+                RepeatMode.Track => "track",
+                RepeatMode.Context => "context",
+                _ => "off"
+            };
 
-                var newRepeatState = playback.RepeatState switch
-                {
-                    RepeatMode.Off => "context",
-                    RepeatMode.Context => "track",
-                    RepeatMode.Track => "off",
-                    _ => "off"
-                };
-
-                var url = $"https://api.spotify.com/v1/me/player/repeat?state={newRepeatState}";
-                return await SendPlayerCommandAsync(url, HttpMethod.Put, useFullUrl: true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error toggling repeat");
-                return false;
-            }
+            var url = $"https://api.spotify.com/v1/me/player/repeat?state={state}";
+            return await SendPlayerCommandAsync(url, HttpMethod.Put, useFullUrl: true);
         }
 
         /// <summary>
@@ -529,6 +500,12 @@ namespace BeatBind.Infrastructure.Services
             var request = createRequest();
             _logger.LogDebug("{Method} {Url}", request.Method.Method, request.RequestUri);
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _currentAuth!.AccessToken);
+
+            // Prefer HTTP/2 so the handler's keep-alive pings apply and the
+            // connection stays warm between hotkey presses
+            request.Version = System.Net.HttpVersion.Version20;
+            request.VersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
+
             return await _httpClient.SendAsync(request);
         }
 
