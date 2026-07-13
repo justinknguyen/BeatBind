@@ -427,12 +427,7 @@ namespace BeatBind.Presentation.Components
         {
             if (ValidateInput())
             {
-                // If this is a new hotkey (ID is 0), generate a new ID
-                if (Hotkey.Id == 0)
-                {
-                    Hotkey.Id = Environment.TickCount;
-                }
-
+                // New hotkeys keep Id 0 here; HotkeysPanel assigns the next free ID
                 Hotkey.Action = _actionComboBox.SelectedValue is HotkeyAction action
                     ? action
                     : HotkeyAction.PlayPause; // or another default/fallback action

@@ -419,17 +419,77 @@ namespace BeatBind.Tests.Application.Services
         }
 
         [Fact]
-        public async Task ToggleShuffleAsync_ShouldCallSpotifyService()
+        public async Task ToggleShuffleAsync_WhenShuffleOff_ShouldEnableShuffle()
         {
             // Arrange
-            _mockSpotifyService.Setup(x => x.ToggleShuffleAsync()).ReturnsAsync(true);
+            var playbackState = new PlaybackState
+            {
+                IsPlaying = true,
+                Volume = 50,
+                ShuffleState = false,
+                ProgressMs = 1000,
+                DurationMs = 200000
+            };
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+            _mockSpotifyService.Setup(x => x.SetShuffleAsync(true)).ReturnsAsync(true);
 
             // Act
             var result = await _service.ToggleShuffleAsync();
 
             // Assert
             result.Should().BeTrue();
-            _mockSpotifyService.Verify(x => x.ToggleShuffleAsync(), Times.Once);
+            _mockSpotifyService.Verify(x => x.SetShuffleAsync(true), Times.Once);
+        }
+
+        [Fact]
+        public async Task ToggleShuffleAsync_WhenPressedTwiceRapidly_ShouldToggleBothWays()
+        {
+            // Arrange — the second press within the cache window must see the shuffle
+            // state left by the first press
+            var playbackState = new PlaybackState
+            {
+                IsPlaying = true,
+                Volume = 50,
+                ShuffleState = false,
+                ProgressMs = 1000,
+                DurationMs = 200000
+            };
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+            _mockSpotifyService.Setup(x => x.SetShuffleAsync(It.IsAny<bool>())).ReturnsAsync(true);
+
+            // Act
+            var first = await _service.ToggleShuffleAsync();
+            var second = await _service.ToggleShuffleAsync();
+
+            // Assert
+            first.Should().BeTrue();
+            second.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.GetCurrentPlaybackAsync(), Times.Once);
+            _mockSpotifyService.Verify(x => x.SetShuffleAsync(true), Times.Once);
+            _mockSpotifyService.Verify(x => x.SetShuffleAsync(false), Times.Once);
+        }
+
+        [Fact]
+        public async Task ToggleRepeatAsync_WhenRepeatOff_ShouldSetToContext()
+        {
+            // Arrange
+            var playbackState = new PlaybackState
+            {
+                IsPlaying = true,
+                Volume = 50,
+                RepeatState = RepeatMode.Off,
+                ProgressMs = 1000,
+                DurationMs = 200000
+            };
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+            _mockSpotifyService.Setup(x => x.SetRepeatAsync(RepeatMode.Context)).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.ToggleRepeatAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.SetRepeatAsync(RepeatMode.Context), Times.Once);
         }
 
         [Fact]
@@ -577,7 +637,7 @@ namespace BeatBind.Tests.Application.Services
         public async Task ToggleShuffleAsync_WhenExceptionThrown_ShouldReturnFalse()
         {
             // Arrange
-            _mockSpotifyService.Setup(x => x.ToggleShuffleAsync()).ThrowsAsync(new Exception("API error"));
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ThrowsAsync(new Exception("API error"));
 
             // Act
             var result = await _service.ToggleShuffleAsync();
@@ -590,7 +650,7 @@ namespace BeatBind.Tests.Application.Services
         public async Task ToggleRepeatAsync_WhenExceptionThrown_ShouldReturnFalse()
         {
             // Arrange
-            _mockSpotifyService.Setup(x => x.ToggleRepeatAsync()).ThrowsAsync(new Exception("API error"));
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ThrowsAsync(new Exception("API error"));
 
             // Act
             var result = await _service.ToggleRepeatAsync();
@@ -745,6 +805,125 @@ namespace BeatBind.Tests.Application.Services
             // Assert
             result.Should().BeTrue();
             _mockSpotifyService.Verify(x => x.SeekToPositionAsync(0), Times.Once);
+        }
+
+        [Fact]
+        public async Task VolumeUpAsync_WhenDeviceVolumeUnknown_ShouldDoNothing()
+        {
+            // Arrange — Spotify reports volume_percent: null for some devices and
+            // during ads; stepping from an assumed level would yank the real volume
+            var config = new ApplicationConfiguration { VolumeSteps = 10 };
+            var playbackState = new PlaybackState { IsPlaying = true, Volume = null, ProgressMs = 1000, DurationMs = 200000 };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+
+            // Act
+            var result = await _service.VolumeUpAsync();
+
+            // Assert
+            result.Should().BeFalse();
+            _mockSpotifyService.Verify(x => x.SetVolumeAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ToggleMuteAsync_WhenDeviceVolumeUnknown_ShouldDoNothing()
+        {
+            // Arrange — an unknown volume must not be treated as muted
+            var playbackState = new PlaybackState { IsPlaying = true, Volume = null, ProgressMs = 1000, DurationMs = 200000 };
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+
+            // Act
+            var result = await _service.ToggleMuteAsync();
+
+            // Assert
+            result.Should().BeFalse();
+            _mockSpotifyService.Verify(x => x.SetVolumeAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task PlayPauseAsync_WhenCachedStateIsStale_ShouldRefetchAndRetry()
+        {
+            // Arrange — the cached state says playing, but playback ended on its
+            // own, so the pause is rejected; the service must refetch and retry
+            var staleState = new PlaybackState { IsPlaying = true, Volume = 50, ProgressMs = 1000, DurationMs = 200000 };
+            var freshState = new PlaybackState { IsPlaying = false, Volume = 50, ProgressMs = 0, DurationMs = 200000 };
+            _mockSpotifyService.SetupSequence(x => x.GetCurrentPlaybackAsync())
+                .ReturnsAsync(staleState)
+                .ReturnsAsync(freshState);
+            _mockSpotifyService.Setup(x => x.PauseAsync()).ReturnsAsync(false);
+            _mockSpotifyService.Setup(x => x.PlayAsync()).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayPauseAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.PauseAsync(), Times.Once);
+            _mockSpotifyService.Verify(x => x.PlayAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task VolumeUpAsync_WhenPressedRapidly_ShouldReuseCachedPlaybackState()
+        {
+            // Arrange — presses within the cache window should fetch the playback
+            // state once and compute successive volume steps locally
+            var config = new ApplicationConfiguration { VolumeSteps = 10 };
+            var playbackState = new PlaybackState { IsPlaying = true, Volume = 50, ProgressMs = 1000, DurationMs = 200000 };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+            _mockSpotifyService.Setup(x => x.SetVolumeAsync(It.IsAny<int>())).ReturnsAsync(true);
+
+            // Act
+            var first = await _service.VolumeUpAsync();
+            var second = await _service.VolumeUpAsync();
+
+            // Assert
+            first.Should().BeTrue();
+            second.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.GetCurrentPlaybackAsync(), Times.Once);
+            _mockSpotifyService.Verify(x => x.SetVolumeAsync(60), Times.Once);
+            _mockSpotifyService.Verify(x => x.SetVolumeAsync(70), Times.Once);
+        }
+
+        [Fact]
+        public async Task NextTrackAsync_ShouldInvalidateCachedPlaybackState()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration { VolumeSteps = 10 };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync())
+                .ReturnsAsync(() => new PlaybackState { IsPlaying = true, Volume = 50, ProgressMs = 1000, DurationMs = 200000 });
+            _mockSpotifyService.Setup(x => x.SetVolumeAsync(It.IsAny<int>())).ReturnsAsync(true);
+            _mockSpotifyService.Setup(x => x.NextTrackAsync()).ReturnsAsync(true);
+
+            // Act — the skip changes the track, so the cached state must be discarded
+            await _service.VolumeUpAsync();
+            await _service.NextTrackAsync();
+            await _service.VolumeUpAsync();
+
+            // Assert
+            _mockSpotifyService.Verify(x => x.GetCurrentPlaybackAsync(), Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task PlayPauseAsync_WhenPressedTwiceRapidly_ShouldToggleBothWays()
+        {
+            // Arrange — the second press within the cache window must see the state
+            // left by the first press, not the original snapshot
+            var playbackState = new PlaybackState { IsPlaying = true, Volume = 50, ProgressMs = 1000, DurationMs = 200000 };
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
+            _mockSpotifyService.Setup(x => x.PauseAsync()).ReturnsAsync(true);
+            _mockSpotifyService.Setup(x => x.PlayAsync()).ReturnsAsync(true);
+
+            // Act
+            var first = await _service.PlayPauseAsync();
+            var second = await _service.PlayPauseAsync();
+
+            // Assert
+            first.Should().BeTrue();
+            second.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.PauseAsync(), Times.Once);
+            _mockSpotifyService.Verify(x => x.PlayAsync(), Times.Once);
         }
 
         [Fact]

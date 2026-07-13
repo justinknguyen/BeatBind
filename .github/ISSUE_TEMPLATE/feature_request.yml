@@ -1,0 +1,32 @@
+name: Feature request
+description: Suggest an idea or improvement
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Heads up: the maintainer has scaled back active development, so features are mostly implemented by community contributors. PRs are very welcome — see [CONTRIBUTING.md](https://github.com/justinknguyen/BeatBind/blob/dev/CONTRIBUTING.md) for a quick-start.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      placeholder: "When I ... I have to ... which is annoying because ..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      placeholder: "Add a hotkey action that ..."
+    validations:
+      required: true
+  - type: dropdown
+    id: contribute
+    attributes:
+      label: Would you be willing to implement this yourself?
+      options:
+        - "Yes, with some pointers"
+        - "Maybe"
+        - "No"
+    validations:
+      required: true

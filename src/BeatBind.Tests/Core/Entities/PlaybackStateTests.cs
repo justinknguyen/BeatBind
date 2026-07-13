@@ -13,7 +13,7 @@ namespace BeatBind.Tests.Core.Entities
 
             // Assert
             playbackState.IsPlaying.Should().BeFalse();
-            playbackState.Volume.Should().Be(0);
+            playbackState.Volume.Should().BeNull(); // null = device volume unknown
             playbackState.ProgressMs.Should().Be(0);
             playbackState.DurationMs.Should().Be(0);
             playbackState.ShuffleState.Should().BeFalse();

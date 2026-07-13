@@ -15,7 +15,10 @@ namespace BeatBind.Presentation
 {
     public partial class MainForm : MaterialForm
     {
-        public const string CURRENT_VERSION = "2.0.4";
+        // Single source of truth for the app version (compared against GitHub
+        // releases by the update checker). When bumping, also update the version
+        // badge in README.md — see CONTRIBUTING.md "Releasing a new version".
+        public const string CURRENT_VERSION = "2.1.0";
 
         private readonly MaterialSkinManager _materialSkinManager;
         private readonly AuthenticationApplicationService _authenticationService;
@@ -24,6 +27,7 @@ namespace BeatBind.Presentation
         private readonly IGithubReleaseService _githubReleaseService;
         private readonly IStartupService _startupService;
         private readonly ILogger<MainForm> _logger;
+        private readonly ILoggerFactory _loggerFactory;
 
         private NotifyIcon? _notifyIcon;
         private Panel? _updateNotificationPanel;
@@ -50,6 +54,7 @@ namespace BeatBind.Presentation
             _githubReleaseService = null!;
             _startupService = null!;
             _logger = NullLogger<MainForm>.Instance;
+            _loggerFactory = NullLoggerFactory.Instance;
 
             if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
             {
@@ -69,18 +74,21 @@ namespace BeatBind.Presentation
         /// <param name="githubReleaseService">Service for checking GitHub releases</param>
         /// <param name="startupService">Service for startup management</param>
         /// <param name="logger">Logger instance</param>
+        /// <param name="loggerFactory">Factory used to create loggers for the child panels</param>
         public MainForm(
             AuthenticationApplicationService authenticationService,
             IConfigurationService configurationService,
             IGithubReleaseService githubReleaseService,
             IStartupService startupService,
-            ILogger<MainForm> logger)
+            ILogger<MainForm> logger,
+            ILoggerFactory loggerFactory)
         {
             _authenticationService = authenticationService;
             _configurationService = configurationService;
             _githubReleaseService = githubReleaseService;
             _startupService = startupService;
             _logger = logger;
+            _loggerFactory = loggerFactory;
 
             // Initialize MaterialSkinManager
             _materialSkinManager = MaterialSkinManager.Instance;
@@ -199,9 +207,9 @@ namespace BeatBind.Presentation
             };
 
             // Create panels
-            _authenticationPanel = new AuthenticationPanel(_authenticationService, _configurationService, NullLogger<AuthenticationPanel>.Instance);
-            _hotkeysPanel = new HotkeysPanel(NullLogger<HotkeysPanel>.Instance);
-            _settingsPanel = new SettingsPanel(_configurationService, _startupService, NullLogger<SettingsPanel>.Instance);
+            _authenticationPanel = new AuthenticationPanel(_authenticationService, _configurationService, _loggerFactory.CreateLogger<AuthenticationPanel>());
+            _hotkeysPanel = new HotkeysPanel(_loggerFactory.CreateLogger<HotkeysPanel>());
+            _settingsPanel = new SettingsPanel(_configurationService, _startupService, _loggerFactory.CreateLogger<SettingsPanel>());
 
             // Wire up panel events
             _hotkeysPanel.HotkeyEditRequested += HotkeysPanel_HotkeyEditRequested;

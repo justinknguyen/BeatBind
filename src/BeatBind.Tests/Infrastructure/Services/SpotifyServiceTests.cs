@@ -174,20 +174,25 @@ namespace BeatBind.Tests.Infrastructure.Services
         }
 
         [Fact]
-        public async Task ToggleShuffleAsync_WhenAuthenticated_ShouldCallGetPlayback()
+        public async Task SetShuffleAsync_WhenAuthenticated_ShouldSendShuffleState()
         {
             // Arrange
             await SetupAuthenticatedService();
-            SetupPlaybackResponse(shuffleState: false);
+            SetupHttpResponse(HttpStatusCode.NoContent);
 
             // Act
-            var result = await _service.ToggleShuffleAsync();
+            var result = await _service.SetShuffleAsync(true);
 
-            // Assert - Verify it attempts to get playback state
+            // Assert
+            result.Should().BeTrue();
             _mockHttpMessageHandler.Protected().Verify(
                 "SendAsync",
                 Times.AtLeastOnce(),
-                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.Is<HttpRequestMessage>(req =>
+                    req.Method == HttpMethod.Put &&
+                    req.RequestUri != null &&
+                    req.RequestUri.ToString().Contains("/me/player/shuffle") &&
+                    req.RequestUri.ToString().Contains("state=true")),
                 ItExpr.IsAny<CancellationToken>());
         }
 
@@ -436,46 +441,17 @@ namespace BeatBind.Tests.Infrastructure.Services
         }
 
         [Fact]
-        public async Task ToggleShuffleAsync_WhenPlaybackAvailable_ShouldToggle()
+        public async Task SetShuffleAsync_WhenNotAuthenticated_ShouldReturnFalse()
         {
-            // Arrange
-            await SetupAuthenticatedService();
-            var sequence = _mockHttpMessageHandler.Protected()
-                .SetupSequence<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>());
-
-            sequence.ReturnsAsync(new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(GetPlaybackJson(true, false))
-            });
-            sequence.ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.NoContent });
-
             // Act
-            var result = await _service.ToggleShuffleAsync();
-
-            // Assert
-            result.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task ToggleShuffleAsync_WhenNoPlayback_ShouldReturnFalse()
-        {
-            // Arrange
-            await SetupAuthenticatedService();
-            SetupHttpResponse(HttpStatusCode.NoContent);
-
-            // Act
-            var result = await _service.ToggleShuffleAsync();
+            var result = await _service.SetShuffleAsync(true);
 
             // Assert
             result.Should().BeFalse();
         }
 
         [Fact]
-        public async Task ToggleShuffleAsync_WhenExceptionThrown_ShouldReturnFalse()
+        public async Task SetShuffleAsync_WhenExceptionThrown_ShouldReturnFalse()
         {
             // Arrange
             await SetupAuthenticatedService();
@@ -487,46 +463,40 @@ namespace BeatBind.Tests.Infrastructure.Services
                 .ThrowsAsync(new HttpRequestException("Network error"));
 
             // Act
-            var result = await _service.ToggleShuffleAsync();
+            var result = await _service.SetShuffleAsync(true);
 
             // Assert
             result.Should().BeFalse();
         }
 
         [Fact]
-        public async Task ToggleRepeatAsync_WhenRepeatOff_ShouldSetToContext()
-        {
-            // Arrange
-            await SetupAuthenticatedService();
-            var sequence = _mockHttpMessageHandler.Protected()
-                .SetupSequence<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>());
-
-            sequence.ReturnsAsync(new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(GetPlaybackJson(true, false, "off"))
-            });
-            sequence.ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.NoContent });
-
-            // Act
-            var result = await _service.ToggleRepeatAsync();
-
-            // Assert
-            result.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task ToggleRepeatAsync_WhenNoPlayback_ShouldReturnFalse()
+        public async Task SetRepeatAsync_WhenAuthenticated_ShouldSendRepeatState()
         {
             // Arrange
             await SetupAuthenticatedService();
             SetupHttpResponse(HttpStatusCode.NoContent);
 
             // Act
-            var result = await _service.ToggleRepeatAsync();
+            var result = await _service.SetRepeatAsync(RepeatMode.Context);
+
+            // Assert
+            result.Should().BeTrue();
+            _mockHttpMessageHandler.Protected().Verify(
+                "SendAsync",
+                Times.AtLeastOnce(),
+                ItExpr.Is<HttpRequestMessage>(req =>
+                    req.Method == HttpMethod.Put &&
+                    req.RequestUri != null &&
+                    req.RequestUri.ToString().Contains("/me/player/repeat") &&
+                    req.RequestUri.ToString().Contains("state=context")),
+                ItExpr.IsAny<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task SetRepeatAsync_WhenNotAuthenticated_ShouldReturnFalse()
+        {
+            // Act
+            var result = await _service.SetRepeatAsync(RepeatMode.Off);
 
             // Assert
             result.Should().BeFalse();
@@ -680,6 +650,134 @@ namespace BeatBind.Tests.Infrastructure.Services
 
             // Assert
             result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task GetCurrentPlaybackAsync_WithNullItemDuringAd_ShouldReturnStateWithoutTrack()
+        {
+            // Arrange — "item", "progress_ms", and "volume_percent" are documented as
+            // nullable (e.g. during ad breaks or private sessions)
+            await SetupAuthenticatedService();
+            var json = """
+            {
+                "is_playing": true,
+                "device": {
+                    "id": "device1",
+                    "name": "Test Device",
+                    "type": "Computer",
+                    "is_active": true,
+                    "is_private_session": false,
+                    "is_restricted": false,
+                    "volume_percent": null
+                },
+                "shuffle_state": false,
+                "repeat_state": "off",
+                "progress_ms": null,
+                "item": null
+            }
+            """;
+            SetupHttpResponse(HttpStatusCode.OK, json);
+
+            // Act
+            var result = await _service.GetCurrentPlaybackAsync();
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.IsPlaying.Should().BeTrue();
+            result.CurrentTrack.Should().BeNull();
+            result.ProgressMs.Should().Be(0);
+            result.Volume.Should().BeNull(); // unknown volume must not be treated as 0
+        }
+
+        [Fact]
+        public async Task Commands_AfterAuthenticationSavedEvent_ShouldUseNewToken()
+        {
+            // Arrange — a UI re-auth (possibly to a different account) saves new
+            // tokens; the singleton service must adopt them immediately
+            await SetupAuthenticatedService();
+            SetupHttpResponse(HttpStatusCode.NoContent);
+
+            var newAuth = new AuthenticationResult
+            {
+                Success = true,
+                AccessToken = "account-b-token",
+                RefreshToken = "account-b-refresh",
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            };
+            _mockAuthService.Raise(x => x.AuthenticationSaved += null, _mockAuthService.Object, newAuth);
+
+            // Act
+            var result = await _service.PauseAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockHttpMessageHandler.Protected().Verify(
+                "SendAsync",
+                Times.AtLeastOnce(),
+                ItExpr.Is<HttpRequestMessage>(req =>
+                    req.Headers.Authorization != null &&
+                    req.Headers.Authorization.Parameter == "account-b-token"),
+                ItExpr.IsAny<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task PlayAsync_WhenTokenRejected_ShouldRefreshAndRetryOnce()
+        {
+            // Arrange — a 401 before the token's expected expiry (revoked token,
+            // clock skew) should trigger one forced refresh and one retry
+            await SetupAuthenticatedService();
+            _mockAuthService.Setup(x => x.RefreshTokenAsync(It.IsAny<string>())).ReturnsAsync(new AuthenticationResult
+            {
+                Success = true,
+                AccessToken = "new-token",
+                RefreshToken = "refresh-token",
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            });
+
+            var sequence = _mockHttpMessageHandler.Protected()
+                .SetupSequence<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>());
+            sequence.ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.Unauthorized });
+            sequence.ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.NoContent });
+
+            // Act
+            var result = await _service.PlayAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockAuthService.Verify(x => x.RefreshTokenAsync(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task RefreshTokenAsync_WhenRefreshFails_ShouldKeepCurrentTokens()
+        {
+            // Arrange — a transient refresh failure must not wipe the refresh token,
+            // otherwise the session is broken until restart
+            await SetupAuthenticatedService();
+            _mockAuthService.Setup(x => x.RefreshTokenAsync(It.IsAny<string>())).ReturnsAsync(new AuthenticationResult
+            {
+                Success = false,
+                Error = "Service unavailable"
+            });
+
+            // Act
+            var firstAttempt = await _service.RefreshTokenAsync();
+
+            // A later attempt should still be able to use the original refresh token
+            _mockAuthService.Setup(x => x.RefreshTokenAsync("refresh-token")).ReturnsAsync(new AuthenticationResult
+            {
+                Success = true,
+                AccessToken = "new-token",
+                RefreshToken = "new-refresh-token",
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            });
+            var secondAttempt = await _service.RefreshTokenAsync();
+
+            // Assert
+            firstAttempt.Should().BeFalse();
+            secondAttempt.Should().BeTrue();
         }
 
         private async Task SetupAuthenticatedService()
