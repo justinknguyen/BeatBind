@@ -37,6 +37,9 @@ namespace BeatBind.Infrastructure.Services
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
 
+        [DllImport("user32.dll")]
+        private static extern short GetAsyncKeyState(int vKey);
+
         protected delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
         public event EventHandler<Hotkey>? HotkeyPressed;
@@ -213,26 +216,78 @@ namespace BeatBind.Infrastructure.Services
 
                 if (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN)
                 {
-                    _pressedKeys.Add(vkCode);
-
-                    // Check if this key press triggers a hotkey
-                    bool hotkeyTriggered = CheckHotkeys();
-
                     // If a hotkey was triggered, suppress the key event from propagating
-                    if (hotkeyTriggered)
+                    if (ProcessKeyDown(vkCode))
                     {
                         return (IntPtr)1;
                     }
                 }
                 else if (wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)WM_SYSKEYUP)
                 {
-                    _pressedKeys.Remove(vkCode);
-                    ClearInactiveHotkeys();
+                    ProcessKeyUp(vkCode);
                 }
             }
 
             // Allow the key event to propagate if no hotkey was triggered
             return CallNextHookEx(_hookId, nCode, wParam, lParam);
+        }
+
+        /// <summary>
+        /// Records a key press, prunes stale keys, and checks for hotkey matches.
+        /// </summary>
+        /// <param name="vkCode">The virtual key code of the pressed key.</param>
+        /// <returns>True if a hotkey was triggered (the key event should be suppressed); otherwise, false.</returns>
+        protected bool ProcessKeyDown(int vkCode)
+        {
+            PruneReleasedKeys(vkCode);
+            _pressedKeys.Add(vkCode);
+
+            return CheckHotkeys();
+        }
+
+        /// <summary>
+        /// Records a key release and clears hotkeys whose keys are no longer held.
+        /// </summary>
+        /// <param name="vkCode">The virtual key code of the released key.</param>
+        protected void ProcessKeyUp(int vkCode)
+        {
+            _pressedKeys.Remove(vkCode);
+            ClearInactiveHotkeys();
+        }
+
+        /// <summary>
+        /// Removes keys from the pressed set that the OS reports as no longer held.
+        /// Key-up events are lost whenever Windows switches to the secure desktop
+        /// (Win+L lock, Ctrl+Alt+Del, UAC prompts) because low-level hooks receive
+        /// no events there — e.g. the Win key from Win+L would otherwise stay
+        /// "pressed" forever and block all hotkey matching until restart.
+        /// </summary>
+        /// <param name="currentVkCode">The key being processed right now. Excluded from
+        /// pruning: the OS input state is not yet updated for the current event, and
+        /// events this hook suppressed never reach the OS input state at all.</param>
+        private void PruneReleasedKeys(int currentVkCode)
+        {
+            if (_pressedKeys.Count == 0)
+            {
+                return;
+            }
+
+            int removed = _pressedKeys.RemoveWhere(vk => vk != currentVkCode && !IsKeyDownInOS(vk));
+            if (removed > 0)
+            {
+                ClearInactiveHotkeys();
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the OS considers the given key physically held down.
+        /// Virtual so tests can simulate OS key state without P/Invoke.
+        /// </summary>
+        /// <param name="vkCode">The virtual key code to check.</param>
+        /// <returns>True if the key is currently down; otherwise, false.</returns>
+        protected virtual bool IsKeyDownInOS(int vkCode)
+        {
+            return (GetAsyncKeyState(vkCode) & 0x8000) != 0;
         }
 
         /// <summary>
