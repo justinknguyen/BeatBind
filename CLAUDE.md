@@ -35,6 +35,8 @@ CI (`.github/workflows/ci.yml`) runs on pushes/PRs to `dev`: `dotnet restore src
 
 Branch model: `main` is the stable/release branch, `dev` is the active development branch (PRs target `dev`), `beta` auto-publishes a beta GitHub release on every push via `build-and-release.yml`.
 
+Version bump (see CONTRIBUTING.md "Releasing a new version"): update `CURRENT_VERSION` in `src/BeatBind.Presentation/MainForm.cs` (the update checker compares it against the latest GitHub release tag) AND the version badge at the top of `README.md`. Those are the only two locations.
+
 ## Architecture
 
 Clean Architecture, five projects under `src/`, dependencies flow inward only: **Presentation → Application → Infrastructure → Core** (Core has no dependencies on the other layers; Infrastructure and Presentation both depend on Core/Application, never on each other directly).

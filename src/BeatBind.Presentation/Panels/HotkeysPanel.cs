@@ -152,6 +152,13 @@ public partial class HotkeysPanel : BasePanelControl
         {
             var hotkey = hotkeyDialog.Hotkey;
 
+            // Assign the next free ID; the ID keys the UI entry dictionary and the
+            // hotkey registration, so duplicates would silently drop hotkeys
+            if (hotkey.Id == 0)
+            {
+                hotkey.Id = GetHotkeysFromUI().Select(h => h.Id).DefaultIfEmpty(0).Max() + 1;
+            }
+
             var existingHotkey = GetHotkeysFromUI().FirstOrDefault(h => h.Action == hotkey.Action);
             if (existingHotkey != null)
             {

@@ -1,0 +1,43 @@
+name: Bug report
+description: Something isn't working
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: BeatBind version
+      description: Shown in the update banner, or check the release you downloaded.
+      placeholder: "2.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+      placeholder: "Pressed my Play/Pause hotkey while an ad was playing and ..."
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open BeatBind and authenticate
+        2. Set a hotkey for Volume Up
+        3. Press it while ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log file
+      description: |
+        Attach or paste the relevant part of the log from `%APPDATA%\BeatBind\` (paste that path into File Explorer). Logs cover the last 48 hours and record every Spotify command sent — they make most bugs diagnosable without back-and-forth. Remove anything you consider sensitive.
+      render: text
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Windows version, and anything unusual (multiple audio devices, casting to a speaker, Spotify Free vs Premium).
+      placeholder: "Windows 11 23H2, Premium, playing on desktop client"

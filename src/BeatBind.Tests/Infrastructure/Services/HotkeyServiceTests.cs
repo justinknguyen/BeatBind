@@ -178,6 +178,97 @@ namespace BeatBind.Tests.Infrastructure.Services
                 Times.Once);
         }
 
+        // Virtual key codes used by the key-simulation tests
+        private const int VkLWin = 0x5B;
+        private const int VkLMenu = 0xA4; // left Alt
+        private const int VkNumPad3 = 0x63;
+
+        // Regression test for the Win+L lock bug: the Win key-down is seen by the
+        // hook, but its key-up happens on the secure desktop where low-level hooks
+        // receive no events. Without pruning, the phantom Win modifier blocks all
+        // hotkey matching until the app is restarted.
+        [Fact]
+        public void Hotkey_AfterKeyUpLostToSecureDesktop_ShouldStillTrigger()
+        {
+            var service = new KeySimulatingHotkeyService(_mockLogger.Object);
+            var triggered = new ManualResetEventSlim(false);
+            service.RegisterHotkey(
+                new Hotkey { Id = 1, Action = HotkeyAction.VolumeDown, KeyCode = VkNumPad3, Modifiers = ModifierKeys.Alt },
+                () => triggered.Set());
+
+            // Win+L: key-down observed, key-up swallowed by the lock screen
+            service.SimulateKeyDown(VkLWin);
+            service.SimulateLostKeyUp(VkLWin);
+
+            // After unlock, the user presses Alt+NumPad3
+            service.SimulateKeyDown(VkLMenu);
+            var suppressed = service.SimulateKeyDown(VkNumPad3);
+
+            suppressed.Should().BeTrue("the phantom Win key should be pruned so the hotkey matches");
+            triggered.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
+        }
+
+        [Fact]
+        public void Hotkey_WithHeldModifier_ShouldNotBePrunedAndShouldTrigger()
+        {
+            var service = new KeySimulatingHotkeyService(_mockLogger.Object);
+            var triggered = new ManualResetEventSlim(false);
+            service.RegisterHotkey(
+                new Hotkey { Id = 1, Action = HotkeyAction.VolumeDown, KeyCode = VkNumPad3, Modifiers = ModifierKeys.Alt },
+                () => triggered.Set());
+
+            // Normal use: Alt is genuinely held when the main key goes down
+            service.SimulateKeyDown(VkLMenu);
+            var suppressed = service.SimulateKeyDown(VkNumPad3);
+
+            suppressed.Should().BeTrue();
+            triggered.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
+        }
+
+        // A key-down this hook suppresses never reaches the OS input state, so
+        // GetAsyncKeyState reports it as up while it is physically held. The key
+        // currently being processed must therefore be excluded from pruning.
+        [Fact]
+        public void Hotkey_WhoseKeyDownIsNotReflectedInOsState_ShouldStillTrigger()
+        {
+            var service = new KeySimulatingHotkeyService(_mockLogger.Object);
+            var triggered = new ManualResetEventSlim(false);
+            service.RegisterHotkey(
+                new Hotkey { Id = 1, Action = HotkeyAction.VolumeDown, KeyCode = VkNumPad3, Modifiers = ModifierKeys.Alt },
+                () => triggered.Set());
+
+            service.SimulateKeyDown(VkLMenu);
+            var suppressed = service.SimulateKeyDownInvisibleToOS(VkNumPad3);
+
+            suppressed.Should().BeTrue("the current key must not be pruned even if the OS state does not show it down");
+            triggered.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
+        }
+
+        [Fact]
+        public void Hotkey_AfterMainKeyUpLostToSecureDesktop_ShouldTriggerOnNextPress()
+        {
+            var service = new KeySimulatingHotkeyService(_mockLogger.Object);
+            var triggerCount = 0;
+            var triggered = new SemaphoreSlim(0);
+            service.RegisterHotkey(
+                new Hotkey { Id = 1, Action = HotkeyAction.VolumeDown, KeyCode = VkNumPad3, Modifiers = ModifierKeys.Alt },
+                () => { Interlocked.Increment(ref triggerCount); triggered.Release(); });
+
+            // Hotkey fires, then both key-ups are lost (e.g. locked mid-press)
+            service.SimulateKeyDown(VkLMenu);
+            service.SimulateKeyDown(VkNumPad3);
+            triggered.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
+            service.SimulateLostKeyUp(VkNumPad3);
+            service.SimulateLostKeyUp(VkLMenu);
+
+            // After unlock the same hotkey is pressed again
+            service.SimulateKeyDown(VkLMenu);
+            service.SimulateKeyDown(VkNumPad3);
+
+            triggered.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
+            triggerCount.Should().Be(2);
+        }
+
         // Testable subclass to bypass P/Invoke
         private class TestableHotkeyService : HotkeyService
         {
@@ -208,6 +299,40 @@ namespace BeatBind.Tests.Infrastructure.Services
                 IsHookInstalled = false;
                 UninstallCallCount++;
             }
+        }
+
+        // Simulates key events and OS key state without P/Invoke. "Lost" key-ups
+        // update the simulated OS state but never reach the hook — exactly what
+        // happens when Windows switches to the secure desktop (Win+L, UAC).
+        private class KeySimulatingHotkeyService : HotkeyService
+        {
+            private readonly HashSet<int> _osKeysDown = new();
+
+            public KeySimulatingHotkeyService(ILogger<HotkeyService> logger) : base(logger) { }
+
+            public bool SimulateKeyDown(int vkCode)
+            {
+                _osKeysDown.Add(vkCode);
+                return ProcessKeyDown(vkCode);
+            }
+
+            // A key-down whose event was suppressed never registers in the OS input state
+            public bool SimulateKeyDownInvisibleToOS(int vkCode)
+            {
+                return ProcessKeyDown(vkCode);
+            }
+
+            // The key is physically released but the hook never sees the key-up event
+            public void SimulateLostKeyUp(int vkCode)
+            {
+                _osKeysDown.Remove(vkCode);
+            }
+
+            protected override bool IsKeyDownInOS(int vkCode) => _osKeysDown.Contains(vkCode);
+
+            protected override IntPtr InstallHook(LowLevelKeyboardProc proc) => new IntPtr(123);
+
+            protected override void UninstallHook(IntPtr hookId) { }
         }
 
         // Always fails to install the hook — used to test error logging in the constructor

@@ -15,8 +15,8 @@ namespace BeatBind.Core.Interfaces
         Task<bool> NextTrackAsync();
         Task<bool> PreviousTrackAsync();
         Task<bool> SetVolumeAsync(int volume);
-        Task<bool> ToggleShuffleAsync();
-        Task<bool> ToggleRepeatAsync();
+        Task<bool> SetShuffleAsync(bool state);
+        Task<bool> SetRepeatAsync(RepeatMode mode);
         Task<bool> SaveCurrentTrackAsync();
         Task<bool> RemoveCurrentTrackAsync();
         Task<bool> SeekToPositionAsync(int positionMs);

@@ -1,7 +1,7 @@
 # BeatBind - Spotify Global Hotkeys
 
 [![build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/justinknguyen/BeatBind)
-[![version](https://img.shields.io/badge/version-2.0.4-blue)](https://github.com/justinknguyen/BeatBind/releases)
+[![version](https://img.shields.io/badge/version-2.1.0-blue)](https://github.com/justinknguyen/BeatBind/releases)
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/justinknguyen/BeatBind/issues)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.txt)
@@ -118,15 +118,12 @@ Logs are saved to `%APPDATA%\BeatBind\`. The application keeps logs for the past
 
 ## Contributing
 
-Contributions are welcome! This project follows Clean Architecture principles.
+Contributions are welcome and drive most changes to this project! **[CONTRIBUTING.md](CONTRIBUTING.md)** has everything you need to get productive quickly: build/test commands, the branch model (PRs target `dev`), an architecture map with recipes for common changes, gotchas that bite newcomers, and the release checklist.
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Run tests (`dotnet test`)
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
+2. Create a feature branch off `dev` (`git checkout -b feature/amazing-feature dev`)
+3. Make your changes and run tests (`dotnet test src/BeatBind.Tests/BeatBind.Tests.csproj`)
+4. Open a Pull Request targeting `dev`
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for project structure and [src/README.md](src/README.md) for development setup.
 

@@ -131,6 +131,40 @@ namespace BeatBind.Infrastructure.Services
         }
 
         /// <summary>
+        /// Assigns fresh IDs to hotkeys with missing (0/negative) or duplicate IDs so
+        /// entries from hand-edited or legacy configs cannot collide — the ID keys
+        /// both the UI list and the hotkey registration, and a collision silently
+        /// drops a hotkey.
+        /// </summary>
+        private void NormalizeHotkeyIds()
+        {
+            if (_config.Hotkeys.Count == 0)
+            {
+                return;
+            }
+
+            var seenIds = new HashSet<int>();
+            var nextId = Math.Max(0, _config.Hotkeys.Max(h => h.Id)) + 1;
+            var changed = false;
+
+            foreach (var hotkey in _config.Hotkeys)
+            {
+                if (hotkey.Id <= 0 || !seenIds.Add(hotkey.Id))
+                {
+                    hotkey.Id = nextId++;
+                    seenIds.Add(hotkey.Id);
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                _logger.LogInformation("Reassigned missing or duplicate hotkey IDs in configuration");
+                SaveConfiguration(_config);
+            }
+        }
+
+        /// <summary>
         /// Ensures that the configuration directory exists, creating it if necessary.
         /// </summary>
         private void EnsureConfigDirectoryExists()
@@ -157,6 +191,7 @@ namespace BeatBind.Infrastructure.Services
                     if (config != null)
                     {
                         _config = config;
+                        NormalizeHotkeyIds();
                         _logger.LogInformation("Configuration loaded from {ConfigPath}", _configPath);
                     }
                 }
