@@ -52,7 +52,7 @@ Clean Architecture, five projects under `src/`, dependencies flow inward only: *
 **Typical change patterns**:
 - New Spotify API capability → add a method to `ISpotifyService` (Core), implement it in `SpotifyService` (Infrastructure), call it from the relevant `*ApplicationService` (Application), wire up UI in the corresponding Panel (Presentation).
 - New config option → extend `ApplicationConfiguration` (Core entity), handle read/write in `ConfigurationService` (Infrastructure), expose in `SettingsPanel`.
-- New hotkey action → extend `Hotkey`/hotkey handling in Core/Infrastructure `HotkeyService`, surface it in `HotkeysPanel` and `HotkeyEditorDialog`.
+- New hotkey action → **append** (never insert) a member to the `HotkeyAction` enum in `Hotkey.cs`, add its display name to `GetActionDisplayName`, then handle it in `HotkeyApplicationService.ExecuteHotkeyAction`. `HotkeyService`, `HotkeysPanel` and `HotkeyEditorDialog` are action-agnostic and need no changes. The enum persists to `config.json` as an integer ordinal, so inserting a member remaps existing users' saved hotkeys.
 
 Config is stored at `%APPDATA%\BeatBind\config.json`; logs at `%APPDATA%\BeatBind\` (kept for 48 hours).
 

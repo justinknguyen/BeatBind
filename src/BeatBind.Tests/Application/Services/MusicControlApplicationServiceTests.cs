@@ -19,6 +19,11 @@ namespace BeatBind.Tests.Application.Services
             _mockSpotifyService = new Mock<ISpotifyService>();
             _mockConfigService = new Mock<IConfigurationService>();
             _mockLogger = new Mock<ILogger<MusicControlApplicationService>>();
+
+            // A default configuration so the play paths, which now read the favorite
+            // device, have something to read. Individual tests override this.
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(new ApplicationConfiguration());
+
             _service = new MusicControlApplicationService(_mockSpotifyService.Object, _mockConfigService.Object, _mockLogger.Object);
         }
 
@@ -45,7 +50,7 @@ namespace BeatBind.Tests.Application.Services
             // Assert
             result.Should().BeTrue();
             _mockSpotifyService.Verify(x => x.PauseAsync(), Times.Once);
-            _mockSpotifyService.Verify(x => x.PlayAsync(), Times.Never);
+            _mockSpotifyService.Verify(x => x.PlayAsync(null), Times.Never);
         }
 
         [Fact]
@@ -63,14 +68,14 @@ namespace BeatBind.Tests.Application.Services
                 CurrentTrack = new Track { Id = "track1", Name = "Test Track", Artist = "Artist" }
             };
             _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
-            _mockSpotifyService.Setup(x => x.PlayAsync()).ReturnsAsync(true);
+            _mockSpotifyService.Setup(x => x.PlayAsync(null)).ReturnsAsync(true);
 
             // Act
             var result = await _service.PlayPauseAsync();
 
             // Assert
             result.Should().BeTrue();
-            _mockSpotifyService.Verify(x => x.PlayAsync(), Times.Once);
+            _mockSpotifyService.Verify(x => x.PlayAsync(null), Times.Once);
             _mockSpotifyService.Verify(x => x.PauseAsync(), Times.Never);
         }
 
@@ -91,14 +96,14 @@ namespace BeatBind.Tests.Application.Services
         public async Task PlayAsync_ShouldCallSpotifyService()
         {
             // Arrange
-            _mockSpotifyService.Setup(x => x.PlayAsync()).ReturnsAsync(true);
+            _mockSpotifyService.Setup(x => x.PlayAsync(null)).ReturnsAsync(true);
 
             // Act
             var result = await _service.PlayAsync();
 
             // Assert
             result.Should().BeTrue();
-            _mockSpotifyService.Verify(x => x.PlayAsync(), Times.Once);
+            _mockSpotifyService.Verify(x => x.PlayAsync(null), Times.Once);
         }
 
         [Fact]
@@ -851,7 +856,7 @@ namespace BeatBind.Tests.Application.Services
                 .ReturnsAsync(staleState)
                 .ReturnsAsync(freshState);
             _mockSpotifyService.Setup(x => x.PauseAsync()).ReturnsAsync(false);
-            _mockSpotifyService.Setup(x => x.PlayAsync()).ReturnsAsync(true);
+            _mockSpotifyService.Setup(x => x.PlayAsync(null)).ReturnsAsync(true);
 
             // Act
             var result = await _service.PlayPauseAsync();
@@ -859,7 +864,7 @@ namespace BeatBind.Tests.Application.Services
             // Assert
             result.Should().BeTrue();
             _mockSpotifyService.Verify(x => x.PauseAsync(), Times.Once);
-            _mockSpotifyService.Verify(x => x.PlayAsync(), Times.Once);
+            _mockSpotifyService.Verify(x => x.PlayAsync(null), Times.Once);
         }
 
         [Fact]
@@ -913,7 +918,7 @@ namespace BeatBind.Tests.Application.Services
             var playbackState = new PlaybackState { IsPlaying = true, Volume = 50, ProgressMs = 1000, DurationMs = 200000 };
             _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(playbackState);
             _mockSpotifyService.Setup(x => x.PauseAsync()).ReturnsAsync(true);
-            _mockSpotifyService.Setup(x => x.PlayAsync()).ReturnsAsync(true);
+            _mockSpotifyService.Setup(x => x.PlayAsync(null)).ReturnsAsync(true);
 
             // Act
             var first = await _service.PlayPauseAsync();
@@ -923,7 +928,7 @@ namespace BeatBind.Tests.Application.Services
             first.Should().BeTrue();
             second.Should().BeTrue();
             _mockSpotifyService.Verify(x => x.PauseAsync(), Times.Once);
-            _mockSpotifyService.Verify(x => x.PlayAsync(), Times.Once);
+            _mockSpotifyService.Verify(x => x.PlayAsync(null), Times.Once);
         }
 
         [Fact]
@@ -941,6 +946,348 @@ namespace BeatBind.Tests.Application.Services
             // Assert
             result.Should().BeTrue();
             _mockSpotifyService.Verify(x => x.PreviousTrackAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task PlayPauseOnFavoriteDeviceAsync_WhenNoFavoriteConfigured_ShouldFallBackToPlayPause()
+        {
+            // Arrange
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(new ApplicationConfiguration());
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(new PlaybackState { IsPlaying = true });
+            _mockSpotifyService.Setup(x => x.PauseAsync()).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayPauseOnFavoriteDeviceAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.PauseAsync(), Times.Once);
+            _mockSpotifyService.Verify(x => x.TransferPlaybackAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task PlayPauseOnFavoriteDeviceAsync_WhenAlreadyPlayingOnFavorite_ShouldPause()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration { FavoriteDeviceId = "speaker-1", FavoriteDeviceName = "Living Room" };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(new PlaybackState
+            {
+                IsPlaying = true,
+                Device = new Device { Id = "speaker-1", Name = "Living Room" }
+            });
+            _mockSpotifyService.Setup(x => x.PauseAsync()).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayPauseOnFavoriteDeviceAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.PauseAsync(), Times.Once);
+            _mockSpotifyService.Verify(x => x.TransferPlaybackAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task PlayPauseOnFavoriteDeviceAsync_WhenPlayingElsewhere_ShouldTransferToFavorite()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration { FavoriteDeviceId = "speaker-1", FavoriteDeviceName = "Living Room" };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(new PlaybackState
+            {
+                IsPlaying = true,
+                Device = new Device { Id = "laptop-1", Name = "Laptop" }
+            });
+            _mockSpotifyService.Setup(x => x.TransferPlaybackAsync("speaker-1", true)).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayPauseOnFavoriteDeviceAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.TransferPlaybackAsync("speaker-1", true), Times.Once);
+            _mockSpotifyService.Verify(x => x.PauseAsync(), Times.Never);
+        }
+
+        [Fact]
+        public async Task PlayPauseOnFavoriteDeviceAsync_WhenNothingIsActive_ShouldTransferToFavorite()
+        {
+            // Arrange - the original bug: resuming after a long pause
+            var config = new ApplicationConfiguration { FavoriteDeviceId = "speaker-1", FavoriteDeviceName = "Living Room" };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync((PlaybackState?)null);
+            _mockSpotifyService.Setup(x => x.TransferPlaybackAsync("speaker-1", true)).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayPauseOnFavoriteDeviceAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.TransferPlaybackAsync("speaker-1", true), Times.Once);
+            _mockSpotifyService.Verify(x => x.PlayAsync(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task PlayPauseOnFavoriteDeviceAsync_WhenStoredIdIsStale_ShouldReResolveByName()
+        {
+            // Arrange - Spotify rotates device ids for some Connect targets
+            var config = new ApplicationConfiguration { FavoriteDeviceId = "old-id", FavoriteDeviceName = "Living Room" };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync((PlaybackState?)null);
+            _mockSpotifyService.Setup(x => x.TransferPlaybackAsync("old-id", true)).ReturnsAsync(false);
+            _mockSpotifyService.Setup(x => x.GetAvailableDevicesAsync()).ReturnsAsync(new List<Device>
+            {
+                new Device { Id = "new-id", Name = "living room", Type = "Speaker" }
+            });
+            _mockSpotifyService.Setup(x => x.TransferPlaybackAsync("new-id", true)).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayPauseOnFavoriteDeviceAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.TransferPlaybackAsync("new-id", true), Times.Once);
+        }
+
+        [Fact]
+        public async Task PlayPauseOnFavoriteDeviceAsync_WhenFavoriteUnavailable_ShouldFallBackToNormalPlayback()
+        {
+            // Arrange - speakers powered off, so they are not in Spotify's device list
+            var config = new ApplicationConfiguration { FavoriteDeviceId = "speaker-1", FavoriteDeviceName = "Living Room" };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync((PlaybackState?)null);
+            _mockSpotifyService.Setup(x => x.TransferPlaybackAsync(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(false);
+            _mockSpotifyService.Setup(x => x.GetAvailableDevicesAsync()).ReturnsAsync(new List<Device>());
+            _mockSpotifyService.Setup(x => x.PlayAsync("speaker-1")).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayPauseOnFavoriteDeviceAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.PlayAsync("speaker-1"), Times.Once);
+        }
+
+        [Fact]
+        public async Task PlayAsync_WithFavoriteDevice_ShouldPassItAsPreferredDevice()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration { FavoriteDeviceId = "speaker-1" };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.PlayAsync("speaker-1")).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.PlayAsync("speaker-1"), Times.Once);
+        }
+
+        [Fact]
+        public async Task PlayAsync_WithoutFavoriteDevice_ShouldNotExpressAPreference()
+        {
+            // Arrange
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(new ApplicationConfiguration());
+            _mockSpotifyService.Setup(x => x.PlayAsync(null)).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.PlayAsync(null), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetAvailableDevicesAsync_ShouldReturnDevicesFromSpotify()
+        {
+            // Arrange
+            var devices = new List<Device> { new Device { Id = "speaker-1", Name = "Living Room" } };
+            _mockSpotifyService.Setup(x => x.GetAvailableDevicesAsync()).ReturnsAsync(devices);
+
+            // Act
+            var result = await _service.GetAvailableDevicesAsync();
+
+            // Assert
+            result.Should().BeEquivalentTo(devices);
+        }
+
+        [Fact]
+        public async Task GetAvailableDevicesAsync_WhenExceptionThrown_ShouldReturnEmptyList()
+        {
+            // Arrange
+            _mockSpotifyService.Setup(x => x.GetAvailableDevicesAsync()).ThrowsAsync(new Exception("API error"));
+
+            // Act
+            var result = await _service.GetAvailableDevicesAsync();
+
+            // Assert
+            result.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task PlayPauseOnFavoriteDeviceAsync_WhenPlayingOnFavoriteMatchedByNameOnly_ShouldPause()
+        {
+            // Arrange - Spotify rotated the device id, but it is still the same speaker
+            var config = new ApplicationConfiguration { FavoriteDeviceId = "old-id", FavoriteDeviceName = "Living Room" };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(new PlaybackState
+            {
+                IsPlaying = true,
+                Device = new Device { Id = "new-id", Name = "living room" }
+            });
+            _mockSpotifyService.Setup(x => x.PauseAsync()).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayPauseOnFavoriteDeviceAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.PauseAsync(), Times.Once);
+            _mockSpotifyService.Verify(x => x.TransferPlaybackAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task PlayPauseOnFavoriteDeviceAsync_WhenOnlyNameConfigured_ShouldResolveDeviceByName()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration { FavoriteDeviceName = "Living Room" };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync((PlaybackState?)null);
+            _mockSpotifyService.Setup(x => x.GetAvailableDevicesAsync()).ReturnsAsync(new List<Device>
+            {
+                new Device { Id = "speaker-1", Name = "living room", Type = "Speaker" }
+            });
+            _mockSpotifyService.Setup(x => x.TransferPlaybackAsync("speaker-1", true)).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayPauseOnFavoriteDeviceAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.TransferPlaybackAsync("speaker-1", true), Times.Once);
+        }
+
+        [Fact]
+        public async Task PlayPauseOnFavoriteDeviceAsync_WhenOnlyIdConfiguredAndDeviceIsGone_ShouldFallBackToNormalPlayback()
+        {
+            // Arrange - no stored name, and the id is no longer among the account's devices
+            var config = new ApplicationConfiguration { FavoriteDeviceId = "speaker-1" };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync((PlaybackState?)null);
+            _mockSpotifyService.Setup(x => x.TransferPlaybackAsync("speaker-1", true)).ReturnsAsync(false);
+            _mockSpotifyService.Setup(x => x.GetAvailableDevicesAsync()).ReturnsAsync(new List<Device>());
+            _mockSpotifyService.Setup(x => x.PlayAsync("speaker-1")).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayPauseOnFavoriteDeviceAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.PlayAsync("speaker-1"), Times.Once);
+        }
+
+        [Fact]
+        public async Task PlayPauseOnFavoriteDeviceAsync_WhenTransferFailsButDeviceIsStillListed_ShouldLeavePlaybackUnchanged()
+        {
+            // Arrange - a transient rejection, not a missing device. Pausing what the user is
+            // listening to would be a worse outcome than doing nothing.
+            var config = new ApplicationConfiguration { FavoriteDeviceId = "speaker-1", FavoriteDeviceName = "Living Room" };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(new PlaybackState
+            {
+                IsPlaying = true,
+                Device = new Device { Id = "laptop-1", Name = "Laptop" }
+            });
+            _mockSpotifyService.Setup(x => x.TransferPlaybackAsync("speaker-1", true)).ReturnsAsync(false);
+            _mockSpotifyService.Setup(x => x.GetAvailableDevicesAsync()).ReturnsAsync(new List<Device>
+            {
+                new Device { Id = "speaker-1", Name = "Living Room", Type = "Speaker" }
+            });
+
+            // Act
+            var result = await _service.PlayPauseOnFavoriteDeviceAsync();
+
+            // Assert
+            result.Should().BeFalse();
+            _mockSpotifyService.Verify(x => x.PauseAsync(), Times.Never);
+            // Attempted once with the stored id, then retried once while it was still listed
+            _mockSpotifyService.Verify(x => x.TransferPlaybackAsync("speaker-1", true), Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task PlayPauseOnFavoriteDeviceAsync_WhenFavoriteUnavailableAndPlayingElsewhere_ShouldPauseCurrentPlayback()
+        {
+            // Arrange - the favorite is offline while music plays on another device, so the
+            // documented fallback is normal play/pause semantics, which here means pausing
+            var config = new ApplicationConfiguration { FavoriteDeviceId = "speaker-1", FavoriteDeviceName = "Living Room" };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(new PlaybackState
+            {
+                IsPlaying = true,
+                Device = new Device { Id = "laptop-1", Name = "Laptop" }
+            });
+            _mockSpotifyService.Setup(x => x.TransferPlaybackAsync(It.IsAny<string>(), It.IsAny<bool>())).ReturnsAsync(false);
+            _mockSpotifyService.Setup(x => x.GetAvailableDevicesAsync()).ReturnsAsync(new List<Device>());
+            _mockSpotifyService.Setup(x => x.PauseAsync()).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayPauseOnFavoriteDeviceAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.PauseAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task PlayPauseOnFavoriteDeviceAsync_WhenPauseFails_ShouldReturnFalse()
+        {
+            // Arrange
+            var config = new ApplicationConfiguration { FavoriteDeviceId = "speaker-1", FavoriteDeviceName = "Living Room" };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(new PlaybackState
+            {
+                IsPlaying = true,
+                Device = new Device { Id = "speaker-1", Name = "Living Room" }
+            });
+            _mockSpotifyService.Setup(x => x.PauseAsync()).ReturnsAsync(false);
+
+            // Act
+            var result = await _service.PlayPauseOnFavoriteDeviceAsync();
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task PlayPauseOnFavoriteDeviceAsync_WhenFavoriteIsWhitespace_ShouldFallBackToPlayPause()
+        {
+            // Arrange - a blank configuration value must read as "no favorite", not as a device id
+            var config = new ApplicationConfiguration { FavoriteDeviceId = "   ", FavoriteDeviceName = "  " };
+            _mockConfigService.Setup(x => x.GetConfiguration()).Returns(config);
+            _mockSpotifyService.Setup(x => x.GetCurrentPlaybackAsync()).ReturnsAsync(new PlaybackState { IsPlaying = true });
+            _mockSpotifyService.Setup(x => x.PauseAsync()).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.PlayPauseOnFavoriteDeviceAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            _mockSpotifyService.Verify(x => x.TransferPlaybackAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task PlayPauseOnFavoriteDeviceAsync_WhenExceptionThrown_ShouldReturnFalse()
+        {
+            // Arrange
+            _mockConfigService.Setup(x => x.GetConfiguration()).Throws(new Exception("Config error"));
+
+            // Act
+            var result = await _service.PlayPauseOnFavoriteDeviceAsync();
+
+            // Assert
+            result.Should().BeFalse();
         }
     }
 }

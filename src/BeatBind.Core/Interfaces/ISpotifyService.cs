@@ -10,7 +10,7 @@ namespace BeatBind.Core.Interfaces
 
         Task<PlaybackState?> GetCurrentPlaybackAsync();
         Task<List<Device>> GetAvailableDevicesAsync();
-        Task<bool> PlayAsync();
+        Task<bool> PlayAsync(string? preferredDeviceId = null);
         Task<bool> PauseAsync();
         Task<bool> NextTrackAsync();
         Task<bool> PreviousTrackAsync();
@@ -20,5 +20,6 @@ namespace BeatBind.Core.Interfaces
         Task<bool> SaveCurrentTrackAsync();
         Task<bool> RemoveCurrentTrackAsync();
         Task<bool> SeekToPositionAsync(int positionMs);
+        Task<bool> TransferPlaybackAsync(string deviceId, bool play = true);
     }
 }
