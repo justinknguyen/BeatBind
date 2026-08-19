@@ -51,7 +51,7 @@ namespace BeatBind.Application.Services
                     if (playbackState == null)
                     {
                         _logger.LogInformation("No active playback, attempting to start playback");
-                        return await _spotifyService.PlayAsync();
+                        return await _spotifyService.PlayAsync(GetFavoriteDeviceId());
                     }
 
                     if (await TogglePlaybackAsync(playbackState))
@@ -66,7 +66,7 @@ namespace BeatBind.Application.Services
                     playbackState = await GetPlaybackStateCachedAsync();
                     if (playbackState == null)
                     {
-                        return await _spotifyService.PlayAsync();
+                        return await _spotifyService.PlayAsync(GetFavoriteDeviceId());
                     }
 
                     return await TogglePlaybackAsync(playbackState);
@@ -89,7 +89,7 @@ namespace BeatBind.Application.Services
         /// <returns>True if the operation was successful; otherwise, false.</returns>
         public Task<bool> PlayAsync()
         {
-            return ExecuteInvalidatingCommandAsync("start playback", _spotifyService.PlayAsync);
+            return ExecuteInvalidatingCommandAsync("start playback", () => _spotifyService.PlayAsync(GetFavoriteDeviceId()));
         }
 
         /// <summary>
@@ -332,6 +332,109 @@ namespace BeatBind.Application.Services
         }
 
         /// <summary>
+        /// Toggles playback on the configured favorite device. When music is already
+        /// playing there this simply pauses; otherwise playback is transferred to the
+        /// favorite and started, so resuming after a long pause lands on the user's
+        /// chosen speakers instead of wherever Spotify last left off.
+        /// Falls back to the normal play/pause behavior when no favorite is
+        /// configured or the favorite is not currently available.
+        /// </summary>
+        /// <returns>True if the operation was successful; otherwise, false.</returns>
+        public async Task<bool> PlayPauseOnFavoriteDeviceAsync()
+        {
+            try
+            {
+                var config = _configurationService.GetConfiguration();
+                var favoriteId = NormalizeDeviceValue(config.FavoriteDeviceId);
+                var favoriteName = NormalizeDeviceValue(config.FavoriteDeviceName);
+
+                if (favoriteId == null && favoriteName == null)
+                {
+                    _logger.LogInformation("No favorite device configured, falling back to play/pause");
+                    return await PlayPauseAsync();
+                }
+
+                await _playbackLock.WaitAsync();
+                try
+                {
+                    var playbackState = await GetPlaybackStateCachedAsync();
+                    if (playbackState != null
+                        && playbackState.IsPlaying
+                        && IsFavoriteDevice(playbackState.Device, favoriteId, favoriteName))
+                    {
+                        // Already playing where the user wants it, so behave as a toggle
+                        if (!await _spotifyService.PauseAsync())
+                        {
+                            return false;
+                        }
+
+                        playbackState.IsPlaying = false;
+                        return true;
+                    }
+
+                    var outcome = await TransferToFavoriteAsync(favoriteId, favoriteName);
+                    if (outcome == FavoriteTransferOutcome.Transferred)
+                    {
+                        InvalidatePlaybackCache();
+                        return true;
+                    }
+
+                    if (outcome == FavoriteTransferOutcome.TransferFailed)
+                    {
+                        // The device is there but Spotify rejected the transfer (rate limit,
+                        // transient error). Leave playback alone: pausing what the user is
+                        // listening to is a worse outcome than doing nothing.
+                        _logger.LogWarning(
+                            "Transfer to favorite device {DeviceName} failed, leaving playback unchanged",
+                            favoriteName ?? favoriteId);
+                        return false;
+                    }
+
+                    // The favorite is asleep, powered off, or otherwise not visible to
+                    // Spotify — fall back to normal play/pause so the hotkey still does
+                    // something rather than looking dead
+                    _logger.LogWarning(
+                        "Favorite device {DeviceName} is unavailable, falling back to normal play/pause",
+                        favoriteName ?? favoriteId);
+
+                    if (playbackState == null)
+                    {
+                        return await _spotifyService.PlayAsync(favoriteId);
+                    }
+
+                    return await TogglePlaybackAsync(playbackState);
+                }
+                finally
+                {
+                    _playbackLock.Release();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to play/pause on favorite device");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the Spotify devices currently visible to the account, so the UI
+        /// can offer them when picking a favorite device.
+        /// </summary>
+        /// <returns>The available devices, or an empty list if none could be retrieved.</returns>
+        public async Task<List<Device>> GetAvailableDevicesAsync()
+        {
+            try
+            {
+                return await _spotifyService.GetAvailableDevicesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get available devices");
+                return new List<Device>();
+            }
+        }
+
+        /// <summary>
         /// Retrieves the current playback state including track and device information.
         /// Always queries the API so UI consumers see fresh data.
         /// </summary>
@@ -350,6 +453,100 @@ namespace BeatBind.Application.Services
         }
 
         /// <summary>
+        /// Outcome of trying to move playback to the favorite device. The caller needs to
+        /// tell "the device is gone" apart from "the request failed", because only the
+        /// former justifies disturbing whatever is currently playing.
+        /// </summary>
+        private enum FavoriteTransferOutcome
+        {
+            /// <summary>Playback is now on the favorite device.</summary>
+            Transferred,
+
+            /// <summary>Spotify does not currently list the favorite device.</summary>
+            DeviceUnavailable,
+
+            /// <summary>The device is listed, but the transfer request failed.</summary>
+            TransferFailed
+        }
+
+        /// <summary>
+        /// Moves playback to the favorite device. The stored id is tried first so the
+        /// common case costs a single request; on failure the device list decides whether
+        /// the device is genuinely absent or the request merely failed, and doubles as
+        /// name-based recovery for when Spotify rotates the device id.
+        /// </summary>
+        private async Task<FavoriteTransferOutcome> TransferToFavoriteAsync(string? favoriteId, string? favoriteName)
+        {
+            if (favoriteId != null && await _spotifyService.TransferPlaybackAsync(favoriteId))
+            {
+                return FavoriteTransferOutcome.Transferred;
+            }
+
+            var devices = await _spotifyService.GetAvailableDevicesAsync();
+            var match = devices.FirstOrDefault(d =>
+                !string.IsNullOrWhiteSpace(d.Id) && IsFavoriteDevice(d, favoriteId, favoriteName));
+
+            if (match == null)
+            {
+                return FavoriteTransferOutcome.DeviceUnavailable;
+            }
+
+            if (!string.Equals(match.Id, favoriteId, StringComparison.Ordinal))
+            {
+                _logger.LogInformation(
+                    "Favorite device id changed, re-resolved {DeviceName} to {DeviceId}",
+                    match.Name,
+                    match.Id);
+            }
+
+            // Retries the same id when the first attempt failed but the device is still
+            // listed, which covers a transient rejection
+            return await _spotifyService.TransferPlaybackAsync(match.Id)
+                ? FavoriteTransferOutcome.Transferred
+                : FavoriteTransferOutcome.TransferFailed;
+        }
+
+        /// <summary>
+        /// Matches a device against the favorite, by id and then by name so a rotated
+        /// device id still counts as the same speaker. Matching on name means two devices
+        /// sharing a name (Spotify readily reports several "Web Player" entries) are
+        /// treated as interchangeable; that is accepted deliberately, because id rotation
+        /// is the common case and telling twins apart would cost an extra request on
+        /// every keypress.
+        /// </summary>
+        private static bool IsFavoriteDevice(Device? device, string? favoriteId, string? favoriteName)
+        {
+            if (device == null)
+            {
+                return false;
+            }
+
+            if (favoriteId != null && string.Equals(device.Id, favoriteId, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            return favoriteName != null && string.Equals(device.Name, favoriteName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Reads the configured favorite device id, or null when none is set.
+        /// </summary>
+        private string? GetFavoriteDeviceId()
+        {
+            return NormalizeDeviceValue(_configurationService.GetConfiguration().FavoriteDeviceId);
+        }
+
+        /// <summary>
+        /// Treats blank configuration values as absent. Null (rather than empty) is what
+        /// ISpotifyService reads as "no device preference".
+        /// </summary>
+        private static string? NormalizeDeviceValue(string? value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+
+        /// <summary>
         /// Sends play or pause based on the given state and flips the cached
         /// IsPlaying flag on success.
         /// </summary>
@@ -357,7 +554,7 @@ namespace BeatBind.Application.Services
         {
             var success = playbackState.IsPlaying
                 ? await _spotifyService.PauseAsync()
-                : await _spotifyService.PlayAsync();
+                : await _spotifyService.PlayAsync(GetFavoriteDeviceId());
 
             if (success)
             {

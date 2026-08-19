@@ -780,6 +780,271 @@ namespace BeatBind.Tests.Infrastructure.Services
             secondAttempt.Should().BeTrue();
         }
 
+        [Fact]
+        public async Task TransferPlaybackAsync_WhenAuthenticated_ShouldSendRequest()
+        {
+            // Arrange
+            await SetupAuthenticatedService();
+            SetupHttpResponse(HttpStatusCode.NoContent);
+
+            // Act
+            var result = await _service.TransferPlaybackAsync("speaker-1");
+
+            // Assert
+            result.Should().BeTrue();
+            VerifyHttpRequest(HttpMethod.Put, "https://api.spotify.com/v1/me/player");
+        }
+
+        [Fact]
+        public async Task TransferPlaybackAsync_WhenApiFails_ShouldReturnFalse()
+        {
+            // Arrange
+            await SetupAuthenticatedService();
+            SetupHttpResponse(HttpStatusCode.NotFound);
+
+            // Act
+            var result = await _service.TransferPlaybackAsync("speaker-1");
+
+            // Assert
+            result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task TransferPlaybackAsync_WithBlankDeviceId_ShouldNotCallApi()
+        {
+            // Arrange
+            await SetupAuthenticatedService();
+
+            // Act
+            var result = await _service.TransferPlaybackAsync("   ");
+
+            // Assert
+            result.Should().BeFalse();
+            _mockHttpMessageHandler.Protected().Verify(
+                "SendAsync",
+                Times.Never(),
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task GetAvailableDevicesAsync_WhenAuthenticated_ShouldReturnDevices()
+        {
+            // Arrange
+            await SetupAuthenticatedService();
+            SetupHttpResponse(HttpStatusCode.OK, DevicesJson);
+
+            // Act
+            var devices = await _service.GetAvailableDevicesAsync();
+
+            // Assert
+            devices.Should().HaveCount(2);
+            devices[0].Id.Should().Be("laptop-1");
+            devices[0].IsActive.Should().BeTrue();
+            devices[1].Id.Should().Be("speaker-1");
+            devices[1].Name.Should().Be("Living Room");
+            devices[1].IsActive.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task GetAvailableDevicesAsync_WhenDeviceOmitsBooleanFields_ShouldStillParseTheList()
+        {
+            // Arrange - a missing boolean used to throw and discard every device
+            await SetupAuthenticatedService();
+            SetupHttpResponse(HttpStatusCode.OK, """
+                {
+                  "devices": [
+                    { "id": "speaker-1", "name": "Living Room", "type": "Speaker", "volume_percent": 40 }
+                  ]
+                }
+                """);
+
+            // Act
+            var devices = await _service.GetAvailableDevicesAsync();
+
+            // Assert
+            devices.Should().ContainSingle();
+            devices[0].Id.Should().Be("speaker-1");
+            devices[0].IsActive.Should().BeFalse();
+            devices[0].VolumePercent.Should().Be(40);
+        }
+
+        [Fact]
+        public async Task PlayAsync_WhenNoActiveDevice_ShouldTransferToPreferredDevice()
+        {
+            // Arrange - the favorite is not the active device, so only the preference
+            // can explain it being chosen
+            await SetupAuthenticatedService();
+            var transferBodies = SetupNoActiveDeviceThenTransfer();
+
+            // Act
+            var result = await _service.PlayAsync("speaker-1");
+
+            // Assert
+            result.Should().BeTrue();
+            transferBodies.Should().ContainSingle();
+            transferBodies[0].Should().Contain("speaker-1");
+        }
+
+        [Fact]
+        public async Task PlayAsync_WhenNoActiveDeviceAndNoPreference_ShouldTransferToActiveDevice()
+        {
+            // Arrange
+            await SetupAuthenticatedService();
+            var transferBodies = SetupNoActiveDeviceThenTransfer();
+
+            // Act
+            var result = await _service.PlayAsync();
+
+            // Assert
+            result.Should().BeTrue();
+            transferBodies.Should().ContainSingle();
+            transferBodies[0].Should().Contain("laptop-1");
+        }
+
+        /// <summary>
+        /// Makes the play request 404 ("no active device"), serves the device list, and
+        /// records the body of the resulting transfer request.
+        /// </summary>
+        private List<string> SetupNoActiveDeviceThenTransfer()
+        {
+            var transferBodies = new List<string>();
+
+            _mockHttpMessageHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>())
+                .Returns(async (HttpRequestMessage request, CancellationToken _) =>
+                {
+                    var url = request.RequestUri!.ToString();
+
+                    if (url.EndsWith("/me/player/play", StringComparison.Ordinal))
+                    {
+                        return new HttpResponseMessage(HttpStatusCode.NotFound)
+                        {
+                            Content = new StringContent(string.Empty)
+                        };
+                    }
+
+                    if (url.EndsWith("/me/player/devices", StringComparison.Ordinal))
+                    {
+                        return new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = new StringContent(DevicesJson)
+                        };
+                    }
+
+                    transferBodies.Add(await request.Content!.ReadAsStringAsync());
+                    return new HttpResponseMessage(HttpStatusCode.NoContent)
+                    {
+                        Content = new StringContent(string.Empty)
+                    };
+                });
+
+            return transferBodies;
+        }
+
+        // The active device is listed first so that picking "speaker-1" can only be
+        // the result of an explicit preference.
+        private const string DevicesJson = """
+            {
+              "devices": [
+                {
+                  "id": "laptop-1",
+                  "name": "Laptop",
+                  "type": "Computer",
+                  "is_active": true,
+                  "is_private_session": false,
+                  "is_restricted": false,
+                  "volume_percent": 55
+                },
+                {
+                  "id": "speaker-1",
+                  "name": "Living Room",
+                  "type": "Speaker",
+                  "is_active": false,
+                  "is_private_session": false,
+                  "is_restricted": false,
+                  "volume_percent": 40
+                }
+              ]
+            }
+            """;
+
+        [Fact]
+        public async Task PlayAsync_WhenPreferredDeviceIsNotAvailable_ShouldTransferToActiveDevice()
+        {
+            // Arrange - a stale favorite id: it is no longer among the account's devices
+            await SetupAuthenticatedService();
+            var transferBodies = SetupNoActiveDeviceThenTransfer();
+
+            // Act
+            var result = await _service.PlayAsync("device-that-went-away");
+
+            // Assert
+            result.Should().BeTrue();
+            transferBodies.Should().ContainSingle();
+            transferBodies[0].Should().Contain("laptop-1");
+        }
+
+        [Fact]
+        public async Task PlayAsync_WhenTransferringToPreferredDevice_ShouldRequestPlayback()
+        {
+            // Arrange
+            await SetupAuthenticatedService();
+            var transferBodies = SetupNoActiveDeviceThenTransfer();
+
+            // Act
+            await _service.PlayAsync("speaker-1");
+
+            // Assert - the transfer must ask Spotify to start playing, not just move the session
+            transferBodies.Should().ContainSingle();
+            transferBodies[0].Should().Contain("\"play\":true");
+        }
+
+        [Fact]
+        public async Task GetAvailableDevicesAsync_WhenBooleanFieldIsJsonNull_ShouldTreatItAsFalse()
+        {
+            // Arrange
+            await SetupAuthenticatedService();
+            SetupHttpResponse(HttpStatusCode.OK, """
+                {
+                  "devices": [
+                    { "id": "speaker-1", "name": "Living Room", "type": "Speaker", "is_active": null, "volume_percent": 40 }
+                  ]
+                }
+                """);
+
+            // Act
+            var devices = await _service.GetAvailableDevicesAsync();
+
+            // Assert
+            devices.Should().ContainSingle();
+            devices[0].IsActive.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task GetAvailableDevicesAsync_WhenBooleanFieldHasWrongType_ShouldTreatItAsFalse()
+        {
+            // Arrange - Spotify should never send this, but a throwing parse would drop every device
+            await SetupAuthenticatedService();
+            SetupHttpResponse(HttpStatusCode.OK, """
+                {
+                  "devices": [
+                    { "id": "speaker-1", "name": "Living Room", "type": "Speaker", "is_active": "true" }
+                  ]
+                }
+                """);
+
+            // Act
+            var devices = await _service.GetAvailableDevicesAsync();
+
+            // Assert
+            devices.Should().ContainSingle();
+            devices[0].IsActive.Should().BeFalse();
+        }
+
         private async Task SetupAuthenticatedService()
         {
             var authResult = new AuthenticationResult

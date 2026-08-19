@@ -170,6 +170,7 @@ namespace BeatBind.Tests.Core.Entities
         [InlineData(HotkeyAction.ToggleRepeat)]
         [InlineData(HotkeyAction.SeekForward)]
         [InlineData(HotkeyAction.SeekBackward)]
+        [InlineData(HotkeyAction.PlayPauseOnFavoriteDevice)]
         public void Hotkey_ShouldSupportAllActions(HotkeyAction action)
         {
             // Act

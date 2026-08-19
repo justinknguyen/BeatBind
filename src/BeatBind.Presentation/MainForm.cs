@@ -28,6 +28,7 @@ namespace BeatBind.Presentation
         private readonly IStartupService _startupService;
         private readonly ILogger<MainForm> _logger;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly MusicControlApplicationService _musicControlService;
 
         private NotifyIcon? _notifyIcon;
         private Panel? _updateNotificationPanel;
@@ -53,6 +54,7 @@ namespace BeatBind.Presentation
             _configurationService = null!;
             _githubReleaseService = null!;
             _startupService = null!;
+            _musicControlService = null!;
             _logger = NullLogger<MainForm>.Instance;
             _loggerFactory = NullLoggerFactory.Instance;
 
@@ -73,6 +75,7 @@ namespace BeatBind.Presentation
         /// <param name="configurationService">Service for configuration management</param>
         /// <param name="githubReleaseService">Service for checking GitHub releases</param>
         /// <param name="startupService">Service for startup management</param>
+        /// <param name="musicControlService">Service used by the settings panel to list Spotify devices</param>
         /// <param name="logger">Logger instance</param>
         /// <param name="loggerFactory">Factory used to create loggers for the child panels</param>
         public MainForm(
@@ -80,6 +83,7 @@ namespace BeatBind.Presentation
             IConfigurationService configurationService,
             IGithubReleaseService githubReleaseService,
             IStartupService startupService,
+            MusicControlApplicationService musicControlService,
             ILogger<MainForm> logger,
             ILoggerFactory loggerFactory)
         {
@@ -87,6 +91,7 @@ namespace BeatBind.Presentation
             _configurationService = configurationService;
             _githubReleaseService = githubReleaseService;
             _startupService = startupService;
+            _musicControlService = musicControlService;
             _logger = logger;
             _loggerFactory = loggerFactory;
 
@@ -209,7 +214,7 @@ namespace BeatBind.Presentation
             // Create panels
             _authenticationPanel = new AuthenticationPanel(_authenticationService, _configurationService, _loggerFactory.CreateLogger<AuthenticationPanel>());
             _hotkeysPanel = new HotkeysPanel(_loggerFactory.CreateLogger<HotkeysPanel>());
-            _settingsPanel = new SettingsPanel(_configurationService, _startupService, _loggerFactory.CreateLogger<SettingsPanel>());
+            _settingsPanel = new SettingsPanel(_configurationService, _startupService, _musicControlService, _loggerFactory.CreateLogger<SettingsPanel>());
 
             // Wire up panel events
             _hotkeysPanel.HotkeyEditRequested += HotkeysPanel_HotkeyEditRequested;
