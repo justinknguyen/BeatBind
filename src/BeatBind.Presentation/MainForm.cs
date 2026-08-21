@@ -18,7 +18,7 @@ namespace BeatBind.Presentation
         // Single source of truth for the app version (compared against GitHub
         // releases by the update checker). When bumping, also update the version
         // badge in README.md — see CONTRIBUTING.md "Releasing a new version".
-        public const string CURRENT_VERSION = "2.1.0";
+        public const string CURRENT_VERSION = "2.1.1";
 
         private readonly MaterialSkinManager _materialSkinManager;
         private readonly AuthenticationApplicationService _authenticationService;
