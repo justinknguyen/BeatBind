@@ -63,6 +63,7 @@ namespace BeatBind.Tests.Core.Entities
         [InlineData(HotkeyAction.RemoveTrack, "Remove Track")]
         [InlineData(HotkeyAction.ToggleShuffle, "Toggle Shuffle")]
         [InlineData(HotkeyAction.ToggleRepeat, "Toggle Repeat")]
+        [InlineData(HotkeyAction.PlayPauseOnFavoriteDevice, "Play/Pause On Favorite Device")]
         public void GetActionDisplayName_ShouldReturnCorrectDisplayName(HotkeyAction action, string expectedName)
         {
             // Act
@@ -323,6 +324,8 @@ namespace BeatBind.Tests.Core.Entities
             config.StartMinimized.Should().BeTrue();
             config.VolumeSteps.Should().Be(10);
             config.SeekMilliseconds.Should().Be(10000);
+            config.FavoriteDeviceId.Should().BeEmpty();
+            config.FavoriteDeviceName.Should().BeEmpty();
             config.Hotkeys.Should().NotBeNull();
         }
 

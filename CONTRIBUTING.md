@@ -52,7 +52,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for diagrams and [CLAUDE.md](CLAUDE.md) f
 ### Recipes for common changes
 
 - **New Spotify API capability** → add a method to `ISpotifyService` (Core) → implement in `SpotifyService` (Infrastructure) using the shared `SendRequestAsync` helper (it handles auth headers, HTTP/2, and 401 refresh-retry) → call it from the relevant `*ApplicationService` → wire up UI in a Panel.
-- **New hotkey action** → add to the `HotkeyAction` enum (Core) → handle it in `HotkeyApplicationService.ExecuteHotkeyAction` → it appears in `HotkeyEditorDialog` automatically. If it reads playback state, go through `ExecuteWithPlaybackStateAsync` in `MusicControlApplicationService` so it benefits from the cache and lock.
+- **New hotkey action** → **append** to the end of the `HotkeyAction` enum (Core) → handle it in `HotkeyApplicationService.ExecuteHotkeyAction` → it appears in `HotkeyEditorDialog` automatically. Appending is not a style preference: the enum is serialized to `config.json` as an integer ordinal, so inserting a member mid-list silently remaps every existing user's saved hotkeys to different actions. If it reads playback state, go through `ExecuteWithPlaybackStateAsync` in `MusicControlApplicationService` so it benefits from the cache and lock.
 - **New config option** → extend `ApplicationConfiguration` (Core) → it round-trips through `ConfigurationService` automatically → expose it in `SettingsPanel`.
 
 ### Things that bite

@@ -29,9 +29,9 @@ namespace BeatBind.Tests.Infrastructure.Services
             // Arrange
             var releaseJson = """
             {
-                "tag_name": "v2.1.0",
-                "html_url": "https://github.com/justinknguyen/BeatBind/releases/tag/v2.1.0",
-                "name": "Version 2.1.0",
+                "tag_name": "v2.1.1",
+                "html_url": "https://github.com/justinknguyen/BeatBind/releases/tag/v2.1.1",
+                "name": "Version 2.1.1",
                 "published_at": "2025-01-15T10:00:00Z",
                 "prerelease": false
             }
@@ -44,8 +44,8 @@ namespace BeatBind.Tests.Infrastructure.Services
 
             // Assert
             result.Should().NotBeNull();
-            result!.Version.Should().Be("2.1.0");
-            result.Name.Should().Be("Version 2.1.0");
+            result!.Version.Should().Be("2.1.1");
+            result.Name.Should().Be("Version 2.1.1");
             result.Url.Should().Contain("github.com");
             result.IsPrerelease.Should().BeFalse();
         }
@@ -56,9 +56,9 @@ namespace BeatBind.Tests.Infrastructure.Services
             // Arrange
             var releaseJson = """
             {
-                "tag_name": "v2.1.0-beta",
-                "html_url": "https://github.com/justinknguyen/BeatBind/releases/tag/v2.1.0-beta",
-                "name": "Version 2.1.0 Beta",
+                "tag_name": "v2.1.1-beta",
+                "html_url": "https://github.com/justinknguyen/BeatBind/releases/tag/v2.1.1-beta",
+                "name": "Version 2.1.1 Beta",
                 "published_at": "2025-01-15T10:00:00Z",
                 "prerelease": true
             }
@@ -122,7 +122,7 @@ namespace BeatBind.Tests.Infrastructure.Services
         public void IsNewerVersion_WhenLatestIsNewer_ShouldReturnTrue()
         {
             // Act
-            var result = _service.IsNewerVersion("2.0.0", "2.1.0");
+            var result = _service.IsNewerVersion("2.0.0", "2.1.1");
 
             // Assert
             result.Should().BeTrue();
@@ -142,7 +142,7 @@ namespace BeatBind.Tests.Infrastructure.Services
         public void IsNewerVersion_WhenLatestIsOlder_ShouldReturnFalse()
         {
             // Act
-            var result = _service.IsNewerVersion("2.1.0", "2.0.0");
+            var result = _service.IsNewerVersion("2.1.1", "2.0.0");
 
             // Assert
             result.Should().BeFalse();
@@ -152,7 +152,7 @@ namespace BeatBind.Tests.Infrastructure.Services
         public void IsNewerVersion_WithVPrefix_ShouldStripAndCompare()
         {
             // Act
-            var result = _service.IsNewerVersion("v2.0.0", "v2.1.0");
+            var result = _service.IsNewerVersion("v2.0.0", "v2.1.1");
 
             // Assert
             result.Should().BeTrue();
@@ -162,7 +162,7 @@ namespace BeatBind.Tests.Infrastructure.Services
         public void IsNewerVersion_WithMixedVPrefix_ShouldStripAndCompare()
         {
             // Act
-            var result = _service.IsNewerVersion("v2.0.0", "2.1.0");
+            var result = _service.IsNewerVersion("v2.0.0", "2.1.1");
 
             // Assert
             result.Should().BeTrue();
@@ -172,7 +172,7 @@ namespace BeatBind.Tests.Infrastructure.Services
         public void IsNewerVersion_WithInvalidCurrentVersion_ShouldReturnFalse()
         {
             // Act
-            var result = _service.IsNewerVersion("invalid", "2.1.0");
+            var result = _service.IsNewerVersion("invalid", "2.1.1");
 
             // Assert
             result.Should().BeFalse();

@@ -244,6 +244,9 @@ namespace BeatBind.Application.Services
                 case HotkeyAction.SeekBackward:
                     await _musicControlService.SeekBackwardAsync();
                     break;
+                case HotkeyAction.PlayPauseOnFavoriteDevice:
+                    await _musicControlService.PlayPauseOnFavoriteDeviceAsync();
+                    break;
                 default:
                     _logger.LogWarning("Unknown hotkey action: {Action}", action);
                     break;
