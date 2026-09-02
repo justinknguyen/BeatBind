@@ -155,6 +155,24 @@ public static class ControlFactory
     }
 
     /// <summary>
+    /// Creates a read-only drop-down list with consistent styling.
+    /// </summary>
+    /// <param name="width">Control width (default: 200)</param>
+    /// <returns>A configured ComboBox</returns>
+    public static ComboBox CreateComboBox(int width = 200)
+    {
+        return new ComboBox
+        {
+            DropDownStyle = ComboBoxStyle.DropDownList,
+            Font = new Font("Segoe UI", 8f),
+            Width = width,
+            Margin = new Padding(0, 3, 15, 3),
+            BackColor = Theme.InputBackground,
+            ForeColor = Theme.PrimaryText
+        };
+    }
+
+    /// <summary>
     /// Creates a styled button for actions (edit, delete, etc.).
     /// </summary>
     /// <param name="emoji">Emoji or icon character</param>

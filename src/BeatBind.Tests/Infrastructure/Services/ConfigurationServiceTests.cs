@@ -214,6 +214,36 @@ namespace BeatBind.Tests.Infrastructure.Services
         }
 
         [Fact]
+        public void LoadConfiguration_WhenFilePredatesNewSettings_ShouldKeepDefaults()
+        {
+            // Arrange - a config written before the favorite-device settings existed.
+            // HotkeyAction is persisted as an integer ordinal, so this also guards
+            // against a new enum member being inserted rather than appended.
+            var legacyConfigPath = Path.Combine(_testConfigPath, "legacy_config.json");
+            File.WriteAllText(legacyConfigPath, """
+                {
+                  "ClientId": "legacy-client",
+                  "VolumeSteps": 7,
+                  "Hotkeys": [
+                    { "Id": 1, "Action": 15, "KeyCode": 65, "Modifiers": 2, "IsEnabled": true }
+                  ]
+                }
+                """);
+
+            // Act
+            var newService = new ConfigurationService(_mockLogger.Object, legacyConfigPath);
+            var config = newService.GetConfiguration();
+
+            // Assert
+            config.ClientId.Should().Be("legacy-client");
+            config.VolumeSteps.Should().Be(7);
+            config.FavoriteDeviceId.Should().BeEmpty();
+            config.FavoriteDeviceName.Should().BeEmpty();
+            config.Hotkeys.Should().ContainSingle()
+                .Which.Action.Should().Be(HotkeyAction.ToggleRepeat);
+        }
+
+        [Fact]
         public void LoadConfiguration_WithInvalidJson_ShouldUseDefaults()
         {
             // Arrange - Create file with invalid JSON

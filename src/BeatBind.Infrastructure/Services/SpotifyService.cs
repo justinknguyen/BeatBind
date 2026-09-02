@@ -242,10 +242,15 @@ namespace BeatBind.Infrastructure.Services
 
         /// <summary>
         /// Starts or resumes playback on the active Spotify device.
-        /// If no device is active, attempts to transfer playback to an available device.
+        /// If no device is active, attempts to transfer playback to an available device,
+        /// preferring the caller's device when it is online.
         /// </summary>
+        /// <param name="preferredDeviceId">
+        /// Device to prefer when playback has to be transferred, or null to let the
+        /// active device (else the first listed one) win.
+        /// </param>
         /// <returns>True if the command was successful; otherwise, false.</returns>
-        public async Task<bool> PlayAsync()
+        public async Task<bool> PlayAsync(string? preferredDeviceId = null)
         {
             try
             {
@@ -268,24 +273,16 @@ namespace BeatBind.Infrastructure.Services
                         return false;
                     }
 
-                    // Try to transfer playback to the first available device (prefer active ones)
-                    var device = devices.FirstOrDefault(d => d.IsActive) ?? devices.First();
+                    // Prefer the caller's device (the configured favorite) so a resumed
+                    // session lands where the user expects instead of on an arbitrary
+                    // device, then fall back to any active one
+                    Device? preferred = string.IsNullOrWhiteSpace(preferredDeviceId)
+                        ? null
+                        : devices.FirstOrDefault(d => d.Id == preferredDeviceId);
+                    var device = preferred ?? devices.FirstOrDefault(d => d.IsActive) ?? devices.First();
                     _logger.LogInformation("Attempting to transfer playback to device: {DeviceName}", device.Name);
 
-                    var transferBody = JsonSerializer.Serialize(new { device_ids = new[] { device.Id }, play = true });
-                    var transferUrl = "https://api.spotify.com/v1/me/player";
-                    using var transferResponse = await SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Put, transferUrl)
-                    {
-                        Content = new StringContent(transferBody, Encoding.UTF8, "application/json")
-                    });
-
-                    if (transferResponse == null || !transferResponse.IsSuccessStatusCode)
-                    {
-                        _logger.LogWarning("Failed to transfer playback. Status: {StatusCode}. Ensure Spotify has recently played content.", transferResponse?.StatusCode);
-                        return false;
-                    }
-
-                    return true;
+                    return await TransferPlaybackAsync(device.Id);
                 }
 
                 return response.IsSuccessStatusCode;
@@ -293,6 +290,47 @@ namespace BeatBind.Infrastructure.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error playing");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Transfers playback to the given device, optionally starting playback on it.
+        /// </summary>
+        /// <param name="deviceId">The target Spotify device id.</param>
+        /// <param name="play">True to start playback on the target device.</param>
+        /// <returns>True if the command was successful; otherwise, false.</returns>
+        public async Task<bool> TransferPlaybackAsync(string deviceId, bool play = true)
+        {
+            if (string.IsNullOrWhiteSpace(deviceId))
+            {
+                _logger.LogWarning("Cannot transfer playback: no device id was supplied");
+                return false;
+            }
+
+            try
+            {
+                var body = JsonSerializer.Serialize(new { device_ids = new[] { deviceId }, play });
+                var url = "https://api.spotify.com/v1/me/player";
+                using var response = await SendRequestAsync(() => new HttpRequestMessage(HttpMethod.Put, url)
+                {
+                    Content = new StringContent(body, Encoding.UTF8, "application/json")
+                });
+
+                if (response == null || !response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning(
+                        "Failed to transfer playback to device {DeviceId}. Status: {StatusCode}. Ensure the device is online and Spotify has recently played content.",
+                        deviceId,
+                        response?.StatusCode);
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error transferring playback to device {DeviceId}", deviceId);
                 return false;
             }
         }
@@ -624,11 +662,23 @@ namespace BeatBind.Infrastructure.Services
                 Id = GetStringOrEmpty(device, "id"),
                 Name = GetStringOrEmpty(device, "name"),
                 Type = GetStringOrEmpty(device, "type"),
-                IsActive = device.GetProperty("is_active").GetBoolean(),
-                IsPrivateSession = device.GetProperty("is_private_session").GetBoolean(),
-                IsRestricted = device.GetProperty("is_restricted").GetBoolean(),
+                IsActive = GetBooleanOrDefault(device, "is_active"),
+                IsPrivateSession = GetBooleanOrDefault(device, "is_private_session"),
+                IsRestricted = GetBooleanOrDefault(device, "is_restricted"),
                 VolumePercent = GetInt32OrDefault(device, "volume_percent")
             };
+        }
+
+        /// <summary>
+        /// Reads a boolean property that may be missing or JSON null, returning false in
+        /// those cases. Devices are parsed in a loop, so a throwing read here would
+        /// discard the entire device list.
+        /// </summary>
+        private static bool GetBooleanOrDefault(JsonElement parent, string propertyName)
+        {
+            return parent.TryGetProperty(propertyName, out var value)
+                && (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False)
+                && value.GetBoolean();
         }
 
         /// <summary>

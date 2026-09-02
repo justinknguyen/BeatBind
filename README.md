@@ -1,7 +1,7 @@
 # BeatBind - Spotify Global Hotkeys
 
 [![build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/justinknguyen/BeatBind)
-[![version](https://img.shields.io/badge/version-2.1.0-blue)](https://github.com/justinknguyen/BeatBind/releases)
+[![version](https://img.shields.io/badge/version-2.1.1-blue)](https://github.com/justinknguyen/BeatBind/releases)
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/justinknguyen/BeatBind/issues)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.txt)
@@ -24,6 +24,7 @@ Control Spotify from anywhere on Windows using global hotkeys. No more alt-tabbi
 - 🎹 **Global Hotkeys** - Control Spotify from any application
 - 🔊 **Volume Control** - Adjust Spotify volume independently from system volume
 - ⏯️ **Playback Control** - Play, pause, skip, seek, shuffle, and repeat
+- 🔈 **Favorite Device** - Pick a speaker or device and resume playback straight to it
 - 💾 **Track Management** - Save and remove tracks from your library
 - 🌙 **System Tray** - Runs quietly in the background
 - 🔄 **Auto-Update Checker** - Get notified when new versions are available
@@ -107,6 +108,7 @@ Once configured, BeatBind runs in the background. Use your hotkeys from any appl
 - **Save/Remove Track** - Manage your library
 - **Shuffle** - Toggle shuffle mode
 - **Repeat** - Toggle repeat mode
+- **Play/Pause On Favorite Device** - Resume playback on the device you chose in `Settings`, instead of wherever Spotify last left off. Useful when Spotify would otherwise start playing on your computer after a long pause.
 
 Access settings anytime by right-clicking the system tray icon.
 

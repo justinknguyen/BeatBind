@@ -76,6 +76,7 @@ namespace BeatBind.Core.Entities
                 HotkeyAction.RemoveTrack => "Remove Track",
                 HotkeyAction.ToggleShuffle => "Toggle Shuffle",
                 HotkeyAction.ToggleRepeat => "Toggle Repeat",
+                HotkeyAction.PlayPauseOnFavoriteDevice => "Play/Pause On Favorite Device",
                 _ => action.ToString()
             };
         }
@@ -198,5 +199,9 @@ namespace BeatBind.Core.Entities
         RemoveTrack,
         ToggleShuffle,
         ToggleRepeat,
+
+        // Appended deliberately: HotkeyAction is serialized to config.json as an
+        // integer ordinal, so inserting a member would remap saved hotkeys.
+        PlayPauseOnFavoriteDevice,
     }
 }

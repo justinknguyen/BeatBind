@@ -7,7 +7,7 @@ body:
     attributes:
       label: BeatBind version
       description: Shown in the update banner, or check the release you downloaded.
-      placeholder: "2.1.0"
+      placeholder: "2.1.1"
     validations:
       required: true
   - type: textarea
