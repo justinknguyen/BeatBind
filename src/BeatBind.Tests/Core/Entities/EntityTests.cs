@@ -86,6 +86,7 @@ namespace BeatBind.Tests.Core.Entities
         [InlineData(9, "Tab")]
         [InlineData(27, "Escape")]
         [InlineData(19, "Pause/Break")]
+        [InlineData(93, "Menu (Apps)")]
         public void GetKeyDisplayName_ShouldReturnCorrectName_ForCommonKeys(int keyCode, string expectedName)
         {
             // Act
@@ -98,6 +99,11 @@ namespace BeatBind.Tests.Core.Entities
         [Theory]
         [InlineData(96, "Numpad 0")]
         [InlineData(105, "Numpad 9")]
+        [InlineData(106, "Numpad *")]
+        [InlineData(107, "Numpad +")]
+        [InlineData(109, "Numpad -")]
+        [InlineData(110, "Numpad .")]
+        [InlineData(111, "Numpad /")]
         public void GetKeyDisplayName_ShouldReturnCorrectName_ForNumpadKeys(int keyCode, string expectedName)
         {
             // Act
@@ -115,6 +121,9 @@ namespace BeatBind.Tests.Core.Entities
         [InlineData(173, "Volume Mute")]
         [InlineData(175, "Volume Up")]
         [InlineData(174, "Volume Down")]
+        [InlineData(181, "Launch Media Select")]
+        [InlineData(182, "Launch App 1")]
+        [InlineData(183, "Launch App 2")]
         public void GetKeyDisplayName_ShouldReturnCorrectName_ForMediaKeys(int keyCode, string expectedName)
         {
             // Act
@@ -156,6 +165,7 @@ namespace BeatBind.Tests.Core.Entities
         [InlineData(220, "\\ (Backslash)")]
         [InlineData(221, "] (Close Bracket)")]
         [InlineData(222, "' (Quote / Æ)")]
+        [InlineData(226, "< > | (ISO Backslash)")]
         public void GetKeyDisplayName_ShouldReturnCorrectName_ForPunctuationKeys(int keyCode, string expectedName)
         {
             // Act
@@ -251,6 +261,49 @@ namespace BeatBind.Tests.Core.Entities
         {
             // Assert
             Hotkey.AvailableKeyCodes.Should().Contain(19); // Pause/Break
+        }
+
+        [Fact]
+        public void AvailableKeyCodes_ShouldContainBrowserKeys()
+        {
+            // Assert
+            Hotkey.AvailableKeyCodes.Should().Contain(new[] { 166, 167, 168, 169, 170, 171, 172 });
+        }
+
+        [Fact]
+        public void AvailableKeyCodes_ShouldContainLaunchKeys()
+        {
+            // Assert
+            Hotkey.AvailableKeyCodes.Should().Contain(new[] { 181, 182, 183 });
+        }
+
+        [Fact]
+        public void AvailableKeyCodes_ShouldContainNumpadOperatorKeys()
+        {
+            // Assert
+            Hotkey.AvailableKeyCodes.Should().Contain(new[] { 106, 107, 109, 110, 111 });
+        }
+
+        [Fact]
+        public void AvailableKeyCodes_ShouldContainMenuAndIsoKeys()
+        {
+            // Assert
+            Hotkey.AvailableKeyCodes.Should().Contain(93); // Apps (Context Menu)
+            Hotkey.AvailableKeyCodes.Should().Contain(226); // OemBackslash (ISO)
+        }
+
+        [Fact]
+        public void AvailableKeyCodes_ShouldHaveNoDuplicates()
+        {
+            // Assert
+            Hotkey.AvailableKeyCodes.Should().OnlyHaveUniqueItems();
+        }
+
+        [Fact]
+        public void AvailableKeyCodes_ShouldAllHaveFriendlyDisplayNames()
+        {
+            // Assert
+            Hotkey.AvailableKeyCodes.Should().OnlyContain(code => !Hotkey.GetKeyDisplayName(code).StartsWith("Key"));
         }
 
         [Fact]

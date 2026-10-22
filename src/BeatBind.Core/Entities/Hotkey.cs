@@ -29,7 +29,8 @@ namespace BeatBind.Core.Entities
             
             // Special Keys
             32, 13, 9, 27, 19, // Space, Enter, Tab, Escape, Pause/Break
-            
+            93, // Apps (Context Menu)
+
             // Punctuation & Symbols (OEM Keys)
             186, // OemSemicolon (;:)
             187, // Oemplus (=+)
@@ -42,7 +43,8 @@ namespace BeatBind.Core.Entities
             220, // OemPipe (\|)
             221, // OemCloseBrackets (]})
             222, // OemQuotes ('")
-            
+            226, // OemBackslash (<>| on ISO keyboards)
+
             // Media Keys
             179, // MediaPlayPause
             176, // MediaNextTrack
@@ -51,9 +53,18 @@ namespace BeatBind.Core.Entities
             173, // VolumeMute
             175, // VolumeUp
             174, // VolumeDown
-            
+
+            // Launch Keys
+            181, // SelectMedia
+            182, // LaunchApplication1
+            183, // LaunchApplication2
+
+            // Browser Keys
+            166, 167, 168, 169, 170, 171, 172, // Back, Forward, Refresh, Stop, Search, Favorites, Home
+
             // Numpad
             96, 97, 98, 99, 100, 101, 102, 103, 104, 105, // Numpad 0-9
+            106, 107, 109, 110, 111, // Numpad *, +, -, ., /
         };
 
         public static string GetActionDisplayName(HotkeyAction action)
@@ -110,6 +121,7 @@ namespace BeatBind.Core.Entities
                 220 => "\\ (Backslash)",
                 221 => "] (Close Bracket)",
                 222 => "' (Quote / Æ)",
+                226 => "< > | (ISO Backslash)",
 
                 // Numpad (96-105)
                 96 => "Numpad 0",
@@ -122,6 +134,11 @@ namespace BeatBind.Core.Entities
                 103 => "Numpad 7",
                 104 => "Numpad 8",
                 105 => "Numpad 9",
+                106 => "Numpad *",
+                107 => "Numpad +",
+                109 => "Numpad -",
+                110 => "Numpad .",
+                111 => "Numpad /",
 
                 // Media Keys
                 179 => "Media Play/Pause",
@@ -131,6 +148,11 @@ namespace BeatBind.Core.Entities
                 173 => "Volume Mute",
                 175 => "Volume Up",
                 174 => "Volume Down",
+
+                // Launch Keys
+                181 => "Launch Media Select",
+                182 => "Launch App 1",
+                183 => "Launch App 2",
 
                 // Browser Keys
                 166 => "Browser Back",
@@ -161,6 +183,7 @@ namespace BeatBind.Core.Entities
                 9 => "Tab",
                 27 => "Escape",
                 19 => "Pause/Break",
+                93 => "Menu (Apps)",
                 36 => "Home",
                 35 => "End",
                 45 => "Insert",
