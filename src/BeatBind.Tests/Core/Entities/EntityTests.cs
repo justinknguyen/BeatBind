@@ -85,6 +85,7 @@ namespace BeatBind.Tests.Core.Entities
         [InlineData(13, "Enter")]
         [InlineData(9, "Tab")]
         [InlineData(27, "Escape")]
+        [InlineData(19, "Pause/Break")]
         public void GetKeyDisplayName_ShouldReturnCorrectName_ForCommonKeys(int keyCode, string expectedName)
         {
             // Act
@@ -243,6 +244,13 @@ namespace BeatBind.Tests.Core.Entities
             // Assert
             Hotkey.AvailableKeyCodes.Should().Contain(96); // Numpad 0
             Hotkey.AvailableKeyCodes.Should().Contain(105); // Numpad 9
+        }
+
+        [Fact]
+        public void AvailableKeyCodes_ShouldContainPauseKey()
+        {
+            // Assert
+            Hotkey.AvailableKeyCodes.Should().Contain(19); // Pause/Break
         }
 
         [Fact]

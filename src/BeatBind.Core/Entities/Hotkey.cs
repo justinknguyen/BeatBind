@@ -28,7 +28,7 @@ namespace BeatBind.Core.Entities
             45, 46, // Insert, Delete
             
             // Special Keys
-            32, 13, 9, 27, // Space, Enter, Tab, Escape
+            32, 13, 9, 27, 19, // Space, Enter, Tab, Escape, Pause/Break
             
             // Punctuation & Symbols (OEM Keys)
             186, // OemSemicolon (;:)
@@ -160,6 +160,7 @@ namespace BeatBind.Core.Entities
                 13 => "Enter",
                 9 => "Tab",
                 27 => "Escape",
+                19 => "Pause/Break",
                 36 => "Home",
                 35 => "End",
                 45 => "Insert",
